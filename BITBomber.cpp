@@ -272,7 +272,7 @@ using namespace std;
 #define BOX 5
 #define TOOL 6
 #define FIRE 7
-#define BOMB_TIMER 3
+#define BOMB_TIMER 4
 //关于地图的define
 #define ROW 8
 #define COL 8
@@ -344,7 +344,7 @@ public:
         // 初始化玩家
         player.x = player.y = 0;
         player.bomb_range = 1;
-        player.bomb_cnt = 1;
+        player.bomb_cnt = 3;
         player.life = 1;
         map[player.x][player.y][0].type = PLAYER;
 
@@ -414,8 +414,7 @@ public:
             }
 
             if (collisionWithMonster) {
-                cout << "Game Over: You were caught by a monster!" << endl;
-                exit(0); // End the game
+                die();
             }
 
             // Update the player's position on the map
@@ -451,19 +450,18 @@ public:
             int newMonsterX = monsters[i].x;
             int newMonsterY = monsters[i].y;
 
-            switch (move) {
-                case 0: newMonsterX--; break; // Move up
-                case 1: newMonsterX++; break; // Move down
-                case 2: newMonsterY--; break; // Move left
-                case 3: newMonsterY++; break; // Move right
-            }
+//            switch (move) {
+//                case 0: newMonsterX--; break; // Move up
+//                case 1: newMonsterX++; break; // Move down
+//                case 2: newMonsterY--; break; // Move left
+//                case 3: newMonsterY++; break; // Move right
+//            }
 
             // Check if new position is valid
             if (IsMoveable(newMonsterX, newMonsterY)) {
                 // Check if monster encounters the player
                 if (newMonsterX == player.x && newMonsterY == player.y) {
-                    cout << "Game Over: You were caught by a monster!" << endl;
-                    exit(0); // End the game
+                    die();
                 }
 
                 // Move the monster
@@ -474,6 +472,76 @@ public:
             }
         }
     }
+
+
+    void poolingBomb() {
+        for (int i = 0; i < MAX_BOMB; i++) {
+            if (bombs[i].time > 0) {
+                bombs[i].time--;
+                if (bombs[i].time == 0) {
+                    // Explode the bomb
+                    int x = bombs[i].x;
+                    int y = bombs[i].y;
+                    int range = bombs[i].range;
+
+                    // Clear the bomb
+                    map[x][y][1].type = EMPTY;
+
+                    // Explode in four directions
+                    for (int j = 0; j < 4; j++) {
+                        int dx = 0;
+                        int dy = 0;
+                        switch (j) {
+                            case 0:
+                                dx = -1;
+                                break; // Up
+                            case 1:
+                                dx = 1;
+                                break; // Down
+                            case 2:
+                                dy = -1;
+                                break; // Left
+                            case 3:
+                                dy = 1;
+                                break; // Right
+                        }
+
+                        // Explode in each direction
+                        for (int k = 1; k <= range; k++) {
+                            int new_x = x + dx * k;
+                            int new_y = y + dy * k;
+
+                            // Check if the new position is valid
+                            if (IsMoveable(new_x, new_y)) {
+                                // Check if the bomb encounters a monster
+                                for (int l = 0; l < MAX_MONSTER; l++) {
+                                    if (monsters[l].x == new_x && monsters[l].y == new_y) {
+                                        // Kill the monster
+                                        map[monsters[l].x][monsters[l].y][0].type = EMPTY;
+                                        monsters[l].x = -1;
+                                        monsters[l].y = -1;
+                                        break;
+                                    }
+                                }
+
+                                // Check if the bomb encounters the player
+                                if (new_x == player.x && new_y == player.y) {
+                                    die();
+                                }
+                            }
+                            else{
+                                // Stop the explosion if the bomb encounters a wall
+                                break;
+                            }
+                        }
+                    }
+                    player.bomb_cnt++;
+                }
+            }
+        }
+
+    }
+
 
     int IsMoveable(int x, int y) {
         if (map[x][y][1].type == BOMB) {
@@ -487,7 +555,13 @@ public:
 
     }
 
-
+    void die() {
+        player.life--;
+        if (player.life == 0) {
+            cout << "Game Over!" << endl;
+            exit(0); // End the game
+        }
+    }
 };
 
 int main() {
@@ -500,11 +574,11 @@ int main() {
         char input;
         cin >> input;
         game.poolingPlayer(input);
-
         game.poolingMonster();
+        game.poolingBomb();
         // Additional logic here for bomb timer countdown and explosion
 
-        system("clear"); // or system("cls") on Windows
+//        system("cls"); // or system("cls") on Windows
     }
 
 
