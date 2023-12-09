@@ -273,9 +273,13 @@ using namespace std;
 #define TOOL 6
 #define FIRE 7
 #define BOMB_TIMER 3
+
+#define MONSTER_1 41
+#define MONSTER_2 42
+#define MONSTER_3 43
 //关于地图的define
-#define ROW 8
-#define COL 8
+#define ROW 11
+#define COL 13
 #define DEPTH 5
 #define MAX_MONSTER 1
 #define MAX_BOMB 5
@@ -300,7 +304,10 @@ struct Player {
 struct Monster {
     int x;
     int y;
+    int frac_x;
+    int frac_y;
     int direction;
+    int speed;
 };
 
 struct Bomb {
@@ -330,7 +337,9 @@ public:
     struct Bomb bombs[MAX_BOMB];
     struct Tool tools[MAX_TOOL];
     struct Fire fires[MAX_FIRE];
-
+	int level = 1;
+	int times;
+	int monster_num = 0;
     Game() {
         // 初始化地图
         for (int i = 0; i < ROW; i++) {
@@ -348,23 +357,42 @@ public:
         player.life = 1;
         map[player.x][player.y][0].type = PLAYER;
 
-        // 初始化怪物
-        for (int i = 0; i < MAX_MONSTER; i++) {
-            monsters[i].x = ROW-1; // 定义怪物的初始位置
-            monsters[i].y = COL-1;
-            monsters[i].direction = 0; // 定义怪物的初始方向
-            // 可能需要确保怪物不在玩家或墙壁上
-            map[monsters[i].x][monsters[i].y][0].type = MONSTER;
-        }
-
-        // 放置一些墙壁
-        map[1][1][0].type = WALL;
-        map[1][2][0].type = WALL;
-        map[2][1][0].type = WALL;
-
-        // 初始化其他游戏元素...
+        level_init(level);
     }
-
+	void level_init(int l){
+		//读关卡文件[level];
+        FILE* file;
+        char* filename[3] = {"1.level","2.level","3.level"};
+        file = fopen(filename[l-1],"r");
+        if(file==NULL){
+        	//错误处理
+			return ; 
+		}
+		monster_num = 0;
+		int num;
+    	for (int i = 0; i < ROW; i++) {
+        	for (int j = 0; j < COL; j++) {
+            	fscanf(file,"%d",&num);
+            	switch(num){
+            		case MONSTER_1:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,1);break;
+            		case MONSTER_2:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,2);break;
+            		case MONSTER_3:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,3);break;
+				}
+				map[i][j][0].type = num;
+            }
+        }
+        fscanf(file,"%d",&times);
+        fclose(file);
+	}
+	
+	void monster_init(int index,int x,int y,int speed){
+    	monsters[index].direction = 0;//random
+		monsters[index].frac_x =  FRAC>>1;
+		monsters[index].frac_y = FRAC>>1;
+		monsters[index].x = x;
+		monsters[index].y = y;
+		monsters[index].speed = speed;
+	}
 
     void draw() {
         for (int i = 0; i < ROW; i++) {
@@ -376,7 +404,7 @@ public:
                         case PLAYER: tmp = 'P'; break;
                         case MONSTER: tmp = 'M'; break;
                         case BOMB: tmp = 'B'; break;
-
+						case BOX:tmp = '=';break;
                     }
                 }
                 cout<<tmp;
@@ -504,7 +532,7 @@ int main() {
         game.poolingMonster();
         // Additional logic here for bomb timer countdown and explosion
 
-        system("clear"); // or system("cls") on Windows
+        system("cls"); // or system("cls") on Windows
     }
 
 
