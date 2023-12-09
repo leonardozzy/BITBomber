@@ -3,7 +3,7 @@
 #include <time.h>
 
 
-//¹ØÓÚtypeµÄdefine
+//å…³äºtypeçš„define
 #define EMPTY 0
 #define WALL 1
 #define PLAYER 2
@@ -13,7 +13,7 @@
 #define TOOL 6
 #define FIRE 7
 
-//¹ØÓÚµØÍ¼µÄdefine
+//å…³äºåœ°å›¾çš„define
 #define ROW 8
 #define COL 8
 #define MAX_MONSTER 5
@@ -21,8 +21,8 @@
 #define MAX_TOOL 5
 #define MAX_FIRE 40
 
-//¹ØÓÚfracµÄdefine
-#define FRAC 5 
+//å…³äºfracçš„define
+#define FRAC 5
 struct Object {
     char type;
     char id;
@@ -68,7 +68,7 @@ struct Fire {
 
 struct control {
     struct Player player;
-    struct Object map[ROW][COL][2];//¼ÇÂ¼¶ÔÏóÀàĞÍ
+    struct Object map[ROW][COL][2];//è®°å½•å¯¹è±¡ç±»å‹
     struct Monster monsters[MAX_MONSTER];
     struct Bomb bombs[MAX_BOMB];
     struct Tool tools[MAX_TOOL];
@@ -77,7 +77,7 @@ struct control {
     int monster_num;
     int level;
     void init() {
-        //³õÊ¼»¯player;
+        //åˆå§‹åŒ–player;
         player_init();
         level = 1;
         level_init(level);
@@ -88,21 +88,21 @@ struct control {
     }
 
     void player_init() {
-        player.bomb_cnt = 1;          // Íæ¼Ò³õÊ¼Õ¨µ¯ÊıÁ¿
-        player.bomb_range = 1;        // Õ¨µ¯³õÊ¼±¬Õ¨·¶Î§
-        player.frac_x = FRAC >> 1;    // Íæ¼ÒÔÚ¸ñ×ÓÖĞµÄX·½Ïò·ÖÊıÎ»ÖÃ
-        player.frac_y = FRAC >> 1;    // Íæ¼ÒÔÚ¸ñ×ÓÖĞµÄY·½Ïò·ÖÊıÎ»ÖÃ
-        player.x = 0;                 // Íæ¼ÒÔÚµØÍ¼ÉÏµÄX×ø±ê
-        player.y = 0;                 // Íæ¼ÒÔÚµØÍ¼ÉÏµÄY×ø±ê
-        player.speed = 1;             // Íæ¼ÒÒÆ¶¯ËÙ¶È
-        player.life = 1;              // Íæ¼ÒÉúÃüÖµ
+        player.bomb_cnt = 1;          // ç©å®¶åˆå§‹ç‚¸å¼¹æ•°é‡
+        player.bomb_range = 1;        // ç‚¸å¼¹åˆå§‹çˆ†ç‚¸èŒƒå›´
+        player.frac_x = FRAC >> 1;    // ç©å®¶åœ¨æ ¼å­ä¸­çš„Xæ–¹å‘åˆ†æ•°ä½ç½®
+        player.frac_y = FRAC >> 1;    // ç©å®¶åœ¨æ ¼å­ä¸­çš„Yæ–¹å‘åˆ†æ•°ä½ç½®
+        player.x = 0;                 // ç©å®¶åœ¨åœ°å›¾ä¸Šçš„Xåæ ‡
+        player.y = 0;                 // ç©å®¶åœ¨åœ°å›¾ä¸Šçš„Yåæ ‡
+        player.speed = 1;             // ç©å®¶ç§»åŠ¨é€Ÿåº¦
+        player.life = 1;              // ç©å®¶ç”Ÿå‘½å€¼
     }
 
 
     void level_init(int l) {
-        //¶Á¹Ø¿¨ÎÄ¼ş[level];
+        //è¯»å…³å¡æ–‡ä»¶[level];
 
-    ¸ù¾İ¹Ø¿¨ÎÄ¼ş³õÊ¼»¯:map¡¢¶ÔÏóÊı×é¡¢times¡¢monster_num;
+        æ ¹æ®å…³å¡æ–‡ä»¶åˆå§‹åŒ–:mapã€å¯¹è±¡æ•°ç»„ã€timesã€monster_num;
     }
 
     void getTimeSignal() {
@@ -119,35 +119,35 @@ struct control {
     }
 
     void poolingPlayer() {
-        »ñÈ¡Íæ¼Ò°´¼üx;
-        »ñÈ¡²½³¤step;
-        if (x in[ÉÏ¡¢ÏÂ¡¢×ó¡¢ÓÒ]) {
-            ÅĞ¶ÏÄÜ²»ÄÜ×ß;
-            if (ÄÜ×ß) {
-                ×ß(´ıÊµÏÖ);
+        è·å–ç©å®¶æŒ‰é”®x;
+        è·å–æ­¥é•¿step;
+        if (x in[ä¸Šã€ä¸‹ã€å·¦ã€å³]) {
+            åˆ¤æ–­èƒ½ä¸èƒ½èµ°;
+            if (èƒ½èµ°) {
+                èµ°(å¾…å®ç°);
             }
-            if (Åöµ½¹ÖÎï) {
+            if (ç¢°åˆ°æ€ªç‰©) {
                 die();
             }
-            if (Åöµ½µÀ¾ß) {
-                Ëæ»ú³öÌâ;
-                ĞŞ¸ÄÏà¹ØÊôĞÔ;
-                µÀ¾ßÏûÊ§;
+            if (ç¢°åˆ°é“å…·) {
+                éšæœºå‡ºé¢˜;
+                ä¿®æ”¹ç›¸å…³å±æ€§;
+                é“å…·æ¶ˆå¤±;
             }
-            ÅĞ¶ÏÊÇ·ñĞŞ¸Ämap;
-            Èç¹ûÊÇ£¬ĞŞ¸Ämap;
+            åˆ¤æ–­æ˜¯å¦ä¿®æ”¹map;
+            å¦‚æœæ˜¯ï¼Œä¿®æ”¹map;
         }
-        else if (x == ·ÅÕ¨µ¯) {
-            ÅĞ¶ÏÄÜ²»ÄÜ·Å;
-            ÈçÄÜ£¬ÔÚmap[x][y][1]·ÅÕ¨µ¯;
+        else if (x == æ”¾ç‚¸å¼¹) {
+            åˆ¤æ–­èƒ½ä¸èƒ½æ”¾;
+            å¦‚èƒ½ï¼Œåœ¨map[x][y][1]æ”¾ç‚¸å¼¹;
         }
-        Çå³ı°´¼üx;
+        æ¸…é™¤æŒ‰é”®x;
     }
 
     void die() {
         life--;
         if (life) {
-            ËøÃü;
+            é”å‘½;
         }
         else {
             game over;
@@ -155,25 +155,25 @@ struct control {
     }
 
     void poolingMonster() {
-        ¼ÆËã / »ñÈ¡¹ÖÎï·½Ïòdirection;
-        if (Åö±Ú) {
-            ¸Ä±ädirection;
+        è®¡ç®— / è·å–æ€ªç‰©æ–¹å‘direction;
+        if (ç¢°å£) {
+            æ”¹å˜direction;
         }
-        if (!Åö±Ú) {
-            ×ß();
-            ÅĞ¶ÏÊÇ·ñĞŞ¸Ämap;
-            ÈçÊÇ£¬ĞŞ¸Ämap;
+        if (!ç¢°å£) {
+            èµ°();
+            åˆ¤æ–­æ˜¯å¦ä¿®æ”¹map;
+            å¦‚æ˜¯ï¼Œä¿®æ”¹map;
         }
     }
 
     void poolingBomb() {
         bomb.time--;
         if (time == 0) {
-            »ñÈ¡x, y;
-            »ñÈ¡range;
-            ĞŞ¸Ämap;
+            è·å–x, y;
+            è·å–range;
+            ä¿®æ”¹map;
             for x_0, y_0 in bomb_range :
-            ÔÚÃ»ÓĞ±»Ç½×è¶ÏÊ±Ôö¼Ó»ğ¶ÔÏó;
+            åœ¨æ²¡æœ‰è¢«å¢™é˜»æ–­æ—¶å¢åŠ ç«å¯¹è±¡;
             clear();
         }
     }
@@ -183,9 +183,9 @@ struct control {
             die();
         }
         else if (map[x_0][y_0][0] == Box) {
-            Ëæ»úÉú³ÉµÀ¾ß;
-            Èç¹ûÓĞ, map[x_0][y_0][0].type = Tool;
-            ²åÈëtools£¬²¢ĞŞ¸Ämap[x_0][y_0][0].id;
+            éšæœºç”Ÿæˆé“å…·;
+            å¦‚æœæœ‰, map[x_0][y_0][0].type = Tool;
+            æ’å…¥toolsï¼Œå¹¶ä¿®æ”¹map[x_0][y_0][0].id;
         }
         else if (map[x_0][y_0][0] != Wall) {
             map[x_0][y_0][0].type = Empty;
