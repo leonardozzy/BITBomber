@@ -1,7 +1,8 @@
-#include <stdio.h>
+#include <iostream>
+#include <vector>
 #include <stdlib.h>
 #include <time.h>
-
+using namespace std;
 
 //关于type的define
 #define EMPTY 0
@@ -14,8 +15,8 @@
 #define FIRE 7
 
 //关于地图的define
-#define ROW 8
-#define COL 8
+#define ROW 11
+#define COL 13
 #define MAX_MONSTER 5
 #define MAX_BOMB 5
 #define MAX_TOOL 5
@@ -31,9 +32,6 @@ struct Object {
 struct Player {
     int x;
     int y;
-    int frac_x;
-    int frac_y;
-    int speed;
     int bomb_range;
     int bomb_cnt;
     int life;
@@ -42,9 +40,6 @@ struct Player {
 struct Monster {
     int x;
     int y;
-    int frac_x;
-    int frac_y;
-    int speed;
     int direction;
 };
 
@@ -61,138 +56,157 @@ struct Tool {
     int times;
 };
 
-struct control {
+struct Fire {
+    int x;
+    int y;
+};
+
+
+class Game {
+public:
     struct Player player;
     struct Object map[ROW][COL][2];//记录对象类型
     struct Monster monsters[MAX_MONSTER];
     struct Bomb bombs[MAX_BOMB];
     struct Tool tools[MAX_TOOL];
     struct Fire fires[MAX_FIRE];
-    int times;
-    int monster_num;
-    int level;
-    void init() {
-        //初始化player;
-        player_init();
-        level = 1;
-        level_init(level);
-        while (1) {
-            getTimeSignal();
-        }
-        level_init();
-    }
 
-    void player_init() {
-        player.bomb_cnt = 1;
+    Game() {
+        // 初始化地图
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                map[i][j][0].type = EMPTY; // Layer 0 (ground layer)
+                map[i][j][1].type = EMPTY; // Layer 1 (object layer)
+            }
+        }
+
+        // 初始化玩家
+        player.x = player.y = 0;
         player.bomb_range = 1;
-        player.frac_x = FRAC >> 1;
-        player.frac_x = FRAC >> 1;
-        player.x = 0;
-        player.y = 0;
-        player.speed = 1;
+        player.bomb_cnt = 1;
         player.life = 1;
-    }
+        map[player.x][player.y][0].type = PLAYER;
 
-    void level_init(int l) {
-        //读关卡文件[level];
-
-    根据关卡文件初始化:map、对象数组、times、monster_num;
-    }
-
-    void getTimeSignal() {
-        times--;
-        clearFire();
-        poolingPlayer();
-        poolingMonster();
-        poolingTool();
-        poolingBomb();
-        if (monster_num == 0) {
-            win();
+        // 初始化怪物
+        for (int i = 0; i < MAX_MONSTER; i++) {
+            monsters[i].x = ROW; // 定义怪物的初始位置
+            monsters[i].y = COL;
+            monsters[i].direction = 0; // 定义怪物的初始方向
+            // 可能需要确保怪物不在玩家或墙壁上
+            map[monsters[i].x][monsters[i].y][0].type = MONSTER;
         }
-        drawMap();
+
+        // 放置一些墙壁
+        map[1][1][0].type = WALL;
+        map[1][2][0].type = WALL;
+        map[2][1][0].type = WALL;
+
+        // 初始化其他游戏元素...
     }
 
-    void poolingPlayer() {
-        获取玩家按键x;
-        获取步长step;
-        if (x in[上、下、左、右]) {
-            判断能不能走;
-            if (能走) {
-                走(待实现);
+
+    void draw() {
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                switch (map[i][j][0].type) {
+                case EMPTY: cout << "."; break;
+                case WALL: cout << "#"; break;
+                case PLAYER: cout << "P"; break;
+                case MONSTER: cout << "M"; break;
+                }
             }
-            if (碰到怪物) {
-                die();
-            }
-            if (碰到道具) {
-                随机出题;
-                修改相关属性;
-                道具消失;
-            }
-            判断是否修改map;
-            如果是，修改map;
+            cout << endl;
         }
-        else if (x == 放炸弹) {
-            判断能不能放;
-            如能，在map[x][y][1]放炸弹;
-        }
-        清除按键x;
     }
 
-    void die() {
-        life--;
-        if (life) {
-            锁命;
+    void poolingPlayer(char input) {
+        // Move player
+        int newPlayerX = player.x;
+        int newPlayerY = player.y;
+
+        switch (input) {
+        case 'w': newPlayerX--; break;
+        case 's': newPlayerX++; break;
+        case 'a': newPlayerY--; break;
+        case 'd': newPlayerY++; break;
         }
-        else {
-            game over;
+
+        // Check if new position is valid
+        if (newPlayerX >= 0 && newPlayerX < ROW && newPlayerY >= 0 && newPlayerY < COL
+            && map[newPlayerX][newPlayerY][0].type != WALL) {
+
+            // Check for collision with monsters
+            bool collisionWithMonster = false;
+            for (int i = 0; i < MAX_MONSTER; i++) {
+                if (monsters[i].x == newPlayerX && monsters[i].y == newPlayerY) {
+                    collisionWithMonster = true;
+                    break;
+                }
+            }
+
+            if (collisionWithMonster) {
+                cout << "Game Over: You were caught by a monster!" << endl;
+                exit(0); // End the game
+            }
+
+            // Update the player's position on the map
+            map[player.x][player.y][0].type = EMPTY;
+            player.x = newPlayerX;
+            player.y = newPlayerY;
+            map[player.x][player.y][0].type = PLAYER;
         }
     }
+
 
     void poolingMonster() {
-        计算 / 获取怪物方向direction;
-        if (碰壁) {
-            改变direction;
-        }
-        if (!碰壁) {
-            走();
-            判断是否修改map;
-            如是，修改map;
+        for (int i = 0; i < MAX_MONSTER; i++) {
+            // Randomly choose a direction for each monster
+            int move = rand() % 4;
+            int newMonsterX = monsters[i].x;
+            int newMonsterY = monsters[i].y;
+
+            switch (move) {
+            case 0: newMonsterX--; break; // Move up
+            case 1: newMonsterX++; break; // Move down
+            case 2: newMonsterY--; break; // Move left
+            case 3: newMonsterY++; break; // Move right
+            }
+
+            // Check if new position is valid
+            if (newMonsterX >= 0 && newMonsterX < ROW && newMonsterY >= 0 && newMonsterY < COL
+                && map[newMonsterX][newMonsterY][0].type != WALL) {
+                // Check if monster encounters the player
+                if (newMonsterX == player.x && newMonsterY == player.y) {
+                    cout << "Game Over: You were caught by a monster!" << endl;
+                    exit(0); // End the game
+                }
+
+                // Move the monster
+                map[monsters[i].x][monsters[i].y][0].type = EMPTY;
+                monsters[i].x = newMonsterX;
+                monsters[i].y = newMonsterY;
+                map[monsters[i].x][monsters[i].y][0].type = MONSTER;
+            }
         }
     }
 
-    void poolingBomb() {
-        bomb.time--;
-        if (time == 0) {
-            获取x, y;
-            获取range;
-            修改map;
-            for x_0, y_0 in bomb_range :
-            在没有被墙阻断时增加火对象;
-            clear();
-        }
+
+
+};
+
+int main() {
+    Game game;
+    srand(time(NULL));
+
+    while (true) {
+        game.draw();
+        cout << "Move (WASD): ";
+        char input;
+        cin >> input;
+        game.poolingPlayer(input);
+        game.poolingMonster();
+        system("clear"); // 在Windows中使用system("cls");
     }
 
-    void clear() {
-        if (map[x_0][y_0][0] == Player) {
-            die();
-        }
-        else if (map[x_0][y_0][0] == Box) {
-            随机生成道具;
-            如果有, map[x_0][y_0][0].type = Tool;
-            插入tools，并修改map[x_0][y_0][0].id;
-        }
-        else if (map[x_0][y_0][0] != Wall) {
-            map[x_0][y_0][0].type = Empty;
-            map[x_0][y_0][1].type = Empty;
-        }
-    }
-
-    void poolingTool() {
-        tool.times--;
-        if (tool.times == 0) {
-            map[x_0][y_0][0].type = Empty;
-            map[x_0][y_0][1].type = Empty;
-            tool.valid = 0;
-        }
-    }
+    return 0;
 }
