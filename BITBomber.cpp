@@ -281,7 +281,7 @@ using namespace std;
 #define ROW 11
 #define COL 13
 #define DEPTH 5
-#define MAX_MONSTER 1
+#define MAX_MONSTER 10
 #define MAX_BOMB 5
 #define MAX_TOOL 5
 #define MAX_FIRE 40
@@ -409,6 +409,7 @@ public:
             }
             cout << endl;
         }
+        cout<<"----------------------------------------"<<endl;
     }
 
     void poolingPlayer(char input) {
@@ -432,7 +433,7 @@ public:
 
             // Check for collision with monsters
             bool collisionWithMonster = false;
-            for (int i = 0; i < MAX_MONSTER; i++) {
+            for (int i = 0; i < monster_num; i++) {
                 if (monsters[i].x == newPlayerX && monsters[i].y == newPlayerY) {
                     collisionWithMonster = true;
                     break;
@@ -470,7 +471,7 @@ public:
 
 
     void poolingMonster() {
-        for (int i = 0; i < MAX_MONSTER; i++) {
+        for (int i = 0; i < monster_num; i++) {
             // Randomly choose a direction for each monster
             int move = rand() % 4;
             int newMonsterX = monsters[i].x;
@@ -538,24 +539,10 @@ public:
                             int new_y = y + dy * k;
 
                             // Check if the new position is valid
-                            if (IsMoveable(new_x, new_y)) {
+                            if (IsDestroyable(new_x, new_y)) {
                                 // Check if the bomb encounters a monster
-                                for (int l = 0; l < MAX_MONSTER; l++) {
-                                    if (monsters[l].x == new_x && monsters[l].y == new_y) {
-                                        // Kill the monster
-                                        map[monsters[l].x][monsters[l].y][0].type = EMPTY;
-                                        monsters[l].x = -1;
-                                        monsters[l].y = -1;
-                                        break;
-                                    }
-                                }
-
-                                // Check if the bomb encounters the player
-                                if (new_x == player.x && new_y == player.y) {
-                                    die();
-                                }
-                            }
-                            else{
+                                clear(new_x, new_y);
+                            }else{
                                 // Stop the explosion if the bomb encounters a wall
                                 break;
                             }
@@ -568,17 +555,48 @@ public:
 
     }
 
+    void clear(int x, int y){
+        for (int l = 0; l < monster_num; l++) {
+            if (monsters[l].x == x && monsters[l].y == y) {
+                // Kill the monster
+                map[monsters[l].x][monsters[l].y][0].type = EMPTY;
+                monsters[l].x = -1;
+                monsters[l].y = -1;
+                break;
+            }
+        }
 
+        // Check if the bomb encounters the player
+        if (x == player.x && y == player.y) {
+            die();
+        }
+        if(map[x][y][0].type == BOX){
+            // Kill the box
+            map[x][y][0].type = EMPTY;
+            // Generate a tool
+            //TODO
+        }
+
+    }
     int IsMoveable(int x, int y) {
         if (map[x][y][1].type == BOMB) {
             return 0;
-        } else if(x >= 0 && x < ROW && y >= 0 && y < COL && map[x][y][0].type != WALL){
+        } else if(map[x][y][0].type==BOX){
+            return 0;
+        }
+        else if(x >= 0 && x < ROW && y >= 0 && y < COL && map[x][y][0].type != WALL){
             return 1;
         }else{
             return 0;
         }
 
-
+    }
+    int IsDestroyable(int x, int y) {
+        if (map[x][y][0].type == WALL) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     void die() {
@@ -604,7 +622,7 @@ int main() {
         game.poolingBomb();
         // Additional logic here for bomb timer countdown and explosion
 
-        system("cls"); // or system("cls") on Windows
+        //system("cls"); // or system("cls") on Windows
     }
 
 
