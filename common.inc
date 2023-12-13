@@ -20,7 +20,7 @@ StrFont	struct
 	style	dword	?
 StrFont	ends
 
-StrDisp	struct	;前四个字段和RectF结构体相同，传RectF的指针时可以直接偷梁换柱
+StrDisp	struct	;鍓嶅洓涓瓧娈靛拰RectF缁撴瀯浣撶浉鍚岋紝浼燫ectF鐨勬寚閽堟椂鍙互鐩存帴鍋锋鎹㈡煴
 	x	real4	?
 	y	real4	?
 	_width	real4	?
@@ -29,6 +29,8 @@ StrDisp	struct	;前四个字段和RectF结构体相同，传RectF的指针时可以直接偷梁换柱
 	vAlign	dword	?
 StrDisp	ends
 
+initResources	proto
+releaseResources	proto
 drawUtf16String	proto graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
 drawGbString	proto graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
 drawSolidRect	proto graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
