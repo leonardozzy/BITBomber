@@ -6,8 +6,7 @@ include	common.inc
 
 .code
 WindowProc	proc	hwnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
-	local	ps:PAINTSTRUCT,hdc:HDC,rect:RECT,hdcBuffer:HDC,memBitmap:HBITMAP,graphicsPtr:dword
-	local	wWidth:dword,wHeight:dword
+	local	ps:PAINTSTRUCT,hdc:HDC,hdcBuffer:HDC,memBitmap:HBITMAP,graphicsPtr:dword
 	cmp	uMsg,WM_TIMER
 	je	WindowProcTimer
 	cmp	uMsg,WM_CREATE
@@ -29,20 +28,13 @@ WindowProcPaint:
 	mov	hdc,eax
 	invoke	CreateCompatibleDC,eax
 	mov	hdcBuffer,eax
-	invoke	GetClientRect,hwnd,addr rect
-	mov	eax,rect.right
-	sub	eax,rect.left
-	mov	wWidth,eax
-	mov	eax,rect.bottom
-	sub	eax,rect.top
-	mov	wHeight,eax
-	invoke	CreateCompatibleBitmap,hdc,wWidth,eax
+	invoke	CreateCompatibleBitmap,hdc,WINDOW_WIDTH,WINDOW_HEIGHT
 	mov	memBitmap,eax
 	invoke	SelectObject,hdcBuffer,eax
 	invoke	GdipCreateFromHDC,hdcBuffer,addr graphicsPtr
-	;在这里进行画图函数的调用，使用graphicsPtr
-
-	invoke	BitBlt,hdc,0,0,wWidth,wHeight,hdcBuffer,0,0,SRCCOPY	;双缓冲绘图技术防止闪烁
+	;在这里使用graphicsPtr进行画图函数的调用，这只是一个示例
+	;invoke	drawSolidRect,graphicsPtr,0ffffffffh,0,0,WINDOW_WIDTH,WINDOW_HEIGHT
+	invoke	BitBlt,hdc,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,hdcBuffer,0,0,SRCCOPY	;双缓冲绘图技术防止闪烁
 	;释放绘图资源
 	invoke	GdipReleaseDC,graphicsPtr,hdcBuffer
 	invoke	GdipDeleteGraphics,graphicsPtr
@@ -51,7 +43,7 @@ WindowProcPaint:
 	invoke	EndPaint,hwnd,addr ps
 	jmp	ExitWindowProc
 WindowProcCreate:
-	invoke	SetTimer,hwnd,1,20,NULL
+	invoke	SetTimer,hwnd,1,20,NULL	;暂定每20ms更新一次状态，但实测频率低于理论值
 	jmp	ExitWindowProc
 WindowProcDestroy:
 	invoke	KillTimer,hwnd,1
