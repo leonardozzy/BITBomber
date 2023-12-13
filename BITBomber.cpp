@@ -1,96 +1,96 @@
 /*
-### éœ€æ±‚åˆ†æ
+### ĞèÇó·ÖÎö
 
-#### æ¨¡å¼ä¸€ï¼šå•äººæ¸¸æˆ
+#### Ä£Ê½Ò»£ºµ¥ÈËÓÎÏ·
 
-è€ƒè™‘åŠ å…¥æ•…äº‹ï¼šåŠ å…¥AI/å¼ åå¹³è¯­éŸ³ï¼ˆæš‚å®šï¼‰
+¿¼ÂÇ¼ÓÈë¹ÊÊÂ£º¼ÓÈëAI/ÕÅ»ªÆ½ÓïÒô£¨Ôİ¶¨£©
 
-é—¯å…³æ¨¡å¼ï¼šä¸€å…³å†…æœ‰å›ºå®šé“å…·ï¼Œéšæœºåˆ†å¸ƒåˆ°æ–¹å—ä¸­/éšæœºåˆ·æ–°å‡º
+´³¹ØÄ£Ê½£ºÒ»¹ØÄÚÓĞ¹Ì¶¨µÀ¾ß£¬Ëæ»ú·Ö²¼µ½·½¿éÖĞ/Ëæ»úË¢ĞÂ³ö
 
-é“å…·ï¼šåŠ å‘½ã€åŠ é€Ÿï¼ˆæš‚å®šï¼‰ã€æé«˜ç‚¸å¼¹èŒƒå›´ã€å¢åŠ ç‚¸å¼¹æ•°é‡
+µÀ¾ß£º¼ÓÃü¡¢¼ÓËÙ£¨Ôİ¶¨£©¡¢Ìá¸ßÕ¨µ¯·¶Î§¡¢Ôö¼ÓÕ¨µ¯ÊıÁ¿
 
-å°æ€ªï¼šç¢°å£è¿”å›åŒºåŸŸå·¡é€»ï¼Œåˆå§‹æ–¹å‘éšæœºï¼Œç©å®¶è§¦ç¢°å°æ€ªå³æ­»äº¡
+Ğ¡¹Ö£ºÅö±Ú·µ»ØÇøÓòÑ²Âß£¬³õÊ¼·½ÏòËæ»ú£¬Íæ¼Ò´¥ÅöĞ¡¹Ö¼´ËÀÍö
 
-è®¾è®¡å¤šå›ºå®šåœ°å›¾
+Éè¼Æ¶à¹Ì¶¨µØÍ¼
 
-è®¾è®¡å¤§BOSSï¼šåŒ—ç†å·¥çš„æ¶é¾™ã€å¼¹å¹•ï¼ˆæš‚å®šï¼‰ã€å¤©é™ç‚¸å¼¹ã€å–·æ°´ï¼ˆæµ‡æ°´ä¹‹åä¸èƒ½æ”¾ç‚¸å¼¹ï¼‰
-
-
-
-èƒœåˆ©æ¡ä»¶ï¼šæ™®é€šå…³å¡ï¼šæ€æ­»æ‰€æœ‰å°æ€ªã€BOSSå…³å¡ï¼šæ‰“è´¥BOSS
-
-æ­»äº¡ï¼šè¶…æ—¶ã€è¢«è‡ªå·±ç‚¸æ­»ã€ä¸å°æ€ªæ¥è§¦
+Éè¼Æ´óBOSS£º±±Àí¹¤µÄ¶ñÁú¡¢µ¯Ä»£¨Ôİ¶¨£©¡¢Ìì½µÕ¨µ¯¡¢ÅçË®£¨½½Ë®Ö®ºó²»ÄÜ·ÅÕ¨µ¯£©
 
 
 
-#### æ¨¡å¼äºŒï¼šåŒäººå¯¹æˆ˜
+Ê¤ÀûÌõ¼ş£ºÆÕÍ¨¹Ø¿¨£ºÉ±ËÀËùÓĞĞ¡¹Ö¡¢BOSS¹Ø¿¨£º´ò°ÜBOSS
 
-è€ƒè™‘ï¼šåŠ å…¥è”æœºå› ç´ ï¼Ÿ
-
-ä»…å±•ç¤ºæœ‰æ— 
+ËÀÍö£º³¬Ê±¡¢±»×Ô¼ºÕ¨ËÀ¡¢ÓëĞ¡¹Ö½Ó´¥
 
 
 
-#### åˆ›æ–°ç‚¹
+#### Ä£Ê½¶ş£ºË«ÈË¶ÔÕ½
 
-##### æ•…äº‹æƒ…èŠ‚
+¿¼ÂÇ£º¼ÓÈëÁª»úÒòËØ£¿
 
-åŒ—ç†å·¥å‡ºç°äº†ä¸€æ¡æ¶é¾™ï¼Œå‘æ–‡ç¿ æ¥¼G126æ•™å®¤ï¼ŒåŒ—äº¬ç†å·¥å¤§å­¦å¼ åå¹³è€å¸ˆå‘ã€Šæ±‡ç¼–è¯­è¨€ä¸æ¥å£æŠ€æœ¯ã€‹ç­çº§å‘å‡ºäº†æ‹›å‹Ÿä»¤ï¼Œèµ‹äºˆä»–ä»¬MASMçš„æ­¦å™¨ï¼Œä»¥IA32ä¹‹åŠ›ï¼Œå¤§æˆ˜åŒ—ç†å·¥çš„æ¶é¾™
-
-##### å›ç­”æ±‡ç¼–é¢˜è·å¾—é“å…·
-
-ç­”é¢˜æ–¹å¼å¾…å®š
-
-##### 3Dæ•ˆæœ
-
-##### è¿ç»­ç§»åŠ¨
-
-ä½¿ç”¨ä¸€ä¸ªæ•´æ•°å’Œå°ç»„åæ ‡
-
-##### èƒŒæ™¯éŸ³ä¹
-
-##### è”æœº
+½öÕ¹Ê¾ÓĞÎŞ
 
 
 
-#### ç»˜å›¾æ¨¡å—
+#### ´´ĞÂµã
 
-ç»´åº¦ï¼š3D
+##### ¹ÊÊÂÇé½Ú
+
+±±Àí¹¤³öÏÖÁËÒ»Ìõ¶ñÁú£¬ÏòÎÄ´äÂ¥G126½ÌÊÒ£¬±±¾©Àí¹¤´óÑ§ÕÅ»ªÆ½ÀÏÊ¦Ïò¡¶»ã±àÓïÑÔÓë½Ó¿Ú¼¼Êõ¡·°à¼¶·¢³öÁËÕĞÄ¼Áî£¬¸³ÓèËûÃÇMASMµÄÎäÆ÷£¬ÒÔIA32Ö®Á¦£¬´óÕ½±±Àí¹¤µÄ¶ñÁú
+
+##### »Ø´ğ»ã±àÌâ»ñµÃµÀ¾ß
+
+´ğÌâ·½Ê½´ı¶¨
+
+##### 3DĞ§¹û
+
+##### Á¬ĞøÒÆ¶¯
+
+Ê¹ÓÃÒ»¸öÕûÊıºÍĞ¡×é×ø±ê
+
+##### ±³¾°ÒôÀÖ
+
+##### Áª»ú
 
 
 
-#### å±•ç¤ºè€ƒè™‘
+#### »æÍ¼Ä£¿é
 
-##### å†…å®¹
+Î¬¶È£º3D
 
-PPT 1min30s~2minï¼šè®¾è®¡å†…å®¹å’Œé“å…·ä»‹ç»
 
-1ã€å¼€å±€æ•…äº‹ï¼ˆåŠ¨ç”»ã€èƒŒæ™¯éŸ³ä¹ï¼‰15s
 
-2ã€å•äººæ¨¡å¼æ™®é€šå…³å¡ï¼ˆ3Dæ•ˆæœã€æ±‡ç¼–è·å¾—é“å…·ï¼‰1min
+#### Õ¹Ê¾¿¼ÂÇ
 
-3ã€è¿ç»­ç§»åŠ¨ï¼ˆPPTå¯¹æ¯”ï¼ŒåŠ ä»¥æ¸¸æˆå±•ç¤ºï¼‰
+##### ÄÚÈİ
 
-4ã€BOSSå…³å¡ï¼šBOSSæŠ€èƒ½ 30s
+PPT 1min30s~2min£ºÉè¼ÆÄÚÈİºÍµÀ¾ß½éÉÜ
 
-5ã€å¯¹æˆ˜æ¨¡å¼ï¼ˆèƒ½å¯¹æˆ˜ï¼‰20s
+1¡¢¿ª¾Ö¹ÊÊÂ£¨¶¯»­¡¢±³¾°ÒôÀÖ£©15s
 
-å­˜æ¡£å’Œè¯»æ¡£
+2¡¢µ¥ÈËÄ£Ê½ÆÕÍ¨¹Ø¿¨£¨3DĞ§¹û¡¢»ã±à»ñµÃµÀ¾ß£©1min
 
-### æ¦‚è¦è®¾è®¡
+3¡¢Á¬ĞøÒÆ¶¯£¨PPT¶Ô±È£¬¼ÓÒÔÓÎÏ·Õ¹Ê¾£©
+
+4¡¢BOSS¹Ø¿¨£ºBOSS¼¼ÄÜ 30s
+
+5¡¢¶ÔÕ½Ä£Ê½£¨ÄÜ¶ÔÕ½£©20s
+
+´æµµºÍ¶Áµµ
+
+### ¸ÅÒªÉè¼Æ
 
 UI
 
 ```C
-void ShowPicture(path,x,y);//ç”¨äºæ˜¾ç¤ºåœ°å›¾å…ƒç´ 
+void ShowPicture(path,x,y);//ÓÃÓÚÏÔÊ¾µØÍ¼ÔªËØ
 void PrintWords(string,x,y);
-void DrawMap(struct Game* g);//æ ¹æ®åœ°å›¾æƒ…å†µï¼Œæ˜¾ç¤ºåœ°å›¾ï¼Œè°ƒç”¨ShowPictureå’ŒPrintWords
+void DrawMap(struct Game* g);//¸ù¾İµØÍ¼Çé¿ö£¬ÏÔÊ¾µØÍ¼£¬µ÷ÓÃShowPictureºÍPrintWords
 ```
 
-æ€»å¯¹è±¡åœ¨ä¸€ä¸ªæ—¶é’Ÿä¿¡å·å‘ç”Ÿå
+×Ü¶ÔÏóÔÚÒ»¸öÊ±ÖÓĞÅºÅ·¢Éúºó
 
 ```C
-//å…³äºtypeçš„define
+//¹ØÓÚtypeµÄdefine
 #define Empty 0
 #define Wall 1
 #define Player 2
@@ -109,12 +109,12 @@ struct control{
     struct Bomb bombs[K];
     struct Tool tools[L];
     struct Fire fires[Q];
-    struct Object map[M][N][2];//è®°å½•å¯¹è±¡ç±»å‹
+    struct Object map[M][N][2];//¼ÇÂ¼¶ÔÏóÀàĞÍ
     int times;
     int monster_num;
     int level;
     void init(){
-        åˆå§‹åŒ–player;
+        ³õÊ¼»¯player;
         level = 1;
         level_init(level);
         while(1){
@@ -124,8 +124,8 @@ struct control{
     }
 
     void level_init(){
-        è¯»å…³å¡æ–‡ä»¶[level];
-        æ ¹æ®å…³å¡æ–‡ä»¶åˆå§‹åŒ–:mapã€å¯¹è±¡æ•°ç»„ã€timesã€monster_num;
+        ¶Á¹Ø¿¨ÎÄ¼ş[level];
+        ¸ù¾İ¹Ø¿¨ÎÄ¼ş³õÊ¼»¯:map¡¢¶ÔÏóÊı×é¡¢times¡¢monster_num;
     }
 
     void getTimeSignal(){
@@ -142,60 +142,60 @@ struct control{
     }
 
     void poolingPlayer(){
-    	è·å–ç©å®¶æŒ‰é”®x;
-        è·å–æ­¥é•¿step;
-    	if(x in [ä¸Šã€ä¸‹ã€å·¦ã€å³]){
-        	åˆ¤æ–­èƒ½ä¸èƒ½èµ°;
-        	if(èƒ½èµ°){
-                èµ°(å¾…å®ç°);
+        »ñÈ¡Íæ¼Ò°´¼üx;
+        »ñÈ¡²½³¤step;
+        if(x in [ÉÏ¡¢ÏÂ¡¢×ó¡¢ÓÒ]){
+            ÅĞ¶ÏÄÜ²»ÄÜ×ß;
+            if(ÄÜ×ß){
+                ×ß(´ıÊµÏÖ);
             }
-            if(ç¢°åˆ°æ€ªç‰©){
+            if(Åöµ½¹ÖÎï){
                 die();
             }
-            if(ç¢°åˆ°é“å…·){
-                éšæœºå‡ºé¢˜;
-                ä¿®æ”¹ç›¸å…³å±æ€§;
-                é“å…·æ¶ˆå¤±;
+            if(Åöµ½µÀ¾ß){
+                Ëæ»ú³öÌâ;
+                ĞŞ¸ÄÏà¹ØÊôĞÔ;
+                µÀ¾ßÏûÊ§;
             }
-        	åˆ¤æ–­æ˜¯å¦ä¿®æ”¹map;
-       	 	å¦‚æœæ˜¯ï¼Œä¿®æ”¹map;
-    	}else if(x == æ”¾ç‚¸å¼¹){
-        	åˆ¤æ–­èƒ½ä¸èƒ½æ”¾;
-        	å¦‚èƒ½ï¼Œåœ¨map[x][y][1]æ”¾ç‚¸å¼¹;
-    	}
-    	æ¸…é™¤æŒ‰é”®x;
-	}
+            ÅĞ¶ÏÊÇ·ñĞŞ¸Ämap;
+            Èç¹ûÊÇ£¬ĞŞ¸Ämap;
+        }else if(x == ·ÅÕ¨µ¯){
+            ÅĞ¶ÏÄÜ²»ÄÜ·Å;
+            ÈçÄÜ£¬ÔÚmap[x][y][1]·ÅÕ¨µ¯;
+        }
+        Çå³ı°´¼üx;
+    }
 
     void die(){
         life--;
         if(life){
-        	é”å‘½;
+            ËøÃü;
         }else{
             game over;
         }
     }
 
     void poolingMonster(){
-        è®¡ç®—/è·å–æ€ªç‰©æ–¹å‘direction;
-        if(ç¢°å£){
-            æ”¹å˜direction;
+        ¼ÆËã/»ñÈ¡¹ÖÎï·½Ïòdirection;
+        if(Åö±Ú){
+            ¸Ä±ädirection;
         }
-        if(!ç¢°å£){
-            èµ°();
-            åˆ¤æ–­æ˜¯å¦ä¿®æ”¹map;
-            å¦‚æ˜¯ï¼Œä¿®æ”¹map;
+        if(!Åö±Ú){
+            ×ß();
+            ÅĞ¶ÏÊÇ·ñĞŞ¸Ämap;
+            ÈçÊÇ£¬ĞŞ¸Ämap;
         }
     }
 
     void poolingBomb(){
         bomb.time--;
         if(time==0){
-            è·å–x,y;
-            è·å–range;
-            ä¿®æ”¹map;
+            »ñÈ¡x,y;
+            »ñÈ¡range;
+            ĞŞ¸Ämap;
             for x_0,y_0 in bomb_range:
-            	åœ¨æ²¡æœ‰è¢«å¢™é˜»æ–­æ—¶å¢åŠ ç«å¯¹è±¡;
-            	clear();
+                ÔÚÃ»ÓĞ±»Ç½×è¶ÏÊ±Ôö¼Ó»ğ¶ÔÏó;
+                clear();
         }
     }
 
@@ -203,9 +203,9 @@ struct control{
         if(map[x_0][y_0][0] == Player){
             die();
         }else if(map[x_0][y_0][0]==Box){
-            éšæœºç”Ÿæˆé“å…·;
-            å¦‚æœæœ‰,map[x_0][y_0][0].type = Tool;
-            æ’å…¥toolsï¼Œå¹¶ä¿®æ”¹map[x_0][y_0][0].id;
+            Ëæ»úÉú³ÉµÀ¾ß;
+            Èç¹ûÓĞ,map[x_0][y_0][0].type = Tool;
+            ²åÈëtools£¬²¢ĞŞ¸Ämap[x_0][y_0][0].id;
         }else if(map[x_0][y_0][0]!=Wall){
             map[x_0][y_0][0].type = Empty;
             map[x_0][y_0][1].type = Empty;
@@ -223,7 +223,7 @@ struct control{
 }
 
 struct Player{
-  	int x;
+    int x;
     int y;
     int frac_x;
     int frac_y;
@@ -243,7 +243,7 @@ struct Monster{
 };
 
 struct Bomb{
-  	int x;
+    int x;
     int y;
     int time;
     int range;
@@ -256,15 +256,14 @@ struct Tool{
 ```
 
 */
-
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
 #include <time.h>
-#include <windows.h>
+#include <cstring>
 using namespace std;
 
-//å…³äºtypeçš„define
+//¹ØÓÚtypeµÄdefine
 #define EMPTY 0
 #define WALL 1
 #define PLAYER 2
@@ -273,12 +272,12 @@ using namespace std;
 #define BOX 5
 #define TOOL 6
 #define FIRE 7
-#define BOMB_TIMER 40
+#define BOMB_TIMER 4
 
 #define MONSTER_1 41
 #define MONSTER_2 42
 #define MONSTER_3 43
-//å…³äºåœ°å›¾çš„define
+//¹ØÓÚµØÍ¼µÄdefine
 #define ROW 11
 #define COL 13
 #define DEPTH 5
@@ -287,8 +286,7 @@ using namespace std;
 #define MAX_TOOL 5
 #define MAX_FIRE 40
 
-#define FRAC_RANGE 100
-//å…³äºfracçš„define
+//¹ØÓÚfracµÄdefine
 #define FRAC 5
 struct Object {
     char type;
@@ -298,19 +296,15 @@ struct Object {
 struct Player {
     int x;
     int y;
-    int frac_x;
-    int frac_y;
-    int speed;
     int bomb_range;
     int bomb_cnt;
     int life;
+    int speed;
 };
 
 struct Monster {
     int x;
     int y;
-    int frac_x;
-    int frac_y;
     int direction;
     int speed;
 };
@@ -324,6 +318,8 @@ struct Bomb {
 
 struct Tool {
     int valid;
+    int x;
+    int y;
     int type;
     int times;
 };
@@ -337,90 +333,97 @@ struct Fire {
 class Game {
 public:
     struct Player player;
-    struct Object map[ROW][COL][DEPTH];//è®°å½•å¯¹è±¡ç±»å‹
+    struct Object map[ROW][COL][DEPTH];//¼ÇÂ¼¶ÔÏóÀàĞÍ
     struct Monster monsters[MAX_MONSTER];
     struct Bomb bombs[MAX_BOMB];
+
     struct Tool tools[MAX_TOOL];
     struct Fire fires[MAX_FIRE];
-	int level = 1;
-	int times;
-	int monster_num = 0;
+    int level = 1;
+    int times;
+    int monster_num = 0;
+    int bomb_num = 0;
+    int tool_num = 0;
     Game() {
-        // åˆå§‹åŒ–åœ°å›¾
-        for (int i = 0; i < ROW; i++) {
-            for (int j = 0; j < COL; j++) {
-                for(int k = 0; k < DEPTH; k++){
-                    map[i][j][k].type = EMPTY;
-                }
-            }
-        }
 
-        // åˆå§‹åŒ–ç©å®¶
+        //set structs to zero
+        memset(&player, 0, sizeof(player));
+        memset(monsters, 0, sizeof(monsters));
+        memset(bombs, 0, sizeof(bombs));
+        memset(tools, 0, sizeof(tools));
+        memset(fires, 0, sizeof(fires));
+
+        // ³õÊ¼»¯Íæ¼Ò
         player.x = player.y = 0;
-        player.frac_x = player.frac_y = 0;
-        player.speed = 20;
         player.bomb_range = 1;
         player.bomb_cnt = 1;
-        player.life = 1;
+        player.life = 2;
+        player.speed = 1;
         map[player.x][player.y][0].type = PLAYER;
 
         level_init(level);
     }
-	void level_init(int l){
-		//è¯»å…³å¡æ–‡ä»¶[level];
+    void level_init(int l) {
+    	memset(map,0,sizeof(map));
+        //¶Á¹Ø¿¨ÎÄ¼ş[level];
         FILE* file;
-        char* filename[3] = {"1.level","2.level","3.level"};
-        file = fopen(filename[l-1],"r");
-        if(file==NULL){
-        	//é”™è¯¯å¤„ç†
-			return ;
-		}
-		monster_num = 0;
-		int num;
-    	for (int i = 0; i < ROW; i++) {
-        	for (int j = 0; j < COL; j++) {
-            	fscanf(file,"%d",&num);
-            	switch(num){
-            		case MONSTER_1:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,1*5);break;
-            		case MONSTER_2:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,2*5);break;
-            		case MONSTER_3:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,3*5);break;
-				}
-				map[i][j][0].type = num;
+        const char* filename[3] = { "1.level","2.level","3.level" };
+        file =
+            fopen(filename[l - 1], "r");
+        if (file == NULL) {
+            //´íÎó´¦Àí
+            return;
+        }
+        monster_num = 0;
+        int num;
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                fscanf(file, "%d", &num);
+                switch (num) {
+                case MONSTER_1:num = 4; map[i][j][0].id = monster_num; monster_init(monster_num++, i, j, 1); break;
+                case MONSTER_2:num = 4; map[i][j][0].id = monster_num; monster_init(monster_num++, i, j, 2); break;
+                case MONSTER_3:num = 4; map[i][j][0].id = monster_num; monster_init(monster_num++, i, j, 3); break;
+                }
+                map[i][j][0].type = num;
             }
         }
-        fscanf(file,"%d",&times);
+        fscanf(file, "%d", &times);
         fclose(file);
-	}
+    }
 
-	void monster_init(int index,int x,int y,int speed){
-    	monsters[index].direction = 0;//random
-//		monsters[index].frac_x =  FRAC>>1;
-//		monsters[index].frac_y = FRAC>>1;
-		monsters[index].x = x;
-		monsters[index].y = y;
-		monsters[index].frac_x = 0;
-		monsters[index].frac_y = 0;
-		monsters[index].speed = speed;
-	}
+    void monster_init(int index, int x, int y, int speed) {
+        monsters[index].direction = 0;//random
+        //		monsters[index].frac_x =  FRAC>>1;
+        //		monsters[index].frac_y = FRAC>>1;
+        monsters[index].x = x;
+        monsters[index].y = y;
+        monsters[index].speed = speed;
+    }
 
     void draw() {
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 char tmp = '.';
-                for(int k = DEPTH-1; k >= 0; k--){
+                for (int k = DEPTH - 1; k >= 0; k--) {
                     switch (map[i][j][k].type) {
-                        case WALL: tmp = '#'; break;
-                        case PLAYER: tmp = 'P'; break;
-                        case MONSTER: tmp = 'M'; break;
-                        case BOMB: tmp = 'B'; break;
-						case BOX:tmp = '=';break;
+                    case WALL: tmp = '#'; break;
+                    case PLAYER: tmp = 'P'; break;
+                    case MONSTER: tmp = 'M'; break;
+                    case BOMB: tmp = 'B'; break;
+                    case BOX:tmp = '='; break;
+                    case TOOL:tmp = 'T'; break;
                     }
                 }
-                cout<<tmp;
+                cout << tmp;
             }
             cout << endl;
         }
-        cout<<"----------------------------------------"<<endl;
+        cout << "----------------------------------------" << endl;
+        cout << "Life: " << player.life << endl;
+        cout << "Bomb Range: " << player.bomb_range << endl;
+        cout << "Bomb Count: " << player.bomb_cnt << endl;
+        cout << "Speed: " << player.speed << endl;
+        cout << "----------------------------------------" << endl;
     }
 
     void poolingPlayer(char input) {
@@ -433,27 +436,11 @@ public:
         int newPlayerY = player.y;
 
         switch (input) {
-            case 'w': player.frac_x -= player.speed; break;
-            case 's': player.frac_x += player.speed; break;
-            case 'a': player.frac_y -= player.speed; break;
-            case 'd': player.frac_y += player.speed; break;
-            default: return;
+        case 'w': newPlayerX--; break;
+        case 's': newPlayerX++; break;
+        case 'a': newPlayerY--; break;
+        case 'd': newPlayerY++; break;
         }
-        if(player.frac_x > FRAC_RANGE){
-        	newPlayerX++; 
-        	player.frac_x -= 2*FRAC_RANGE;
-		}else if(player.frac_x < -FRAC_RANGE){
-        	newPlayerX--;
-        	player.frac_x += 2*FRAC_RANGE;
-		}else if(player.frac_y > FRAC_RANGE){
-        	newPlayerY++;
-        	player.frac_y -= 2*FRAC_RANGE;
-		}else if(player.frac_y < -FRAC_RANGE){
-        	newPlayerY--;
-        	player.frac_y += 2*FRAC_RANGE;
-		}else{
-			return;//å› ä¸ºæ–°XYæ²¡å˜ï¼Œä¸éœ€è¦åˆ¤æ–­ 
-		}
 
         // Check if new position is valid
         if (IsMoveable(newPlayerX, newPlayerY)) {
@@ -469,6 +456,18 @@ public:
 
             if (collisionWithMonster) {
                 die();
+            }
+            if (map[newPlayerX][newPlayerY][0].type == TOOL) {
+                int tool_index = map[newPlayerX][newPlayerY][0].id;
+                switch (tools[tool_index].type) {
+                case 0:player.life++; break;
+                case 1:player.bomb_range++; break;
+                case 2:player.bomb_cnt++; break;
+                case 3:player.speed++; break;
+                }
+                map[newPlayerX][newPlayerY][0].type = EMPTY;
+                map[newPlayerX][newPlayerY][0].id = -1;
+                tools[tool_index].valid = 0;
             }
 
             // Update the player's position on the map
@@ -492,6 +491,7 @@ public:
                     player.bomb_cnt--;
                     break;
                 }
+                
             }
         }
     }
@@ -499,32 +499,18 @@ public:
 
     void poolingMonster() {
         for (int i = 0; i < monster_num; i++) {
-            // Randomly choose a direction for each monster
-            int move = rand() % 4;
+            // if the monster's direct next setp is wall,then it 
+            // rendomly choose a direction,else it will move to the direction
+            int move = monsters[i].direction;
             int newMonsterX = monsters[i].x;
             int newMonsterY = monsters[i].y;
 
             switch (move) {
-                case 0: monsters[i].frac_x -= monsters[i].speed; break; // Move up
-                case 1: monsters[i].frac_x += monsters[i].speed; break; // Move down
-                case 2: monsters[i].frac_y -= monsters[i].speed; break; // Move left
-                case 3: monsters[i].frac_y += monsters[i].speed; break; // Move right
+            case 0: newMonsterX--; break; // Move up
+            case 1: newMonsterX++; break; // Move down
+            case 2: newMonsterY--; break; // Move left
+            case 3: newMonsterY++; break; // Move right
             }
-	        if(monsters[i].frac_x > FRAC_RANGE){
-	        	newMonsterX++; 
-	        	monsters[i].frac_x -= 2*FRAC_RANGE;
-			}else if(monsters[i].frac_x < -FRAC_RANGE){
-	        	newMonsterX--;
-	        	monsters[i].frac_x += 2*FRAC_RANGE;
-			}else if(monsters[i].frac_y > FRAC_RANGE){
-	        	newMonsterY++;
-	        	monsters[i].frac_y -= 2*FRAC_RANGE;
-			}else if(monsters[i].frac_y < -FRAC_RANGE){
-	        	newMonsterY--;
-	        	monsters[i].frac_y += 2*FRAC_RANGE;
-			}else{
-				continue;//å› ä¸ºæ–°XYæ²¡å˜ï¼Œä¸éœ€è¦åˆ¤æ–­ 
-			}
 
             // Check if new position is valid
             if (IsMoveable(newMonsterX, newMonsterY)) {
@@ -538,6 +524,9 @@ public:
                 monsters[i].x = newMonsterX;
                 monsters[i].y = newMonsterY;
                 map[monsters[i].x][monsters[i].y][0].type = MONSTER;
+            }
+            else {
+                monsters[i].direction = rand() % 4;
             }
         }
     }
@@ -561,18 +550,18 @@ public:
                         int dx = 0;
                         int dy = 0;
                         switch (j) {
-                            case 0:
-                                dx = -1;
-                                break; // Up
-                            case 1:
-                                dx = 1;
-                                break; // Down
-                            case 2:
-                                dy = -1;
-                                break; // Left
-                            case 3:
-                                dy = 1;
-                                break; // Right
+                        case 0:
+                            dx = -1;
+                            break; // Up
+                        case 1:
+                            dx = 1;
+                            break; // Down
+                        case 2:
+                            dy = -1;
+                            break; // Left
+                        case 3:
+                            dy = 1;
+                            break; // Right
                         }
 
                         // Explode in each direction
@@ -584,7 +573,8 @@ public:
                             if (IsDestroyable(new_x, new_y)) {
                                 // Check if the bomb encounters a monster
                                 clear(new_x, new_y);
-                            }else{
+                            }
+                            else {
                                 // Stop the explosion if the bomb encounters a wall
                                 break;
                             }
@@ -596,8 +586,21 @@ public:
         }
 
     }
+    void poolingTool() {
+        for (int i = 0; i < MAX_TOOL; i++) {
+            if (tools[i].valid == 1) {
+                tools[i].times--;
+                if (tools[i].times == 0) {
+                    // Clear the tool
+                    map[tools[i].x][tools[i].y][0].type = EMPTY;
+                    tools[i].valid = 0;
+                }
+            }
+        }
+    }
 
-    void clear(int x, int y){
+
+    void clear(int x, int y) {
         for (int l = 0; l < monster_num; l++) {
             if (monsters[l].x == x && monsters[l].y == y) {
                 // Kill the monster
@@ -612,23 +615,46 @@ public:
         if (x == player.x && y == player.y) {
             die();
         }
-        if(map[x][y][0].type == BOX){
+
+        if (map[x][y][0].type == BOX) {
             // Kill the box
             map[x][y][0].type = EMPTY;
-            // Generate a tool
-            //TODO
+            // Generate a tool and place it on the map
+            int generate_tool = rand() % 4;
+            if (generate_tool==1) {
+                placeTool(x, y);
+            }
+
         }
 
+    }
+
+    int placeTool(int x, int y) {
+        for (int i = 0; i < MAX_TOOL; i++) {
+            if (tools[i].valid == 0) {
+                tools[i].valid = 1;
+                tools[i].x = x;
+                tools[i].y = y;
+                tools[i].type = rand() % 4;
+                tools[i].times = 10;
+                map[x][y][0].type = TOOL;
+                map[x][y][0].id = i;
+                return 1;
+            }
+        }
+        return 0;
     }
     int IsMoveable(int x, int y) {
         if (map[x][y][1].type == BOMB) {
             return 0;
-        } else if(map[x][y][0].type==BOX){
+        }
+        else if (map[x][y][0].type == BOX) {
             return 0;
         }
-        else if(x >= 0 && x < ROW && y >= 0 && y < COL && map[x][y][0].type != WALL){
+        else if (x >= 0 && x < ROW && y >= 0 && y < COL && map[x][y][0].type != WALL) {
             return 1;
-        }else{
+        }
+        else {
             return 0;
         }
 
@@ -636,7 +662,8 @@ public:
     int IsDestroyable(int x, int y) {
         if (map[x][y][0].type == WALL) {
             return 0;
-        } else {
+        }
+        else {
             return 1;
         }
     }
@@ -647,26 +674,40 @@ public:
             cout << "Game Over!" << endl;
             exit(0); // End the game
         }
+        map[player.x][player.y][0].type = EMPTY;
+        player.x = player.y = 0;
+        map[player.x][player.y][0].type = PLAYER;
+
+    }
+    void archive() {
+        FILE* file;
+        file = fopen("save.bb", "w");
+        fwrite(&player, 1, sizeof(struct Player), file);
+        fwrite(&map, ROW * COL * DEPTH, sizeof(struct Object), file);
+        fwrite(&monsters, MAX_MONSTER, sizeof(struct Monster), file);
+        fwrite(&bombs, MAX_BOMB, sizeof(struct Bomb), file);
+        fwrite(&tools, MAX_TOOL, sizeof(struct Tool), file);
+        fwrite(&fires, MAX_FIRE, sizeof(struct Fire), file);
+        fwrite(&level, 1, sizeof(int), file);
+        fwrite(&times, 1, sizeof(int), file);
+        fwrite(&monster_num, 1, sizeof(int), file);
+        fclose(file);
+    }
+    void read() {
+        FILE* file;
+        file = fopen("save.bb", "r");
+        fread(&player, 1, sizeof(struct Player), file);
+        fread(&map, ROW * COL * DEPTH, sizeof(struct Object), file);
+        fread(&monsters, MAX_MONSTER, sizeof(struct Monster), file);
+        fread(&bombs, MAX_BOMB, sizeof(struct Bomb), file);
+        fread(&tools, MAX_TOOL, sizeof(struct Tool), file);
+        fread(&fires, MAX_FIRE, sizeof(struct Fire), file);
+        fread(&level, 1, sizeof(int), file);
+        fread(&times, 1, sizeof(int), file);
+        fread(&monster_num, 1, sizeof(int), file);
+        fclose(file);
     }
 };
-
-char ReadKey(){
-	//char key_table = {'w','a'};
-	short ret_value;
-	ret_value = GetAsyncKeyState('W');
-	if(ret_value & 0x0001){ cout<<'w'<<endl;	return 'w';	}
-	ret_value = GetAsyncKeyState('A');
-	if(ret_value & 0x0001){ cout<<'a'<<endl;	return 'a';	}
-	ret_value = GetAsyncKeyState('S');
-	if(ret_value & 0x0001){ cout<<'s'<<endl;	return 's';	}
-	ret_value = GetAsyncKeyState('D');
-	if(ret_value & 0x0001){ cout<<'d'<<endl;	return 'd';	}
-	ret_value = GetAsyncKeyState('B');
-	if(ret_value & 0x0001){ cout<<'b'<<endl;	return 'b';	}
-	cout<<endl;
-	return 0;
-} 
-
 
 int main() {
     Game game;
@@ -674,16 +715,16 @@ int main() {
 
     while (true) {
         game.draw();
-        cout << "Move (WASD) or Place Bomb (B):";
+        cout << "Move (WASD) or Place Bomb (B): ";
         char input;
-        //cin >> input;
-        input = ReadKey();
+        cin >> input;
         game.poolingPlayer(input);
         game.poolingMonster();
         game.poolingBomb();
+        game.poolingTool();
         // Additional logic here for bomb timer countdown and explosion
-		Sleep(100); 
-        //system("cls"); // or system("cls") on Windows
+
+        system("cls"); // or system("cls") on Windows
     }
 
 
