@@ -142,11 +142,11 @@ struct control{
     }
 
     void poolingPlayer(){
-    	获取玩家按键x;
+        获取玩家按键x;
         获取步长step;
-    	if(x in [上、下、左、右]){
-        	判断能不能走;
-        	if(能走){
+        if(x in [上、下、左、右]){
+            判断能不能走;
+            if(能走){
                 走(待实现);
             }
             if(碰到怪物){
@@ -157,19 +157,19 @@ struct control{
                 修改相关属性;
                 道具消失;
             }
-        	判断是否修改map;
-       	 	如果是，修改map;
-    	}else if(x == 放炸弹){
-        	判断能不能放;
-        	如能，在map[x][y][1]放炸弹;
-    	}
-    	清除按键x;
-	}
+            判断是否修改map;
+            如果是，修改map;
+        }else if(x == 放炸弹){
+            判断能不能放;
+            如能，在map[x][y][1]放炸弹;
+        }
+        清除按键x;
+    }
 
     void die(){
         life--;
         if(life){
-        	锁命;
+            锁命;
         }else{
             game over;
         }
@@ -194,8 +194,8 @@ struct control{
             获取range;
             修改map;
             for x_0,y_0 in bomb_range:
-            	在没有被墙阻断时增加火对象;
-            	clear();
+                在没有被墙阻断时增加火对象;
+                clear();
         }
     }
 
@@ -223,7 +223,7 @@ struct control{
 }
 
 struct Player{
-  	int x;
+    int x;
     int y;
     int frac_x;
     int frac_y;
@@ -243,7 +243,7 @@ struct Monster{
 };
 
 struct Bomb{
-  	int x;
+    int x;
     int y;
     int time;
     int range;
@@ -299,6 +299,7 @@ struct Player {
     int bomb_range;
     int bomb_cnt;
     int life;
+    int speed;
 };
 
 struct Monster {
@@ -317,6 +318,8 @@ struct Bomb {
 
 struct Tool {
     int valid;
+    int x;
+    int y;
     int type;
     int times;
 };
@@ -333,84 +336,101 @@ public:
     struct Object map[ROW][COL][DEPTH];//记录对象类型
     struct Monster monsters[MAX_MONSTER];
     struct Bomb bombs[MAX_BOMB];
+
     struct Tool tools[MAX_TOOL];
     struct Fire fires[MAX_FIRE];
-	int level = 1;
-	int times;
-	int monster_num = 0;
+    int level = 1;
+    int times;
+    int monster_num = 0;
+    int bomb_num = 0;
+    int tool_num = 0;
     Game() {
         // 初始化地图
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
-                for(int k = 0; k < DEPTH; k++){
+                for (int k = 0; k < DEPTH; k++) {
                     map[i][j][k].type = EMPTY;
                 }
             }
         }
+        //set structs to zero
+        memset(&player, 0, sizeof(player));
+        memset(monsters, 0, sizeof(monsters));
+        memset(bombs, 0, sizeof(bombs));
+        memset(tools, 0, sizeof(tools));
+        memset(fires, 0, sizeof(fires));
+
 
         // 初始化玩家
         player.x = player.y = 0;
         player.bomb_range = 1;
         player.bomb_cnt = 1;
-        player.life = 1;
+        player.life = 2;
+        player.speed = 1;
         map[player.x][player.y][0].type = PLAYER;
 
         level_init(level);
     }
-    
-	void level_init(int l){
-		//读关卡文件[level];
+    void level_init(int l) {
+        //读关卡文件[level];
         FILE* file;
-        char* filename[3] = {"1.level","2.level","3.level"};
-        file = fopen(filename[l-1],"r");
-        if(file==NULL){
-        	//错误处理
-			return ;
-		}
-		monster_num = 0;
-		int num;
-    	for (int i = 0; i < ROW; i++) {
-        	for (int j = 0; j < COL; j++) {
-            	fscanf(file,"%d",&num);
-            	switch(num){
-            		case MONSTER_1:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,1);break;
-            		case MONSTER_2:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,2);break;
-            		case MONSTER_3:num=4;map[i][j][0].id = monster_num;monster_init(monster_num++,i,j,3);break;
-				}
-				map[i][j][0].type = num;
+        const char* filename[3] = { "1.level","2.level","3.level" };
+        file =
+            fopen(filename[l - 1], "r");
+        if (file == NULL) {
+            //错误处理
+            return;
+        }
+        monster_num = 0;
+        int num;
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                fscanf(file, "%d", &num);
+                switch (num) {
+                case MONSTER_1:num = 4; map[i][j][0].id = monster_num; monster_init(monster_num++, i, j, 1); break;
+                case MONSTER_2:num = 4; map[i][j][0].id = monster_num; monster_init(monster_num++, i, j, 2); break;
+                case MONSTER_3:num = 4; map[i][j][0].id = monster_num; monster_init(monster_num++, i, j, 3); break;
+                }
+                map[i][j][0].type = num;
             }
         }
-        fscanf(file,"%d",&times);
+        fscanf(file, "%d", &times);
         fclose(file);
-	}
+    }
 
-	void monster_init(int index,int x,int y,int speed){
-    	monsters[index].direction = 0;//random
-//		monsters[index].frac_x =  FRAC>>1;
-//		monsters[index].frac_y = FRAC>>1;
-		monsters[index].x = x;
-		monsters[index].y = y;
-		monsters[index].speed = speed;
-	}
+    void monster_init(int index, int x, int y, int speed) {
+        monsters[index].direction = 0;//random
+        //		monsters[index].frac_x =  FRAC>>1;
+        //		monsters[index].frac_y = FRAC>>1;
+        monsters[index].x = x;
+        monsters[index].y = y;
+        monsters[index].speed = speed;
+    }
 
     void draw() {
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 char tmp = '.';
-                for(int k = DEPTH-1; k >= 0; k--){
+                for (int k = DEPTH - 1; k >= 0; k--) {
                     switch (map[i][j][k].type) {
-                        case WALL: tmp = '#'; break;
-                        case PLAYER: tmp = 'P'; break;
-                        case MONSTER: tmp = 'M'; break;
-                        case BOMB: tmp = 'B'; break;
-						case BOX:tmp = '=';break;
+                    case WALL: tmp = '#'; break;
+                    case PLAYER: tmp = 'P'; break;
+                    case MONSTER: tmp = 'M'; break;
+                    case BOMB: tmp = 'B'; break;
+                    case BOX:tmp = '='; break;
+                    case TOOL:tmp = 'T'; break;
                     }
                 }
-                cout<<tmp;
+                cout << tmp;
             }
             cout << endl;
         }
-        cout<<"----------------------------------------"<<endl;
+        cout << "----------------------------------------" << endl;
+        cout << "Life: " << player.life << endl;
+        cout << "Bomb Range: " << player.bomb_range << endl;
+        cout << "Bomb Count: " << player.bomb_cnt << endl;
+        cout << "Speed: " << player.speed << endl;
+        cout << "----------------------------------------" << endl;
     }
 
     void poolingPlayer(char input) {
@@ -423,10 +443,10 @@ public:
         int newPlayerY = player.y;
 
         switch (input) {
-            case 'w': newPlayerX--; break;
-            case 's': newPlayerX++; break;
-            case 'a': newPlayerY--; break;
-            case 'd': newPlayerY++; break;
+        case 'w': newPlayerX--; break;
+        case 's': newPlayerX++; break;
+        case 'a': newPlayerY--; break;
+        case 'd': newPlayerY++; break;
         }
 
         // Check if new position is valid
@@ -443,6 +463,18 @@ public:
 
             if (collisionWithMonster) {
                 die();
+            }
+            if (map[newPlayerX][newPlayerY][0].type == TOOL) {
+                int tool_index = map[newPlayerX][newPlayerY][0].id;
+                switch (tools[tool_index].type) {
+                case 0:player.life++; break;
+                case 1:player.bomb_range++; break;
+                case 2:player.bomb_cnt++; break;
+                case 3:player.speed++; break;
+                }
+                map[newPlayerX][newPlayerY][0].type = EMPTY;
+                map[newPlayerX][newPlayerY][0].id = -1;
+                tools[tool_index].valid = 0;
             }
 
             // Update the player's position on the map
@@ -479,10 +511,10 @@ public:
             int newMonsterY = monsters[i].y;
 
             switch (move) {
-                case 0: newMonsterX--; break; // Move up
-                case 1: newMonsterX++; break; // Move down
-                case 2: newMonsterY--; break; // Move left
-                case 3: newMonsterY++; break; // Move right
+            case 0: newMonsterX--; break; // Move up
+            case 1: newMonsterX++; break; // Move down
+            case 2: newMonsterY--; break; // Move left
+            case 3: newMonsterY++; break; // Move right
             }
 
             // Check if new position is valid
@@ -520,18 +552,18 @@ public:
                         int dx = 0;
                         int dy = 0;
                         switch (j) {
-                            case 0:
-                                dx = -1;
-                                break; // Up
-                            case 1:
-                                dx = 1;
-                                break; // Down
-                            case 2:
-                                dy = -1;
-                                break; // Left
-                            case 3:
-                                dy = 1;
-                                break; // Right
+                        case 0:
+                            dx = -1;
+                            break; // Up
+                        case 1:
+                            dx = 1;
+                            break; // Down
+                        case 2:
+                            dy = -1;
+                            break; // Left
+                        case 3:
+                            dy = 1;
+                            break; // Right
                         }
 
                         // Explode in each direction
@@ -543,7 +575,8 @@ public:
                             if (IsDestroyable(new_x, new_y)) {
                                 // Check if the bomb encounters a monster
                                 clear(new_x, new_y);
-                            }else{
+                            }
+                            else {
                                 // Stop the explosion if the bomb encounters a wall
                                 break;
                             }
@@ -555,8 +588,21 @@ public:
         }
 
     }
+    void poolingTool() {
+        for (int i = 0; i < MAX_TOOL; i++) {
+            if (tools[i].valid == 1) {
+                tools[i].times--;
+                if (tools[i].times == 0) {
+                    // Clear the tool
+                    map[tools[i].x][tools[i].y][0].type = EMPTY;
+                    tools[i].valid = 0;
+                }
+            }
+        }
+    }
 
-    void clear(int x, int y){
+
+    void clear(int x, int y) {
         for (int l = 0; l < monster_num; l++) {
             if (monsters[l].x == x && monsters[l].y == y) {
                 // Kill the monster
@@ -571,23 +617,46 @@ public:
         if (x == player.x && y == player.y) {
             die();
         }
-        if(map[x][y][0].type == BOX){
+
+        if (map[x][y][0].type == BOX) {
             // Kill the box
             map[x][y][0].type = EMPTY;
-            // Generate a tool
-            //TODO
+            // Generate a tool and place it on the map
+            int generate_tool = rand() % 2;
+            if (generate_tool) {
+                placeTool(x, y);
+            }
+
         }
 
+    }
+
+    int placeTool(int x, int y) {
+        for (int i = 0; i < MAX_TOOL; i++) {
+            if (tools[i].valid == 0) {
+                tools[i].valid = 1;
+                tools[i].x = x;
+                tools[i].y = y;
+                tools[i].type = rand() % 4;
+                tools[i].times = 10;
+                map[x][y][0].type = TOOL;
+                map[x][y][0].id = i;
+                return 1;
+            }
+        }
+        return 0;
     }
     int IsMoveable(int x, int y) {
         if (map[x][y][1].type == BOMB) {
             return 0;
-        } else if(map[x][y][0].type==BOX){
+        }
+        else if (map[x][y][0].type == BOX) {
             return 0;
         }
-        else if(x >= 0 && x < ROW && y >= 0 && y < COL && map[x][y][0].type != WALL){
+        else if (x >= 0 && x < ROW && y >= 0 && y < COL && map[x][y][0].type != WALL) {
             return 1;
-        }else{
+        }
+        else {
             return 0;
         }
 
@@ -595,7 +664,8 @@ public:
     int IsDestroyable(int x, int y) {
         if (map[x][y][0].type == WALL) {
             return 0;
-        } else {
+        }
+        else {
             return 1;
         }
     }
@@ -606,36 +676,11 @@ public:
             cout << "Game Over!" << endl;
             exit(0); // End the game
         }
+        map[player.x][player.y][0].type = EMPTY;
+        player.x = player.y = 0;
+        map[player.x][player.y][0].type = PLAYER;
+
     }
-    
-    void archive(){
-		FILE* file;
-		file = fopen("save.bb","w");
-		fwrite(&player,1,sizeof(struct Player),file);
-		fwrite(&map,ROW*COL*DEPTH,sizeof(struct Object),file);
-		fwrite(&monsters,MAX_MONSTER,sizeof(struct Monster),file);
-		fwrite(&bombs,MAX_BOMB,sizeof(struct Bomb),file);
-		fwrite(&tools,MAX_TOOL,sizeof(struct Tool),file);
-		fwrite(&fires,MAX_FIRE,sizeof(struct Fire),file);
-		fwrite(&level,1,sizeof(int),file);
-		fwrite(&times,1,sizeof(int),file);
-		fwrite(&monster_num,1,sizeof(int),file);
-		fclose(file);
-	}
-	void read(){
-		FILE* file;
-		file = fopen("save.bb","r");
-		fread(&player,1,sizeof(struct Player),file);
-		fread(&map,ROW*COL*DEPTH,sizeof(struct Object),file);
-		fread(&monsters,MAX_MONSTER,sizeof(struct Monster),file);
-		fread(&bombs,MAX_BOMB,sizeof(struct Bomb),file);
-		fread(&tools,MAX_TOOL,sizeof(struct Tool),file);
-		fread(&fires,MAX_FIRE,sizeof(struct Fire),file);
-		fread(&level,1,sizeof(int),file);
-		fread(&times,1,sizeof(int),file);
-		fread(&monster_num,1,sizeof(int),file);
-		fclose(file);
-	}
 };
 
 int main() {
@@ -650,9 +695,10 @@ int main() {
         game.poolingPlayer(input);
         game.poolingMonster();
         game.poolingBomb();
+        game.poolingTool();
         // Additional logic here for bomb timer countdown and explosion
 
-        //system("cls"); // or system("cls") on Windows
+        system("cls"); // or system("cls") on Windows
     }
 
 
