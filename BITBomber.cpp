@@ -490,6 +490,7 @@ public:
                     player.bomb_cnt--;
                     break;
                 }
+                
             }
         }
     }
@@ -497,9 +498,9 @@ public:
 
     void poolingMonster() {
         for (int i = 0; i < monster_num; i++) {
-            // Move the monster
-            // Randomly choose a direction for each monster
-            int move = rand() % 4;
+            // if the monster's direct next setp is wall,then it 
+            // rendomly choose a direction,else it will move to the direction
+            int move = monsters[i].direction;
             int newMonsterX = monsters[i].x;
             int newMonsterY = monsters[i].y;
 
@@ -522,6 +523,9 @@ public:
                 monsters[i].x = newMonsterX;
                 monsters[i].y = newMonsterY;
                 map[monsters[i].x][monsters[i].y][0].type = MONSTER;
+            }
+            else {
+                monsters[i].direction = rand() % 4;
             }
         }
     }
