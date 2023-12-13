@@ -346,7 +346,12 @@ public:
     int tool_num = 0;
     Game() {
 
-
+        //set structs to zero
+        memset(&player, 0, sizeof(player));
+        memset(monsters, 0, sizeof(monsters));
+        memset(bombs, 0, sizeof(bombs));
+        memset(tools, 0, sizeof(tools));
+        memset(fires, 0, sizeof(fires));
 
         // ³õÊ¼»¯Íæ¼Ò
         player.x = player.y = 0;
@@ -667,6 +672,34 @@ public:
         player.x = player.y = 0;
         map[player.x][player.y][0].type = PLAYER;
 
+    }
+    void archive() {
+        FILE* file;
+        file = fopen("save.bb", "w");
+        fwrite(&player, 1, sizeof(struct Player), file);
+        fwrite(&map, ROW * COL * DEPTH, sizeof(struct Object), file);
+        fwrite(&monsters, MAX_MONSTER, sizeof(struct Monster), file);
+        fwrite(&bombs, MAX_BOMB, sizeof(struct Bomb), file);
+        fwrite(&tools, MAX_TOOL, sizeof(struct Tool), file);
+        fwrite(&fires, MAX_FIRE, sizeof(struct Fire), file);
+        fwrite(&level, 1, sizeof(int), file);
+        fwrite(&times, 1, sizeof(int), file);
+        fwrite(&monster_num, 1, sizeof(int), file);
+        fclose(file);
+    }
+    void read() {
+        FILE* file;
+        file = fopen("save.bb", "r");
+        fread(&player, 1, sizeof(struct Player), file);
+        fread(&map, ROW * COL * DEPTH, sizeof(struct Object), file);
+        fread(&monsters, MAX_MONSTER, sizeof(struct Monster), file);
+        fread(&bombs, MAX_BOMB, sizeof(struct Bomb), file);
+        fread(&tools, MAX_TOOL, sizeof(struct Tool), file);
+        fread(&fires, MAX_FIRE, sizeof(struct Fire), file);
+        fread(&level, 1, sizeof(int), file);
+        fread(&times, 1, sizeof(int), file);
+        fread(&monster_num, 1, sizeof(int), file);
+        fclose(file);
     }
 };
 
