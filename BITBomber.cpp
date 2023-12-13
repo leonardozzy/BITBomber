@@ -497,6 +497,7 @@ public:
 
     void poolingMonster() {
         for (int i = 0; i < monster_num; i++) {
+            // Move the monster
             // Randomly choose a direction for each monster
             int move = rand() % 4;
             int newMonsterX = monsters[i].x;
@@ -614,8 +615,8 @@ public:
             // Kill the box
             map[x][y][0].type = EMPTY;
             // Generate a tool and place it on the map
-            int generate_tool = rand() % 2;
-            if (generate_tool) {
+            int generate_tool = rand() % 4;
+            if (generate_tool==1) {
                 placeTool(x, y);
             }
 
