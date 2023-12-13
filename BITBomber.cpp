@@ -339,21 +339,13 @@ public:
 	int times;
 	int monster_num = 0;
     Game() {
-        // 初始化地图
-        for (int i = 0; i < ROW; i++) {
-            for (int j = 0; j < COL; j++) {
-                for(int k = 0; k < DEPTH; k++){
-                    map[i][j][k].type = EMPTY;
-                }
-            }
-        }
+
 
         // 初始化玩家
         player.x = player.y = 0;
         player.bomb_range = 1;
         player.bomb_cnt = 1;
         player.life = 1;
-        map[player.x][player.y][0].type = PLAYER;
 
         level_init(level);
     }
@@ -361,7 +353,7 @@ public:
 	void level_init(int l){
 		//读关卡文件[level];
         FILE* file;
-        char* filename[3] = {"1.level","2.level","3.level"};
+        const char* filename[3] = {"1.level","2.level","3.level"};
         file = fopen(filename[l-1],"r");
         if(file==NULL){
         	//错误处理
