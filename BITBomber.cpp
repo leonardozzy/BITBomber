@@ -1,262 +1,3 @@
-/*
-### ĞèÇó·ÖÎö
-
-#### Ä£Ê½Ò»£ºµ¥ÈËÓÎÏ·
-
-¿¼ÂÇ¼ÓÈë¹ÊÊÂ£º¼ÓÈëAI/ÕÅ»ªÆ½ÓïÒô£¨Ôİ¶¨£©
-
-´³¹ØÄ£Ê½£ºÒ»¹ØÄÚÓĞ¹Ì¶¨µÀ¾ß£¬Ëæ»ú·Ö²¼µ½·½¿éÖĞ/Ëæ»úË¢ĞÂ³ö
-
-µÀ¾ß£º¼ÓÃü¡¢¼ÓËÙ£¨Ôİ¶¨£©¡¢Ìá¸ßÕ¨µ¯·¶Î§¡¢Ôö¼ÓÕ¨µ¯ÊıÁ¿
-
-Ğ¡¹Ö£ºÅö±Ú·µ»ØÇøÓòÑ²Âß£¬³õÊ¼·½ÏòËæ»ú£¬Íæ¼Ò´¥ÅöĞ¡¹Ö¼´ËÀÍö
-
-Éè¼Æ¶à¹Ì¶¨µØÍ¼
-
-Éè¼Æ´óBOSS£º±±Àí¹¤µÄ¶ñÁú¡¢µ¯Ä»£¨Ôİ¶¨£©¡¢Ìì½µÕ¨µ¯¡¢ÅçË®£¨½½Ë®Ö®ºó²»ÄÜ·ÅÕ¨µ¯£©
-
-
-
-Ê¤ÀûÌõ¼ş£ºÆÕÍ¨¹Ø¿¨£ºÉ±ËÀËùÓĞĞ¡¹Ö¡¢BOSS¹Ø¿¨£º´ò°ÜBOSS
-
-ËÀÍö£º³¬Ê±¡¢±»×Ô¼ºÕ¨ËÀ¡¢ÓëĞ¡¹Ö½Ó´¥
-
-
-
-#### Ä£Ê½¶ş£ºË«ÈË¶ÔÕ½
-
-¿¼ÂÇ£º¼ÓÈëÁª»úÒòËØ£¿
-
-½öÕ¹Ê¾ÓĞÎŞ
-
-
-
-#### ´´ĞÂµã
-
-##### ¹ÊÊÂÇé½Ú
-
-±±Àí¹¤³öÏÖÁËÒ»Ìõ¶ñÁú£¬ÏòÎÄ´äÂ¥G126½ÌÊÒ£¬±±¾©Àí¹¤´óÑ§ÕÅ»ªÆ½ÀÏÊ¦Ïò¡¶»ã±àÓïÑÔÓë½Ó¿Ú¼¼Êõ¡·°à¼¶·¢³öÁËÕĞÄ¼Áî£¬¸³ÓèËûÃÇMASMµÄÎäÆ÷£¬ÒÔIA32Ö®Á¦£¬´óÕ½±±Àí¹¤µÄ¶ñÁú
-
-##### »Ø´ğ»ã±àÌâ»ñµÃµÀ¾ß
-
-´ğÌâ·½Ê½´ı¶¨
-
-##### 3DĞ§¹û
-
-##### Á¬ĞøÒÆ¶¯
-
-Ê¹ÓÃÒ»¸öÕûÊıºÍĞ¡×é×ø±ê
-
-##### ±³¾°ÒôÀÖ
-
-##### Áª»ú
-
-
-
-#### »æÍ¼Ä£¿é
-
-Î¬¶È£º3D
-
-
-
-#### Õ¹Ê¾¿¼ÂÇ
-
-##### ÄÚÈİ
-
-PPT 1min30s~2min£ºÉè¼ÆÄÚÈİºÍµÀ¾ß½éÉÜ
-
-1¡¢¿ª¾Ö¹ÊÊÂ£¨¶¯»­¡¢±³¾°ÒôÀÖ£©15s
-
-2¡¢µ¥ÈËÄ£Ê½ÆÕÍ¨¹Ø¿¨£¨3DĞ§¹û¡¢»ã±à»ñµÃµÀ¾ß£©1min
-
-3¡¢Á¬ĞøÒÆ¶¯£¨PPT¶Ô±È£¬¼ÓÒÔÓÎÏ·Õ¹Ê¾£©
-
-4¡¢BOSS¹Ø¿¨£ºBOSS¼¼ÄÜ 30s
-
-5¡¢¶ÔÕ½Ä£Ê½£¨ÄÜ¶ÔÕ½£©20s
-
-´æµµºÍ¶Áµµ
-
-### ¸ÅÒªÉè¼Æ
-
-UI
-
-```C
-void ShowPicture(path,x,y);//ÓÃÓÚÏÔÊ¾µØÍ¼ÔªËØ
-void PrintWords(string,x,y);
-void DrawMap(struct Game* g);//¸ù¾İµØÍ¼Çé¿ö£¬ÏÔÊ¾µØÍ¼£¬µ÷ÓÃShowPictureºÍPrintWords
-```
-
-×Ü¶ÔÏóÔÚÒ»¸öÊ±ÖÓĞÅºÅ·¢Éúºó
-
-```C
-//¹ØÓÚtypeµÄdefine
-#define Empty 0
-#define Wall 1
-#define Player 2
-#define Bomb 3
-#define Monster 4
-#define Box 5
-#define Tool 6
-#define fire 7
-struct Object{
-  char type;
-  char id;
-};
-struct control{
-    struct Player player;
-    struct Monster monsters[N];
-    struct Bomb bombs[K];
-    struct Tool tools[L];
-    struct Fire fires[Q];
-    struct Object map[M][N][2];//¼ÇÂ¼¶ÔÏóÀàĞÍ
-    int times;
-    int monster_num;
-    int level;
-    void init(){
-        ³õÊ¼»¯player;
-        level = 1;
-        level_init(level);
-        while(1){
-            getTimeSignal();
-        }
-        level_init();
-    }
-
-    void level_init(){
-        ¶Á¹Ø¿¨ÎÄ¼ş[level];
-        ¸ù¾İ¹Ø¿¨ÎÄ¼ş³õÊ¼»¯:map¡¢¶ÔÏóÊı×é¡¢times¡¢monster_num;
-    }
-
-    void getTimeSignal(){
-        times--;
-        clearFire();
-        poolingPlayer();
-        poolingMonster();
-        poolingTool();
-        poolingBomb();
-        if(monster_num==0){
-            win();
-        }
-        drawMap();
-    }
-
-    void poolingPlayer(){
-        »ñÈ¡Íæ¼Ò°´¼üx;
-        »ñÈ¡²½³¤step;
-        if(x in [ÉÏ¡¢ÏÂ¡¢×ó¡¢ÓÒ]){
-            ÅĞ¶ÏÄÜ²»ÄÜ×ß;
-            if(ÄÜ×ß){
-                ×ß(´ıÊµÏÖ);
-            }
-            if(Åöµ½¹ÖÎï){
-                die();
-            }
-            if(Åöµ½µÀ¾ß){
-                Ëæ»ú³öÌâ;
-                ĞŞ¸ÄÏà¹ØÊôĞÔ;
-                µÀ¾ßÏûÊ§;
-            }
-            ÅĞ¶ÏÊÇ·ñĞŞ¸Ämap;
-            Èç¹ûÊÇ£¬ĞŞ¸Ämap;
-        }else if(x == ·ÅÕ¨µ¯){
-            ÅĞ¶ÏÄÜ²»ÄÜ·Å;
-            ÈçÄÜ£¬ÔÚmap[x][y][1]·ÅÕ¨µ¯;
-        }
-        Çå³ı°´¼üx;
-    }
-
-    void die(){
-        life--;
-        if(life){
-            ËøÃü;
-        }else{
-            game over;
-        }
-    }
-
-    void poolingMonster(){
-        ¼ÆËã/»ñÈ¡¹ÖÎï·½Ïòdirection;
-        if(Åö±Ú){
-            ¸Ä±ädirection;
-        }
-        if(!Åö±Ú){
-            ×ß();
-            ÅĞ¶ÏÊÇ·ñĞŞ¸Ämap;
-            ÈçÊÇ£¬ĞŞ¸Ämap;
-        }
-    }
-
-    void poolingBomb(){
-        bomb.time--;
-        if(time==0){
-            »ñÈ¡x,y;
-            »ñÈ¡range;
-            ĞŞ¸Ämap;
-            for x_0,y_0 in bomb_range:
-                ÔÚÃ»ÓĞ±»Ç½×è¶ÏÊ±Ôö¼Ó»ğ¶ÔÏó;
-                clear();
-        }
-    }
-
-    void clear(){
-        if(map[x_0][y_0][0] == Player){
-            die();
-        }else if(map[x_0][y_0][0]==Box){
-            Ëæ»úÉú³ÉµÀ¾ß;
-            Èç¹ûÓĞ,map[x_0][y_0][0].type = Tool;
-            ²åÈëtools£¬²¢ĞŞ¸Ämap[x_0][y_0][0].id;
-        }else if(map[x_0][y_0][0]!=Wall){
-            map[x_0][y_0][0].type = Empty;
-            map[x_0][y_0][1].type = Empty;
-        }
-    }
-
-    void poolingTool(){
-        tool.times--;
-        if(tool.times==0){
-            map[x_0][y_0][0].type = Empty;
-            map[x_0][y_0][1].type = Empty;
-            tool.valid = 0;
-        }
-    }
-}
-
-struct Player{
-    int x;
-    int y;
-    int frac_x;
-    int frac_y;
-    int speed;
-    int bomb_range;
-    int bomb_cnt;
-    int life;
-};
-
-struct Monster{
-    int x;
-    int y;
-    int frac_x;
-    int frac_y;
-    int speed;
-    int direction;
-};
-
-struct Bomb{
-    int x;
-    int y;
-    int time;
-    int range;
-};
-struct Tool{
-    int valid;
-    int type;
-    int times;
-}
-```
-
-*/
-
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
@@ -264,7 +5,7 @@ struct Tool{
 #include <string.h> 
 using namespace std;
 
-//¹ØÓÚtypeµÄdefine
+//å…³äºtypeçš„define
 #define EMPTY 0
 #define WALL 1
 #define PLAYER 2
@@ -277,7 +18,7 @@ using namespace std;
 #define MONSTER_1 41
 #define MONSTER_2 42
 #define MONSTER_3 43
-//¹ØÓÚµØÍ¼µÄdefine
+//å…³äºåœ°å›¾çš„define
 #define ROW 11
 #define COL 13
 #define DEPTH 5
@@ -286,13 +27,20 @@ using namespace std;
 #define MAX_TOOL 5
 #define MAX_FIRE 40
 
-//¹ØÓÚfracµÄdefine
+//å…³äºfracçš„define
 #define FRAC 5
 
-//¹ØÓÚÊ±¼äµÄdefine 
+
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
+//å…³äºæ—¶é—´çš„define 
 #define BOMB_TIMER 4
 #define FIRE_TIMER 1
 #define TOOL_TIMER 10
+
+
 struct Object {
     char type;
     char id;
@@ -338,7 +86,7 @@ struct Fire {
 class Game {
 public:
     struct Player player;
-    struct Object map[ROW][COL][DEPTH];//¼ÇÂ¼¶ÔÏóÀàĞÍ
+    struct Object map[ROW][COL][DEPTH];//è®°å½•å¯¹è±¡ç±»å‹
     struct Monster monsters[MAX_MONSTER];
     struct Bomb bombs[MAX_BOMB];
 
@@ -350,13 +98,15 @@ public:
     int bomb_num = 0;
     int tool_num = 0;
     Game() {
+
         //set structs to zero
         memset(&player, 0, sizeof(player));
         memset(monsters, 0, sizeof(monsters));
         memset(bombs, 0, sizeof(bombs));
         memset(tools, 0, sizeof(tools));
         memset(fires, 0, sizeof(fires));
-        // ³õÊ¼»¯Íæ¼Ò
+
+        // åˆå§‹åŒ–ç©å®¶
         player.x = player.y = 0;
         player.bomb_range = 1;
         player.bomb_cnt = 1;
@@ -368,13 +118,13 @@ public:
     }
     void level_init(int l) {
     	memset(map,0,sizeof(map));
-        //¶Á¹Ø¿¨ÎÄ¼ş[level];
+        //è¯»å…³å¡æ–‡ä»¶[level];
         FILE* file;
         const char* filename[3] = { "1.level","2.level","3.level" };
         file =
             fopen(filename[l - 1], "r");
         if (file == NULL) {
-            //´íÎó´¦Àí
+            //é”™è¯¯å¤„ç†
             return;
         }
         monster_num = 0;
@@ -496,7 +246,7 @@ public:
                     player.bomb_cnt--;
                     break;
                 }
-                
+
             }
         }
     }
@@ -504,18 +254,43 @@ public:
 
     void poolingMonster() {
         for (int i = 0; i < monster_num; i++) {
-            // if the monster's direct next setp is wall,then it 
-            // rendomly choose a direction,else it will move to the direction
+
+            //åˆ¤æ–­ä¸‹ä¸€æ­¥æ˜¯å¦æœ‰ä¸¤ä¸ªåŠä»¥ä¸Šæ–¹å‘å¯èµ°
+            int direct_able = 0;
+            int monster_from = 0;
+            switch (monsters[i].direction) {
+            case UP: monster_from = DOWN; break; // Move up
+            case DOWN: monster_from = UP; break; // Move down
+            case LEFT: monster_from = RIGHT; break; // Move left
+            case RIGHT: monster_from = LEFT; break; // Move right
+            }
+            for (int j = 0; j < 4; j++) {
+                int newX = monsters[i].x;
+                int newY = monsters[i].y;
+
+                switch (j) {
+                case UP: newX--; break; // Move up
+                case DOWN: newX++; break; // Move down
+                case LEFT: newY--; break; // Move left
+                case RIGHT: newY++; break; // Move right
+                }
+                if (IsMoveable(newX, newY) && monster_from != j) {
+                    direct_able++;
+                }
+            }
+            //get last step from monster from
+            int before_x;
+            int before_y;
+            calculateNextMove(monsters[i].x, monsters[i].y,
+                monster_from, before_x, before_y);
+            if (direct_able >= 2 && IsMoveable(before_x, before_y)) {
+                monsters[i].direction = changeDirection(i);
+            }
+
             int move = monsters[i].direction;
             int newMonsterX = monsters[i].x;
             int newMonsterY = monsters[i].y;
-
-            switch (move) {
-            case 0: newMonsterX--; break; // Move up
-            case 1: newMonsterX++; break; // Move down
-            case 2: newMonsterY--; break; // Move left
-            case 3: newMonsterY++; break; // Move right
-            }
+            calculateNextMove(monsters[i].x, monsters[i].y, move, newMonsterX, newMonsterY);
 
             // Check if new position is valid
             if (IsMoveable(newMonsterX, newMonsterY)) {
@@ -523,7 +298,6 @@ public:
                 if (newMonsterX == player.x && newMonsterY == player.y) {
                     die();
                 }
-
                 // Move the monster
                 map[monsters[i].x][monsters[i].y][1].type = EMPTY;
                 monsters[i].x = newMonsterX;
@@ -533,7 +307,68 @@ public:
             else {
                 monsters[i].direction = rand() % 4;
             }
+            else {
+                // Change direction if the monster encounters a wall
+                monsters[i].direction = changeDirection(i);
+
+            }
         }
+    }
+    void calculateNextMove(int x, int y, int direction, int& new_x, int& new_y) {
+        switch (direction) {
+        case UP: new_x = x - 1; new_y = y; break; // Move up
+        case DOWN: new_x = x + 1; new_y = y; break; // Move down
+        case LEFT: new_x = x; new_y = y - 1; break; // Move left
+        case RIGHT: new_x = x; new_y = y + 1; break; // Move right
+        }
+    }
+    int changeDirection(int index) {
+        int direction[4] = { 1,1,1,1 };
+        //å»æ‰monsteræ¥çš„æ–¹å‘
+        int monster_from = 0;
+        switch (monsters[index].direction) {
+        case UP: monster_from = DOWN; break; // Move up
+        case DOWN: monster_from = UP; break; // Move down
+        case LEFT: monster_from = RIGHT; break; // Move left
+        case RIGHT: monster_from = LEFT; break; // Move right
+        }
+        direction[monster_from] = 0;
+        for (int j = 0; j < 4; j++) {
+            int newX = monsters[index].x;
+            int newY = monsters[index].y;
+            calculateNextMove(monsters[index].x, monsters[index].y, j, newX, newY);
+            if (!IsMoveable(newX, newY)) {
+                direction[j] = 0;
+            }
+        }
+        //chose the available direction randomly
+        int available_direction = 0;
+        int new_direction = 0;
+        for (int j = 0; j < 4; j++) {
+            if (direction[j] == 1) {
+                new_direction = j;
+                available_direction++;
+            }
+        }
+        if (available_direction == 0) {
+            return monster_from;
+        }
+        int random_direction = rand() % 10;
+        for (int j = 0; j < random_direction; j++) {
+            new_direction++;
+            new_direction %= 4;
+            while (1) {
+                if (direction[new_direction] == 1) {
+                    break;
+                }
+                else {
+                    new_direction++;
+                    new_direction %= 4;
+                }
+            }
+        }
+        monsters[index].direction = new_direction;
+        return new_direction;
     }
     
     void explode(int x,int y){
@@ -550,7 +385,7 @@ public:
 	}
 	
 	void dealBomb(int x,int y,int range,int type){
-		//¸Ä³É»ã±àÊ±£¬Ê¹ÓÃº¯ÊıÖ¸Õë 
+		//æ”¹æˆæ±‡ç¼–æ—¶ï¼Œä½¿ç”¨å‡½æ•°æŒ‡é’ˆ 
 		// deal in four directions
 		for(int i = 0;i < 4;i++){
 			int dx = 0;
@@ -618,7 +453,14 @@ public:
         }
     }
 
-
+    void poolingSuccess() {
+        if (monster_num == 0) {
+            cout << "You win!" << endl;
+            exit(0);
+            level++;
+            level_init(level);
+        }
+    }
     void clear(int x, int y) {
         for (int l = 0; l < monster_num; l++) {
             if (monsters[l].x == x && monsters[l].y == y) {
@@ -626,6 +468,7 @@ public:
                 map[monsters[l].x][monsters[l].y][1].type = EMPTY;
                 monsters[l].x = -1;
                 monsters[l].y = -1;
+                monster_num--;
                 break;
             }
         }
@@ -640,7 +483,7 @@ public:
             map[x][y][1].type = EMPTY;
             // Generate a tool and place it on the map
             int generate_tool = rand() % 4;
-            if (generate_tool==1) {
+            if (generate_tool == 1) {
                 placeTool(x, y);
             }
 
