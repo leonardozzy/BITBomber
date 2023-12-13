@@ -8,7 +8,7 @@ include	common.inc
 WindowProc	proc	hwnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 	local	ps:PAINTSTRUCT,hdc:HDC,rect:RECT,hdcBuffer:HDC,memBitmap:HBITMAP,graphicsPtr:dword
 	local	wWidth:dword,wHeight:dword
-	cmp uMsg,WM_TIMER
+	cmp	uMsg,WM_TIMER
 	je	WindowProcTimer
 	cmp	uMsg,WM_CREATE
 	je	WindowProcCreate
