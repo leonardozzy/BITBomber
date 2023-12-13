@@ -1,96 +1,96 @@
 /*
-### ÐèÇó·ÖÎö
+### éœ€æ±‚åˆ†æž
 
-#### Ä£Ê½Ò»£ºµ¥ÈËÓÎÏ·
+#### æ¨¡å¼ä¸€ï¼šå•äººæ¸¸æˆ
 
-¿¼ÂÇ¼ÓÈë¹ÊÊÂ£º¼ÓÈëAI/ÕÅ»ªÆ½ÓïÒô£¨ÔÝ¶¨£©
+è€ƒè™‘åŠ å…¥æ•…äº‹ï¼šåŠ å…¥AI/å¼ åŽå¹³è¯­éŸ³ï¼ˆæš‚å®šï¼‰
 
-´³¹ØÄ£Ê½£ºÒ»¹ØÄÚÓÐ¹Ì¶¨µÀ¾ß£¬Ëæ»ú·Ö²¼µ½·½¿éÖÐ/Ëæ»úË¢ÐÂ³ö
+é—¯å…³æ¨¡å¼ï¼šä¸€å…³å†…æœ‰å›ºå®šé“å…·ï¼Œéšæœºåˆ†å¸ƒåˆ°æ–¹å—ä¸­/éšæœºåˆ·æ–°å‡º
 
-µÀ¾ß£º¼ÓÃü¡¢¼ÓËÙ£¨ÔÝ¶¨£©¡¢Ìá¸ßÕ¨µ¯·¶Î§¡¢Ôö¼ÓÕ¨µ¯ÊýÁ¿
+é“å…·ï¼šåŠ å‘½ã€åŠ é€Ÿï¼ˆæš‚å®šï¼‰ã€æé«˜ç‚¸å¼¹èŒƒå›´ã€å¢žåŠ ç‚¸å¼¹æ•°é‡
 
-Ð¡¹Ö£ºÅö±Ú·µ»ØÇøÓòÑ²Âß£¬³õÊ¼·½ÏòËæ»ú£¬Íæ¼Ò´¥ÅöÐ¡¹Ö¼´ËÀÍö
+å°æ€ªï¼šç¢°å£è¿”å›žåŒºåŸŸå·¡é€»ï¼Œåˆå§‹æ–¹å‘éšæœºï¼ŒçŽ©å®¶è§¦ç¢°å°æ€ªå³æ­»äº¡
 
-Éè¼Æ¶à¹Ì¶¨µØÍ¼
+è®¾è®¡å¤šå›ºå®šåœ°å›¾
 
-Éè¼Æ´óBOSS£º±±Àí¹¤µÄ¶ñÁú¡¢µ¯Ä»£¨ÔÝ¶¨£©¡¢Ìì½µÕ¨µ¯¡¢ÅçË®£¨½½Ë®Ö®ºó²»ÄÜ·ÅÕ¨µ¯£©
-
-
-
-Ê¤ÀûÌõ¼þ£ºÆÕÍ¨¹Ø¿¨£ºÉ±ËÀËùÓÐÐ¡¹Ö¡¢BOSS¹Ø¿¨£º´ò°ÜBOSS
-
-ËÀÍö£º³¬Ê±¡¢±»×Ô¼ºÕ¨ËÀ¡¢ÓëÐ¡¹Ö½Ó´¥
+è®¾è®¡å¤§BOSSï¼šåŒ—ç†å·¥çš„æ¶é¾™ã€å¼¹å¹•ï¼ˆæš‚å®šï¼‰ã€å¤©é™ç‚¸å¼¹ã€å–·æ°´ï¼ˆæµ‡æ°´ä¹‹åŽä¸èƒ½æ”¾ç‚¸å¼¹ï¼‰
 
 
 
-#### Ä£Ê½¶þ£ºË«ÈË¶ÔÕ½
+èƒœåˆ©æ¡ä»¶ï¼šæ™®é€šå…³å¡ï¼šæ€æ­»æ‰€æœ‰å°æ€ªã€BOSSå…³å¡ï¼šæ‰“è´¥BOSS
 
-¿¼ÂÇ£º¼ÓÈëÁª»úÒòËØ£¿
-
-½öÕ¹Ê¾ÓÐÎÞ
+æ­»äº¡ï¼šè¶…æ—¶ã€è¢«è‡ªå·±ç‚¸æ­»ã€ä¸Žå°æ€ªæŽ¥è§¦
 
 
 
-#### ´´ÐÂµã
+#### æ¨¡å¼äºŒï¼šåŒäººå¯¹æˆ˜
 
-##### ¹ÊÊÂÇé½Ú
+è€ƒè™‘ï¼šåŠ å…¥è”æœºå› ç´ ï¼Ÿ
 
-±±Àí¹¤³öÏÖÁËÒ»Ìõ¶ñÁú£¬ÏòÎÄ´äÂ¥G126½ÌÊÒ£¬±±¾©Àí¹¤´óÑ§ÕÅ»ªÆ½ÀÏÊ¦Ïò¡¶»ã±àÓïÑÔÓë½Ó¿Ú¼¼Êõ¡·°à¼¶·¢³öÁËÕÐÄ¼Áî£¬¸³ÓèËûÃÇMASMµÄÎäÆ÷£¬ÒÔIA32Ö®Á¦£¬´óÕ½±±Àí¹¤µÄ¶ñÁú
-
-##### »Ø´ð»ã±àÌâ»ñµÃµÀ¾ß
-
-´ðÌâ·½Ê½´ý¶¨
-
-##### 3DÐ§¹û
-
-##### Á¬ÐøÒÆ¶¯
-
-Ê¹ÓÃÒ»¸öÕûÊýºÍÐ¡×é×ø±ê
-
-##### ±³¾°ÒôÀÖ
-
-##### Áª»ú
+ä»…å±•ç¤ºæœ‰æ— 
 
 
 
-#### »æÍ¼Ä£¿é
+#### åˆ›æ–°ç‚¹
 
-Î¬¶È£º3D
+##### æ•…äº‹æƒ…èŠ‚
+
+åŒ—ç†å·¥å‡ºçŽ°äº†ä¸€æ¡æ¶é¾™ï¼Œå‘æ–‡ç¿ æ¥¼G126æ•™å®¤ï¼ŒåŒ—äº¬ç†å·¥å¤§å­¦å¼ åŽå¹³è€å¸ˆå‘ã€Šæ±‡ç¼–è¯­è¨€ä¸ŽæŽ¥å£æŠ€æœ¯ã€‹ç­çº§å‘å‡ºäº†æ‹›å‹Ÿä»¤ï¼Œèµ‹äºˆä»–ä»¬MASMçš„æ­¦å™¨ï¼Œä»¥IA32ä¹‹åŠ›ï¼Œå¤§æˆ˜åŒ—ç†å·¥çš„æ¶é¾™
+
+##### å›žç­”æ±‡ç¼–é¢˜èŽ·å¾—é“å…·
+
+ç­”é¢˜æ–¹å¼å¾…å®š
+
+##### 3Dæ•ˆæžœ
+
+##### è¿žç»­ç§»åŠ¨
+
+ä½¿ç”¨ä¸€ä¸ªæ•´æ•°å’Œå°ç»„åæ ‡
+
+##### èƒŒæ™¯éŸ³ä¹
+
+##### è”æœº
 
 
 
-#### Õ¹Ê¾¿¼ÂÇ
+#### ç»˜å›¾æ¨¡å—
 
-##### ÄÚÈÝ
+ç»´åº¦ï¼š3D
 
-PPT 1min30s~2min£ºÉè¼ÆÄÚÈÝºÍµÀ¾ß½éÉÜ
 
-1¡¢¿ª¾Ö¹ÊÊÂ£¨¶¯»­¡¢±³¾°ÒôÀÖ£©15s
 
-2¡¢µ¥ÈËÄ£Ê½ÆÕÍ¨¹Ø¿¨£¨3DÐ§¹û¡¢»ã±à»ñµÃµÀ¾ß£©1min
+#### å±•ç¤ºè€ƒè™‘
 
-3¡¢Á¬ÐøÒÆ¶¯£¨PPT¶Ô±È£¬¼ÓÒÔÓÎÏ·Õ¹Ê¾£©
+##### å†…å®¹
 
-4¡¢BOSS¹Ø¿¨£ºBOSS¼¼ÄÜ 30s
+PPT 1min30s~2minï¼šè®¾è®¡å†…å®¹å’Œé“å…·ä»‹ç»
 
-5¡¢¶ÔÕ½Ä£Ê½£¨ÄÜ¶ÔÕ½£©20s
+1ã€å¼€å±€æ•…äº‹ï¼ˆåŠ¨ç”»ã€èƒŒæ™¯éŸ³ä¹ï¼‰15s
 
-´æµµºÍ¶Áµµ
+2ã€å•äººæ¨¡å¼æ™®é€šå…³å¡ï¼ˆ3Dæ•ˆæžœã€æ±‡ç¼–èŽ·å¾—é“å…·ï¼‰1min
 
-### ¸ÅÒªÉè¼Æ
+3ã€è¿žç»­ç§»åŠ¨ï¼ˆPPTå¯¹æ¯”ï¼ŒåŠ ä»¥æ¸¸æˆå±•ç¤ºï¼‰
+
+4ã€BOSSå…³å¡ï¼šBOSSæŠ€èƒ½ 30s
+
+5ã€å¯¹æˆ˜æ¨¡å¼ï¼ˆèƒ½å¯¹æˆ˜ï¼‰20s
+
+å­˜æ¡£å’Œè¯»æ¡£
+
+### æ¦‚è¦è®¾è®¡
 
 UI
 
 ```C
-void ShowPicture(path,x,y);//ÓÃÓÚÏÔÊ¾µØÍ¼ÔªËØ
+void ShowPicture(path,x,y);//ç”¨äºŽæ˜¾ç¤ºåœ°å›¾å…ƒç´ 
 void PrintWords(string,x,y);
-void DrawMap(struct Game* g);//¸ù¾ÝµØÍ¼Çé¿ö£¬ÏÔÊ¾µØÍ¼£¬µ÷ÓÃShowPictureºÍPrintWords
+void DrawMap(struct Game* g);//æ ¹æ®åœ°å›¾æƒ…å†µï¼Œæ˜¾ç¤ºåœ°å›¾ï¼Œè°ƒç”¨ShowPictureå’ŒPrintWords
 ```
 
-×Ü¶ÔÏóÔÚÒ»¸öÊ±ÖÓÐÅºÅ·¢Éúºó
+æ€»å¯¹è±¡åœ¨ä¸€ä¸ªæ—¶é’Ÿä¿¡å·å‘ç”ŸåŽ
 
 ```C
-//¹ØÓÚtypeµÄdefine
+//å…³äºŽtypeçš„define
 #define Empty 0
 #define Wall 1
 #define Player 2
@@ -109,12 +109,12 @@ struct control{
     struct Bomb bombs[K];
     struct Tool tools[L];
     struct Fire fires[Q];
-    struct Object map[M][N][2];//¼ÇÂ¼¶ÔÏóÀàÐÍ
+    struct Object map[M][N][2];//è®°å½•å¯¹è±¡ç±»åž‹
     int times;
     int monster_num;
     int level;
     void init(){
-        ³õÊ¼»¯player;
+        åˆå§‹åŒ–player;
         level = 1;
         level_init(level);
         while(1){
@@ -124,8 +124,8 @@ struct control{
     }
 
     void level_init(){
-        ¶Á¹Ø¿¨ÎÄ¼þ[level];
-        ¸ù¾Ý¹Ø¿¨ÎÄ¼þ³õÊ¼»¯:map¡¢¶ÔÏóÊý×é¡¢times¡¢monster_num;
+        è¯»å…³å¡æ–‡ä»¶[level];
+        æ ¹æ®å…³å¡æ–‡ä»¶åˆå§‹åŒ–:mapã€å¯¹è±¡æ•°ç»„ã€timesã€monster_num;
     }
 
     void getTimeSignal(){
@@ -142,59 +142,59 @@ struct control{
     }
 
     void poolingPlayer(){
-    	»ñÈ¡Íæ¼Ò°´¼üx;
-        »ñÈ¡²½³¤step;
-    	if(x in [ÉÏ¡¢ÏÂ¡¢×ó¡¢ÓÒ]){
-        	ÅÐ¶ÏÄÜ²»ÄÜ×ß;
-        	if(ÄÜ×ß){
-                ×ß(´ýÊµÏÖ);
+    	èŽ·å–çŽ©å®¶æŒ‰é”®x;
+        èŽ·å–æ­¥é•¿step;
+    	if(x in [ä¸Šã€ä¸‹ã€å·¦ã€å³]){
+        	åˆ¤æ–­èƒ½ä¸èƒ½èµ°;
+        	if(èƒ½èµ°){
+                èµ°(å¾…å®žçŽ°);
             }
-            if(Åöµ½¹ÖÎï){
+            if(ç¢°åˆ°æ€ªç‰©){
                 die();
             }
-            if(Åöµ½µÀ¾ß){
-                Ëæ»ú³öÌâ;
-                ÐÞ¸ÄÏà¹ØÊôÐÔ;
-                µÀ¾ßÏûÊ§;
+            if(ç¢°åˆ°é“å…·){
+                éšæœºå‡ºé¢˜;
+                ä¿®æ”¹ç›¸å…³å±žæ€§;
+                é“å…·æ¶ˆå¤±;
             }
-        	ÅÐ¶ÏÊÇ·ñÐÞ¸Ämap;
-       	 	Èç¹ûÊÇ£¬ÐÞ¸Ämap;
-    	}else if(x == ·ÅÕ¨µ¯){
-        	ÅÐ¶ÏÄÜ²»ÄÜ·Å;
-        	ÈçÄÜ£¬ÔÚmap[x][y][1]·ÅÕ¨µ¯;
+        	åˆ¤æ–­æ˜¯å¦ä¿®æ”¹map;
+       	 	å¦‚æžœæ˜¯ï¼Œä¿®æ”¹map;
+    	}else if(x == æ”¾ç‚¸å¼¹){
+        	åˆ¤æ–­èƒ½ä¸èƒ½æ”¾;
+        	å¦‚èƒ½ï¼Œåœ¨map[x][y][1]æ”¾ç‚¸å¼¹;
     	}
-    	Çå³ý°´¼üx;
+    	æ¸…é™¤æŒ‰é”®x;
 	}
 
     void die(){
         life--;
         if(life){
-        	ËøÃü;
+        	é”å‘½;
         }else{
             game over;
         }
     }
 
     void poolingMonster(){
-        ¼ÆËã/»ñÈ¡¹ÖÎï·½Ïòdirection;
-        if(Åö±Ú){
-            ¸Ä±ädirection;
+        è®¡ç®—/èŽ·å–æ€ªç‰©æ–¹å‘direction;
+        if(ç¢°å£){
+            æ”¹å˜direction;
         }
-        if(!Åö±Ú){
-            ×ß();
-            ÅÐ¶ÏÊÇ·ñÐÞ¸Ämap;
-            ÈçÊÇ£¬ÐÞ¸Ämap;
+        if(!ç¢°å£){
+            èµ°();
+            åˆ¤æ–­æ˜¯å¦ä¿®æ”¹map;
+            å¦‚æ˜¯ï¼Œä¿®æ”¹map;
         }
     }
 
     void poolingBomb(){
         bomb.time--;
         if(time==0){
-            »ñÈ¡x,y;
-            »ñÈ¡range;
-            ÐÞ¸Ämap;
+            èŽ·å–x,y;
+            èŽ·å–range;
+            ä¿®æ”¹map;
             for x_0,y_0 in bomb_range:
-            	ÔÚÃ»ÓÐ±»Ç½×è¶ÏÊ±Ôö¼Ó»ð¶ÔÏó;
+            	åœ¨æ²¡æœ‰è¢«å¢™é˜»æ–­æ—¶å¢žåŠ ç«å¯¹è±¡;
             	clear();
         }
     }
@@ -203,9 +203,9 @@ struct control{
         if(map[x_0][y_0][0] == Player){
             die();
         }else if(map[x_0][y_0][0]==Box){
-            Ëæ»úÉú³ÉµÀ¾ß;
-            Èç¹ûÓÐ,map[x_0][y_0][0].type = Tool;
-            ²åÈëtools£¬²¢ÐÞ¸Ämap[x_0][y_0][0].id;
+            éšæœºç”Ÿæˆé“å…·;
+            å¦‚æžœæœ‰,map[x_0][y_0][0].type = Tool;
+            æ’å…¥toolsï¼Œå¹¶ä¿®æ”¹map[x_0][y_0][0].id;
         }else if(map[x_0][y_0][0]!=Wall){
             map[x_0][y_0][0].type = Empty;
             map[x_0][y_0][1].type = Empty;
@@ -264,7 +264,7 @@ struct Tool{
 #include <windows.h>
 using namespace std;
 
-//¹ØÓÚtypeµÄdefine
+//å…³äºŽtypeçš„define
 #define EMPTY 0
 #define WALL 1
 #define PLAYER 2
@@ -278,7 +278,7 @@ using namespace std;
 #define MONSTER_1 41
 #define MONSTER_2 42
 #define MONSTER_3 43
-//¹ØÓÚµØÍ¼µÄdefine
+//å…³äºŽåœ°å›¾çš„define
 #define ROW 11
 #define COL 13
 #define DEPTH 5
@@ -288,7 +288,7 @@ using namespace std;
 #define MAX_FIRE 40
 
 #define FRAC_RANGE 100
-//¹ØÓÚfracµÄdefine
+//å…³äºŽfracçš„define
 #define FRAC 5
 struct Object {
     char type;
@@ -337,7 +337,7 @@ struct Fire {
 class Game {
 public:
     struct Player player;
-    struct Object map[ROW][COL][DEPTH];//¼ÇÂ¼¶ÔÏóÀàÐÍ
+    struct Object map[ROW][COL][DEPTH];//è®°å½•å¯¹è±¡ç±»åž‹
     struct Monster monsters[MAX_MONSTER];
     struct Bomb bombs[MAX_BOMB];
     struct Tool tools[MAX_TOOL];
@@ -346,7 +346,7 @@ public:
 	int times;
 	int monster_num = 0;
     Game() {
-        // ³õÊ¼»¯µØÍ¼
+        // åˆå§‹åŒ–åœ°å›¾
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 for(int k = 0; k < DEPTH; k++){
@@ -355,7 +355,7 @@ public:
             }
         }
 
-        // ³õÊ¼»¯Íæ¼Ò
+        // åˆå§‹åŒ–çŽ©å®¶
         player.x = player.y = 0;
         player.frac_x = player.frac_y = 0;
         player.speed = 20;
@@ -367,12 +367,12 @@ public:
         level_init(level);
     }
 	void level_init(int l){
-		//¶Á¹Ø¿¨ÎÄ¼þ[level];
+		//è¯»å…³å¡æ–‡ä»¶[level];
         FILE* file;
         char* filename[3] = {"1.level","2.level","3.level"};
         file = fopen(filename[l-1],"r");
         if(file==NULL){
-        	//´íÎó´¦Àí
+        	//é”™è¯¯å¤„ç†
 			return ;
 		}
 		monster_num = 0;
@@ -452,7 +452,7 @@ public:
         	newPlayerY--;
         	player.frac_y += 2*FRAC_RANGE;
 		}else{
-			return;//ÒòÎªÐÂXYÃ»±ä£¬²»ÐèÒªÅÐ¶Ï 
+			return;//å› ä¸ºæ–°XYæ²¡å˜ï¼Œä¸éœ€è¦åˆ¤æ–­ 
 		}
 
         // Check if new position is valid
@@ -523,7 +523,7 @@ public:
 	        	newMonsterY--;
 	        	monsters[i].frac_y += 2*FRAC_RANGE;
 			}else{
-				continue;//ÒòÎªÐÂXYÃ»±ä£¬²»ÐèÒªÅÐ¶Ï 
+				continue;//å› ä¸ºæ–°XYæ²¡å˜ï¼Œä¸éœ€è¦åˆ¤æ–­ 
 			}
 
             // Check if new position is valid
