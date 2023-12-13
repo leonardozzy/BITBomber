@@ -1,262 +1,3 @@
-/*
-### 需求分析
-
-#### 模式一：单人游戏
-
-考虑加入故事：加入AI/张华平语音（暂定）
-
-闯关模式：一关内有固定道具，随机分布到方块中/随机刷新出
-
-道具：加命、加速（暂定）、提高炸弹范围、增加炸弹数量
-
-小怪：碰壁返回区域巡逻，初始方向随机，玩家触碰小怪即死亡
-
-设计多固定地图
-
-设计大BOSS：北理工的恶龙、弹幕（暂定）、天降炸弹、喷水（浇水之后不能放炸弹）
-
-
-
-胜利条件：普通关卡：杀死所有小怪、BOSS关卡：打败BOSS
-
-死亡：超时、被自己炸死、与小怪接触
-
-
-
-#### 模式二：双人对战
-
-考虑：加入联机因素？
-
-仅展示有无
-
-
-
-#### 创新点
-
-##### 故事情节
-
-北理工出现了一条恶龙，向文翠楼G126教室，北京理工大学张华平老师向《汇编语言与接口技术》班级发出了招募令，赋予他们MASM的武器，以IA32之力，大战北理工的恶龙
-
-##### 回答汇编题获得道具
-
-答题方式待定
-
-##### 3D效果
-
-##### 连续移动
-
-使用一个整数和小组坐标
-
-##### 背景音乐
-
-##### 联机
-
-
-
-#### 绘图模块
-
-维度：3D
-
-
-
-#### 展示考虑
-
-##### 内容
-
-PPT 1min30s~2min：设计内容和道具介绍
-
-1、开局故事（动画、背景音乐）15s
-
-2、单人模式普通关卡（3D效果、汇编获得道具）1min
-
-3、连续移动（PPT对比，加以游戏展示）
-
-4、BOSS关卡：BOSS技能 30s
-
-5、对战模式（能对战）20s
-
-存档和读档
-
-### 概要设计
-
-UI
-
-```C
-void ShowPicture(path,x,y);//用于显示地图元素
-void PrintWords(string,x,y);
-void DrawMap(struct Game* g);//根据地图情况，显示地图，调用ShowPicture和PrintWords
-```
-
-总对象在一个时钟信号发生后
-
-```C
-//关于type的define
-#define Empty 0
-#define Wall 1
-#define Player 2
-#define Bomb 3
-#define Monster 4
-#define Box 5
-#define Tool 6
-#define fire 7
-struct Object{
-  char type;
-  char id;
-};
-struct control{
-    struct Player player;
-    struct Monster monsters[N];
-    struct Bomb bombs[K];
-    struct Tool tools[L];
-    struct Fire fires[Q];
-    struct Object map[M][N][2];//记录对象类型
-    int times;
-    int monster_num;
-    int level;
-    void init(){
-        初始化player;
-        level = 1;
-        level_init(level);
-        while(1){
-            getTimeSignal();
-        }
-        level_init();
-    }
-
-    void level_init(){
-        读关卡文件[level];
-        根据关卡文件初始化:map、对象数组、times、monster_num;
-    }
-
-    void getTimeSignal(){
-        times--;
-        clearFire();
-        poolingPlayer();
-        poolingMonster();
-        poolingTool();
-        poolingBomb();
-        if(monster_num==0){
-            win();
-        }
-        drawMap();
-    }
-
-    void poolingPlayer(){
-        获取玩家按键x;
-        获取步长step;
-        if(x in [上、下、左、右]){
-            判断能不能走;
-            if(能走){
-                走(待实现);
-            }
-            if(碰到怪物){
-                die();
-            }
-            if(碰到道具){
-                随机出题;
-                修改相关属性;
-                道具消失;
-            }
-            判断是否修改map;
-            如果是，修改map;
-        }else if(x == 放炸弹){
-            判断能不能放;
-            如能，在map[x][y][1]放炸弹;
-        }
-        清除按键x;
-    }
-
-    void die(){
-        life--;
-        if(life){
-            锁命;
-        }else{
-            game over;
-        }
-    }
-
-    void poolingMonster(){
-        计算/获取怪物方向direction;
-        if(碰壁){
-            改变direction;
-        }
-        if(!碰壁){
-            走();
-            判断是否修改map;
-            如是，修改map;
-        }
-    }
-
-    void poolingBomb(){
-        bomb.time--;
-        if(time==0){
-            获取x,y;
-            获取range;
-            修改map;
-            for x_0,y_0 in bomb_range:
-                在没有被墙阻断时增加火对象;
-                clear();
-        }
-    }
-
-    void clear(){
-        if(map[x_0][y_0][0] == Player){
-            die();
-        }else if(map[x_0][y_0][0]==Box){
-            随机生成道具;
-            如果有,map[x_0][y_0][0].type = Tool;
-            插入tools，并修改map[x_0][y_0][0].id;
-        }else if(map[x_0][y_0][0]!=Wall){
-            map[x_0][y_0][0].type = Empty;
-            map[x_0][y_0][1].type = Empty;
-        }
-    }
-
-    void poolingTool(){
-        tool.times--;
-        if(tool.times==0){
-            map[x_0][y_0][0].type = Empty;
-            map[x_0][y_0][1].type = Empty;
-            tool.valid = 0;
-        }
-    }
-}
-
-struct Player{
-    int x;
-    int y;
-    int frac_x;
-    int frac_y;
-    int speed;
-    int bomb_range;
-    int bomb_cnt;
-    int life;
-};
-
-struct Monster{
-    int x;
-    int y;
-    int frac_x;
-    int frac_y;
-    int speed;
-    int direction;
-};
-
-struct Bomb{
-    int x;
-    int y;
-    int time;
-    int range;
-};
-struct Tool{
-    int valid;
-    int type;
-    int times;
-}
-```
-
-*/
-
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
@@ -288,6 +29,13 @@ using namespace std;
 
 //关于frac的define
 #define FRAC 5
+
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
+
+
 struct Object {
     char type;
     char id;
@@ -345,21 +93,13 @@ public:
     int bomb_num = 0;
     int tool_num = 0;
     Game() {
-        // 初始化地图
-        for (int i = 0; i < ROW; i++) {
-            for (int j = 0; j < COL; j++) {
-                for (int k = 0; k < DEPTH; k++) {
-                    map[i][j][k].type = EMPTY;
-                }
-            }
-        }
+
         //set structs to zero
         memset(&player, 0, sizeof(player));
         memset(monsters, 0, sizeof(monsters));
         memset(bombs, 0, sizeof(bombs));
         memset(tools, 0, sizeof(tools));
         memset(fires, 0, sizeof(fires));
-
 
         // 初始化玩家
         player.x = player.y = 0;
@@ -498,6 +238,7 @@ public:
                     player.bomb_cnt--;
                     break;
                 }
+
             }
         }
     }
@@ -505,17 +246,41 @@ public:
 
     void poolingMonster() {
         for (int i = 0; i < monster_num; i++) {
-            // Randomly choose a direction for each monster
-            int move = rand() % 4;
+            //判断下一步是否有两个及以上方向可走
+            int direct_able = 0;
+            int monster_from = 0;
+            switch (monsters[i].direction) {
+            case UP: monster_from = DOWN; break; // Move up
+            case DOWN: monster_from = UP; break; // Move down
+            case LEFT: monster_from = RIGHT; break; // Move left
+            case RIGHT: monster_from = LEFT; break; // Move right
+            }
+            for (int j = 0; j < 4; j++) {
+                int newX = monsters[i].x;
+                int newY = monsters[i].y;
+
+                switch (j) {
+                case UP: newX--; break; // Move up
+                case DOWN: newX++; break; // Move down
+                case LEFT: newY--; break; // Move left
+                case RIGHT: newY++; break; // Move right
+                }
+                if (IsMoveable(newX, newY) && monster_from != j) {
+                    direct_able++;
+                }
+            }
+            //get last step from monster from
+            int before_x;
+            int before_y;
+            calculateNextMove(monsters[i].x, monsters[i].y,
+                monster_from, before_x, before_y);
+            if (direct_able >= 2 && IsMoveable(before_x, before_y)) {
+                monsters[i].direction = changeDirection(i);
+            }
+            int move = monsters[i].direction;
             int newMonsterX = monsters[i].x;
             int newMonsterY = monsters[i].y;
-
-            switch (move) {
-            case 0: newMonsterX--; break; // Move up
-            case 1: newMonsterX++; break; // Move down
-            case 2: newMonsterY--; break; // Move left
-            case 3: newMonsterY++; break; // Move right
-            }
+            calculateNextMove(monsters[i].x, monsters[i].y, move, newMonsterX, newMonsterY);
 
             // Check if new position is valid
             if (IsMoveable(newMonsterX, newMonsterY)) {
@@ -523,14 +288,74 @@ public:
                 if (newMonsterX == player.x && newMonsterY == player.y) {
                     die();
                 }
-
                 // Move the monster
                 map[monsters[i].x][monsters[i].y][0].type = EMPTY;
                 monsters[i].x = newMonsterX;
                 monsters[i].y = newMonsterY;
                 map[monsters[i].x][monsters[i].y][0].type = MONSTER;
             }
+            else {
+                // Change direction if the monster encounters a wall
+                monsters[i].direction = changeDirection(i);
+
+            }
         }
+    }
+    void calculateNextMove(int x, int y, int direction, int& new_x, int& new_y) {
+        switch (direction) {
+        case UP: new_x = x - 1; new_y = y; break; // Move up
+        case DOWN: new_x = x + 1; new_y = y; break; // Move down
+        case LEFT: new_x = x; new_y = y - 1; break; // Move left
+        case RIGHT: new_x = x; new_y = y + 1; break; // Move right
+        }
+    }
+    int changeDirection(int index) {
+        int direction[4] = { 1,1,1,1 };
+        //去掉monster来的方向
+        int monster_from = 0;
+        switch (monsters[index].direction) {
+        case UP: monster_from = DOWN; break; // Move up
+        case DOWN: monster_from = UP; break; // Move down
+        case LEFT: monster_from = RIGHT; break; // Move left
+        case RIGHT: monster_from = LEFT; break; // Move right
+        }
+        direction[monster_from] = 0;
+        for (int j = 0; j < 4; j++) {
+            int newX = monsters[index].x;
+            int newY = monsters[index].y;
+            calculateNextMove(monsters[index].x, monsters[index].y, j, newX, newY);
+            if (!IsMoveable(newX, newY)) {
+                direction[j] = 0;
+            }
+        }
+        //chose the available direction randomly
+        int available_direction = 0;
+        int new_direction = 0;
+        for (int j = 0; j < 4; j++) {
+            if (direction[j] == 1) {
+                new_direction = j;
+                available_direction++;
+            }
+        }
+        if (available_direction == 0) {
+            return monster_from;
+        }
+        int random_direction = rand() % 10;
+        for (int j = 0; j < random_direction; j++) {
+            new_direction++;
+            new_direction %= 4;
+            while (1) {
+                if (direction[new_direction] == 1) {
+                    break;
+                }
+                else {
+                    new_direction++;
+                    new_direction %= 4;
+                }
+            }
+        }
+        monsters[index].direction = new_direction;
+        return new_direction;
     }
 
 
@@ -601,7 +426,14 @@ public:
         }
     }
 
-
+    void poolingSuccess() {
+        if (monster_num == 0) {
+            cout << "You win!" << endl;
+            exit(0);
+            level++;
+            level_init(level);
+        }
+    }
     void clear(int x, int y) {
         for (int l = 0; l < monster_num; l++) {
             if (monsters[l].x == x && monsters[l].y == y) {
@@ -609,6 +441,7 @@ public:
                 map[monsters[l].x][monsters[l].y][0].type = EMPTY;
                 monsters[l].x = -1;
                 monsters[l].y = -1;
+                monster_num--;
                 break;
             }
         }
@@ -622,8 +455,8 @@ public:
             // Kill the box
             map[x][y][0].type = EMPTY;
             // Generate a tool and place it on the map
-            int generate_tool = rand() % 2;
-            if (generate_tool) {
+            int generate_tool = rand() % 4;
+            if (generate_tool == 1) {
                 placeTool(x, y);
             }
 
@@ -680,6 +513,34 @@ public:
         player.x = player.y = 0;
         map[player.x][player.y][0].type = PLAYER;
 
+    }
+    void archive() {
+        FILE* file;
+        file = fopen("save.bb", "w");
+        fwrite(&player, 1, sizeof(struct Player), file);
+        fwrite(&map, ROW * COL * DEPTH, sizeof(struct Object), file);
+        fwrite(&monsters, MAX_MONSTER, sizeof(struct Monster), file);
+        fwrite(&bombs, MAX_BOMB, sizeof(struct Bomb), file);
+        fwrite(&tools, MAX_TOOL, sizeof(struct Tool), file);
+        fwrite(&fires, MAX_FIRE, sizeof(struct Fire), file);
+        fwrite(&level, 1, sizeof(int), file);
+        fwrite(&times, 1, sizeof(int), file);
+        fwrite(&monster_num, 1, sizeof(int), file);
+        fclose(file);
+    }
+    void read() {
+        FILE* file;
+        file = fopen("save.bb", "r");
+        fread(&player, 1, sizeof(struct Player), file);
+        fread(&map, ROW * COL * DEPTH, sizeof(struct Object), file);
+        fread(&monsters, MAX_MONSTER, sizeof(struct Monster), file);
+        fread(&bombs, MAX_BOMB, sizeof(struct Bomb), file);
+        fread(&tools, MAX_TOOL, sizeof(struct Tool), file);
+        fread(&fires, MAX_FIRE, sizeof(struct Fire), file);
+        fread(&level, 1, sizeof(int), file);
+        fread(&times, 1, sizeof(int), file);
+        fread(&monster_num, 1, sizeof(int), file);
+        fclose(file);
     }
 };
 
