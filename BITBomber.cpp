@@ -288,6 +288,13 @@ using namespace std;
 
 //关于frac的define
 #define FRAC 5
+
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
+
+
 struct Object {
     char type;
     char id;
@@ -498,18 +505,41 @@ public:
 
     void poolingMonster() {
         for (int i = 0; i < monster_num; i++) {
-            // if the monster's direct next setp is wall,then it 
-            // rendomly choose a direction,else it will move to the direction
+            //判断下一步是否有两个及以上方向可走
+            int direct_able = 0;
+            int monster_from = 0;
+            switch (monsters[i].direction) {
+            case UP: monster_from = DOWN; break; // Move up
+            case DOWN: monster_from = UP; break; // Move down
+            case LEFT: monster_from = RIGHT; break; // Move left
+            case RIGHT: monster_from = LEFT; break; // Move right
+            }
+            for (int j = 0; j < 4; j++) {
+				int newX = monsters[i].x;
+				int newY = monsters[i].y;
+
+                switch (j) {
+				case UP: newX--; break; // Move up
+				case DOWN: newX++; break; // Move down
+				case LEFT: newY--; break; // Move left
+				case RIGHT: newY++; break; // Move right
+				}
+                if (IsMoveable(newX, newY)&& monster_from !=j) {
+					direct_able++;
+				}
+			}
+            //get last step from monster from
+            int before_x;
+            int before_y;
+            calculateNextMove(monsters[i].x, monsters[i].y,
+                monster_from, before_x, before_y);
+            if (direct_able >= 2&& IsMoveable(before_x, before_y)) {
+                monsters[i].direction = changeDirection(i);
+			}
             int move = monsters[i].direction;
             int newMonsterX = monsters[i].x;
             int newMonsterY = monsters[i].y;
-
-            switch (move) {
-            case 0: newMonsterX--; break; // Move up
-            case 1: newMonsterX++; break; // Move down
-            case 2: newMonsterY--; break; // Move left
-            case 3: newMonsterY++; break; // Move right
-            }
+            calculateNextMove(monsters[i].x, monsters[i].y, move, newMonsterX, newMonsterY);
 
             // Check if new position is valid
             if (IsMoveable(newMonsterX, newMonsterY)) {
@@ -517,7 +547,6 @@ public:
                 if (newMonsterX == player.x && newMonsterY == player.y) {
                     die();
                 }
-
                 // Move the monster
                 map[monsters[i].x][monsters[i].y][0].type = EMPTY;
                 monsters[i].x = newMonsterX;
@@ -525,9 +554,67 @@ public:
                 map[monsters[i].x][monsters[i].y][0].type = MONSTER;
             }
             else {
-                monsters[i].direction = rand() % 4;
+                // Change direction if the monster encounters a wall
+				monsters[i].direction = changeDirection(i);
+
             }
         }
+    }
+    void calculateNextMove(int x, int y, int direction,int& new_x,int &new_y) {
+        switch (direction) {
+		case UP: new_x = x - 1; new_y = y; break; // Move up
+		case DOWN: new_x = x + 1; new_y = y; break; // Move down
+		case LEFT: new_x = x; new_y = y - 1; break; // Move left
+		case RIGHT: new_x = x; new_y = y + 1; break; // Move right
+		}
+	}
+    int changeDirection(int index) {
+        int direction[4] = { 1,1,1,1 };
+        //去掉monster来的方向
+        int monster_from = 0;
+        switch (monsters[index].direction) {
+        case UP: monster_from = DOWN; break; // Move up
+        case DOWN: monster_from = UP; break; // Move down
+        case LEFT: monster_from = RIGHT; break; // Move left
+        case RIGHT: monster_from = LEFT; break; // Move right
+        }
+        direction[monster_from] = 0;
+        for (int j = 0; j < 4; j++) {
+			int newX = monsters[index].x;
+			int newY = monsters[index].y;
+            calculateNextMove(monsters[index].x, monsters[index].y, j, newX, newY);
+            if (!IsMoveable(newX, newY)) {
+                direction[j] = 0;
+			}
+		}
+		//chose the available direction randomly
+		int available_direction = 0;
+		int new_direction = 0;
+        for (int j = 0; j < 4; j++) {
+            if (direction[j] == 1) {
+				new_direction = j;
+				available_direction++;
+			}
+		}
+        if (available_direction == 0) {
+			return monster_from;
+		}
+        int random_direction = rand() % 10;
+        for (int j = 0; j < random_direction; j++) {
+			new_direction++;
+			new_direction %= 4;
+            while (1) {
+                if (direction[new_direction] == 1) {
+					break;
+				}
+                else {
+					new_direction++;
+                    new_direction %= 4;
+				}
+			}
+		}
+		monsters[index].direction = new_direction;
+		return new_direction;
     }
 
 
@@ -598,7 +685,14 @@ public:
         }
     }
 
-
+    void poolingSuccess() {
+        if (monster_num == 0) {
+            cout<<"You win!"<<endl;
+            exit(0);
+			level++;
+			level_init(level);
+		}
+	}
     void clear(int x, int y) {
         for (int l = 0; l < monster_num; l++) {
             if (monsters[l].x == x && monsters[l].y == y) {
@@ -606,6 +700,7 @@ public:
                 map[monsters[l].x][monsters[l].y][0].type = EMPTY;
                 monsters[l].x = -1;
                 monsters[l].y = -1;
+                monster_num--;
                 break;
             }
         }
