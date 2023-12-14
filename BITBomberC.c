@@ -69,7 +69,6 @@ struct Bomb {
 };
 
 struct Tool {
-    //int valid;
     int x;
     int y;
     int timer;
@@ -172,13 +171,10 @@ void draw(Game *this) {
 }
 
 int isMoveable(Game *this, int x, int y) {
-    if (x < 0 || x >= ROW || y < 0 || y >= COL || this->map[x][y][0].type == BOMB || this->map[x][y][1].type == BOX) {
+    if (this->map[x][y][0].type == BOMB || this->map[x][y][1].type == BOX || this->map[x][y][1].type == WALL) {
         return 0;
     }
-    if (this->map[x][y][1].type != WALL) {
-        return 1;
-    }
-    return 0;
+    return 1;
 }
 
 void placeBomb(Game *this) {
@@ -313,7 +309,7 @@ int changeDirection(Game *this, int index) {
 }
 
 void poolingMonster(Game *this) {
-    for (int i = 0; i < MAX_MONSTER; i++) {   // todo monster_num?
+    for (int i = 0; i < MAX_MONSTER; i++) {
         if (this->monsters[i].valid) {
 
             //判断下一步是否有两个及以上方向可走
@@ -379,7 +375,8 @@ void poolingMonster(Game *this) {
                 this->map[this->monsters[i].x][this->monsters[i].y][1].type = EMPTY;
                 this->monsters[i].x = newMonsterX;
                 this->monsters[i].y = newMonsterY;
-                this->map[this->monsters[i].x][this->monsters[i].y][1].type = MONSTER;
+                this->map[newMonsterX][newMonsterY][1].type = MONSTER;
+                this->map[newMonsterX][newMonsterY][1].id = i;
             } else {
                 // Change direction if the monster encounters a wall
                 this->monsters[i].direction = changeDirection(this, i);
@@ -443,7 +440,7 @@ void clearFire(Game *this, int x,int y){
 }
 
 int IsDestroyable(Game *this, int x, int y) {
-    if (x < 0 || y < 0 || x >= ROW || y >= COL || this->map[x][y][1].type == WALL || this->map[x][y][0].type == BOMB) {
+    if (this->map[x][y][1].type == WALL || this->map[x][y][0].type == BOMB) {
         return 0;
     }
     return 1;
@@ -543,7 +540,7 @@ void read(Game *this) {
 }
 
 int main() {
-    //setbuf(stdout,NULL);
+    setbuf(stdout,NULL);
     Game game;
     initGame(&game);
     srand(time(NULL));
