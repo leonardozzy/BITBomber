@@ -3,7 +3,7 @@
 #include <time.h>
 #include <string.h>
 
-//关于type的define
+//define connectting map_element
 #define EMPTY 0
 #define WALL 1
 #define PLAYER 2
@@ -12,43 +12,61 @@
 #define BOX 5
 #define TOOL 6
 #define FIRE 7
+#define BOSS 8
+#define BLUEFIRE 9
+#define ATTACK 10
 
 #define MONSTER_1 41
 #define MONSTER_2 42
 #define MONSTER_3 43
 
+//define connectting speed 
 #define PLAYER_1_SPEED 80
 #define MONSTER_1_SPEED 60
 #define MONSTER_2_SPEED 80
 #define MONSTER_3_SPEED 90
-//关于地图的define
+
+//define connectting  map_size
 #define ROW 13
 #define COL 15
 #define DEPTH 3
+
+//define connectting max
 #define MAX_MONSTER 10
 #define MAX_BOMB 5
 #define MAX_TOOL 5
-#define MAX_FIRE 40
+#define MAX_ATTACK 5
+#define BOSS_LIFE 5
 
-//关于frac的define
-#define FRAC 5
-
-
+//define connectting direction
 #define UP 0
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
 #define SETBOMB 4
-//关于时间的define
+
+//define connectting time
 #define BOMB_TIMER 30
 #define FIRE_TIMER 1
 #define TOOL_TIMER 10
 #define INVISIBLE_TIMER 5
+#define COOL_TIME 30
+#define SKY_TIME 30
+#define PRE_DROP_TIME 10
+#define PRE_ATTACK_TIME 10
+#define ATTACK_TIME 5
+#define ATTACK_FREQ 10
 
 #define FRAC_RANGE 100
 
 #define NORMAL 0
 #define INVISIBLE 1
+
+//define connectting tools (CHANGE)
+#define MAX_LIFE 5
+#define MAX_RANGE 4
+#define MAX_BOMB_CNT 3
+#define MAX_SPEED 5
 
 struct Object {
     int type;
@@ -91,25 +109,39 @@ struct Tool {
     int timer;
     int type;
 };
+struct Attack{
+	int x;
+	int y;
+	int time;
+};
+struct Boss{
+	int x;
+	int y;
+	int life;
+	int cool_time;
+	int sky_time;
+	int pre_drop_time;
+	int in_map;
+};
 
 typedef struct Game {
     struct Player player;
-    struct Object map[ROW][COL][DEPTH];//记录对象类型
+    struct Object map[ROW][COL][DEPTH];
     struct Monster monsters[MAX_MONSTER];
     struct Bomb bombs[MAX_BOMB];
-
     struct Tool tools[MAX_TOOL];
+    struct Attack attacks[MAX_ATTACK];
+    struct Boss boss;
     int level;
     int timer;
+    int level_timer;
     int monster_num;
     int bomb_num;
     int tool_num;
 } Game;
 
 void monster_init(Game *this, int index, int x, int y, int speed) {
-    this->monsters[index].direction = 0;//random
-    //		monsters[index].frac_x =  FRAC>>1;
-    //		monsters[index].frac_y = FRAC>>1;
+    this->monsters[index].direction = 0;
     this->monsters[index].x = x;
     this->monsters[index].y = y;
 	this->monsters[index].frac_x = 0;
@@ -117,15 +149,23 @@ void monster_init(Game *this, int index, int x, int y, int speed) {
     this->monsters[index].speed = speed;
     this->monsters[index].valid = 1;
 }
-
+void boss_init(Game* this,int x,int y){
+	this->map[x][y][1].type = BOSS;
+	this->boss.x = x;
+	this->boss.y = y;
+	this->boss.cool_time = COOL_TIME;
+	this->boss.in_map = 1;
+	this->boss.pre_drop_time = 0;
+	this->boss.sky_time = 0;
+	this->boss.life = BOSS_LIFE;
+}
 void level_init(Game *this) {
     memset(this->map,0,ROW * COL * DEPTH * sizeof(struct Object));
-    //读关卡文件[level];
     FILE* file;
-    const char* filename[3] = { "1.level","2.level","3.level" };
+    const char* filename[4] = { "1.level","2.level","3.level","4.level"};
     file = fopen(filename[this->level - 1], "r");
     if (file == NULL) {
-        //错误处理
+        exit(0);//file not found 
         return;
     }
     this->monster_num = 0;
@@ -137,6 +177,7 @@ void level_init(Game *this) {
                 case MONSTER_1:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, MONSTER_1_SPEED); break;
                 case MONSTER_2:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, MONSTER_2_SPEED); break;
                 case MONSTER_3:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, MONSTER_3_SPEED); break;
+                case BOSS:boss_init(this,i,j);this->monster_num=1;
             }
             this->map[i][j][1].type = num;
         }
@@ -148,8 +189,8 @@ void level_init(Game *this) {
 void initGame(Game *this) {
     memset(this, 0, sizeof(Game));
     this->level = 1;
-
-    // 初始化玩家
+    
+	//init player
     this->player.x = 1;
     this->player.y = 1;
     this->player.frac_x = 0;
@@ -177,6 +218,9 @@ void draw(Game *this) {
                     case BOX:tmp = '='; break;
                     case TOOL:tmp = 'T'; break;
                     case FIRE:tmp = 'F';break;
+                    case BLUEFIRE:tmp = 'W';break;
+                    case ATTACK:tmp = 'A';break;
+                    case BOSS:tmp = 'D';break;
                 }
             }
             putchar(tmp);
@@ -266,6 +310,7 @@ void die(Game *this) {
         this->player.x = this->player.y = 1;
         this->map[this->player.x][this->player.y][1].type = PLAYER;
         setInvisible(this, &this->player);
+        this->timer = this->level_timer;
     }
 }
 
@@ -303,6 +348,7 @@ void pollingPlayer(Game *this, int input) {
                 case 1:this->player.bomb_range++; break;
                 case 2:this->player.bomb_cnt++; break;
                 case 3:this->player.speed++; break;
+                case 4:this->timer = this->timer + 30;break;
             }
             this->map[newPlayerX][newPlayerY][0].type = EMPTY;
             this->tools[tool_index].timer = 0;
@@ -468,7 +514,7 @@ int placeTool(Game *this, int x, int y) {
         if (this->tools[i].timer == 0) {
             this->tools[i].x = x;
             this->tools[i].y = y;
-            this->tools[i].type = rand() % 4;
+            this->tools[i].type = rand() % 5;
             this->tools[i].timer = TOOL_TIMER;
             this->map[x][y][0].type = TOOL;
             this->map[x][y][0].id = i;
@@ -499,8 +545,14 @@ void clear(Game *this, int x, int y) {
         if (generate_tool == 1) {
             placeTool(this, x, y);
         }
-
     }
+    if(this->map[x][y][1].type == BOSS){
+		this->boss.life--;
+		if(this->boss.life==0){
+			printf("You Win!!!!");
+			exit(0);
+		}
+	}
 }
 
 void explode(Game *this, int x,int y){
@@ -594,6 +646,95 @@ void poolingTool(Game *this) {
     }
 }
 
+void preAttack(Game* this,int x,int y){
+	this->map[x][y][2].type = ATTACK;
+}
+void makeAttack(Game* this,int x,int y){
+	this->map[x][y][2].type = BLUEFIRE;
+	clear(this,x,y);
+}
+void makeDrop(Game* this,int x,int y){
+	clear(this,x,y);
+}
+void dealAttack(Game* this,int x,int y,void (*job)(Game*,int,int)){
+	for(int i=x-1;i<=x+1;i++){
+		for(int j=y-1;j<=y+1;j++){
+			if(this->map[i][j][1].type != WALL){
+				job(this,i,j);
+			}
+		}
+	}
+}
+
+void poolingAttack(Game* this){
+	for(int i=0;i<MAX_ATTACK;i++){
+		if(this->attacks[i].time>0){
+			this->attacks[i].time--;
+			if(this->attacks[i].time > ATTACK_TIME){
+				dealAttack(this,this->attacks[i].x,this->attacks[i].y,preAttack);
+			}else if(this->attacks[i].time > 0){
+				dealAttack(this,this->attacks[i].x,this->attacks[i].y,makeAttack); 
+			}else{
+				dealAttack(this,this->attacks[i].x,this->attacks[i].y,clearFire); 
+			}
+		}
+	}
+}
+
+void bossAttack(Game* this){
+	int x = this->player.x;
+	int y = this->player.y;
+	int id;
+	for(int i=0;i<MAX_ATTACK;i++){
+		if(this->attacks[i].time==0){
+			id = i;
+			this->attacks[i].x = x;
+			this->attacks[i].y = y;
+			this->attacks[i].time = PRE_ATTACK_TIME + ATTACK_TIME;
+			break;	
+		}
+	}
+}
+
+void bossDrop(Game* this){
+	this->boss.in_map = 1;
+	dealAttack(this,this->boss.x,this->boss.y,makeDrop);
+	this->map[this->boss.x][this->boss.y][1].type = BOSS;
+}
+
+void poolingBoss(Game* this){
+	if(this->boss.in_map){
+		this->boss.cool_time--;
+		if(this->boss.cool_time==0){
+			this->boss.in_map=0;
+			this->boss.sky_time = SKY_TIME;
+			this->map[this->boss.x][this->boss.y][1].type = EMPTY;
+		}
+	}else{
+		if(this->boss.sky_time>0){
+			this->boss.sky_time--;
+			if(this->boss.sky_time==0){
+				this->boss.pre_drop_time = PRE_DROP_TIME;
+				this->boss.x = this->player.x;
+				this->boss.y = this->player.y;
+			}else if(this->boss.sky_time % ATTACK_FREQ == 0){
+				bossAttack(this);
+			}
+		}else{
+			if(this->boss.pre_drop_time>0){
+				this->boss.pre_drop_time--;
+				if(this->boss.pre_drop_time==0){
+					dealAttack(this,this->boss.x,this->boss.y,clearFire);
+					bossDrop(this);
+					this->boss.cool_time = COOL_TIME;
+				}else{
+					dealAttack(this,this->boss.x,this->boss.y,preAttack);
+				}
+			}
+		}
+	}
+}
+
 void poolingSuccess(Game *this) {
     if (this->monster_num == 0) {
         puts("You Win!");
@@ -649,6 +790,8 @@ int main() {
             poolingBomb(&game);
             poolingTool(&game);
             poolingSuccess(&game);
+            poolingBoss(&game);
+            poolingAttack(&game);
         // Additional logic here for bomb timer countdown and explosion
         Sleep(100); 
         system("cls"); // or system("cls") on Windows
