@@ -178,7 +178,7 @@ int isMoveable(Game *this, int x, int y) {
 }
 
 void placeBomb(Game *this) {
-    if (this->player.bomb_cnt > 0) {
+    if (this->player.bomb_cnt > 0 && this->map[this->player.x][this->player.y][0].type==EMPTY) {
         // Find an empty slot for a new bomb
         for (int i = 0; i < MAX_BOMB; i++) {
             if (this->bombs[i].timer <= 0) {  // Assuming a bomb's timer <= 0 means it's inactive
@@ -520,7 +520,6 @@ void poolingTool(Game *this) {
 void poolingSuccess(Game *this) {
     if (this->monster_num == 0) {
         puts("You Win!");
-        //exit(0);
         this->level++;
         level_init(this);
     }
@@ -554,6 +553,7 @@ int main() {
             poolingMonster(&game);
             poolingBomb(&game);
             poolingTool(&game);
+            poolingSuccess(&game); 
         }
         // Additional logic here for bomb timer countdown and explosion
 
