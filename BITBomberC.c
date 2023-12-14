@@ -16,6 +16,11 @@
 #define MONSTER_1 41
 #define MONSTER_2 42
 #define MONSTER_3 43
+
+#define PLAYER_1_SPEED 80
+#define MONSTER_1_SPEED 60
+#define MONSTER_2_SPEED 80
+#define MONSTER_3_SPEED 90
 //关于地图的define
 #define ROW 13
 #define COL 15
@@ -33,11 +38,13 @@
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
+#define SETBOMB 4
 //关于时间的define
-#define BOMB_TIMER 4
+#define BOMB_TIMER 30
 #define FIRE_TIMER 1
 #define TOOL_TIMER 10
 
+#define FRAC_RANGE 100
 
 struct Object {
     int type;
@@ -47,6 +54,8 @@ struct Object {
 struct Player {
     int x;
     int y;
+    int frac_x;
+    int frac_y;
     int bomb_range;
     int bomb_cnt;
     int life;
@@ -57,6 +66,8 @@ struct Monster {
     int valid;
     int x;
     int y;
+    int frac_x;
+    int frac_y;
     int direction;
     int speed;
 };
@@ -95,6 +106,8 @@ void monster_init(Game *this, int index, int x, int y, int speed) {
     //		monsters[index].frac_y = FRAC>>1;
     this->monsters[index].x = x;
     this->monsters[index].y = y;
+	this->monsters[index].frac_x = 0;
+	this->monsters[index].frac_y = 0;
     this->monsters[index].speed = speed;
     this->monsters[index].valid = 1;
 }
@@ -115,9 +128,9 @@ void level_init(Game *this) {
         for (int j = 0; j < COL; j++) {
             fscanf(file, "%d", &num);
             switch (num) {
-                case MONSTER_1:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, 1); break;
-                case MONSTER_2:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, 2); break;
-                case MONSTER_3:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, 3); break;
+                case MONSTER_1:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, MONSTER_1_SPEED); break;
+                case MONSTER_2:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, MONSTER_2_SPEED); break;
+                case MONSTER_3:num = 4; this->map[i][j][1].id = this->monster_num; monster_init(this, this->monster_num++, i, j, MONSTER_3_SPEED); break;
             }
             this->map[i][j][1].type = num;
         }
@@ -133,10 +146,12 @@ void initGame(Game *this) {
     // 初始化玩家
     this->player.x = 1;
     this->player.y = 1;
+    this->player.frac_x = 0;
+    this->player.frac_y = 0;
     this->player.bomb_range = 1;
     this->player.bomb_cnt = 1;
     this->player.life = 2;
-    this->player.speed = 1;
+    this->player.speed = PLAYER_1_SPEED;
     this->map[0][0][1].type = PLAYER;
 
     level_init(this);
@@ -184,6 +199,35 @@ int isMoveable(Game *this, int x, int y) {
     }
     return 1;
 }
+void moveOneStep(int x, int y, int direction, int *new_x, int *new_y, int *frac_x, int *frac_y, int speed){
+    switch (direction) {
+        case UP:    *frac_x -= speed; break; // Move up
+        case DOWN:  *frac_x += speed; break; // Move down
+        case LEFT:  *frac_y -= speed; break; // Move left
+        case RIGHT: *frac_y += speed; break; // Move right
+    }
+    if(*frac_x > FRAC_RANGE){
+        *new_x = x+1; 
+        *new_y = y;
+        *frac_x -= 2*FRAC_RANGE;
+    }else if(*frac_x < -FRAC_RANGE){
+        *new_x = x-1;
+        *new_y = y;
+        *frac_x += 2*FRAC_RANGE;
+    }else if(*frac_y > FRAC_RANGE){
+        *new_x = x;
+        *new_y = y+1;
+        *frac_y -= 2*FRAC_RANGE;
+    }else if(*frac_y < -FRAC_RANGE){
+        *new_x = x;
+        *new_y = y-1;
+        *frac_y += 2*FRAC_RANGE;
+    }else{
+        *new_x = x;
+        *new_y = y;
+        return;//因为新XY没变，不需要判断 
+    }
+}
 
 void placeBomb(Game *this) {
     if (this->player.bomb_cnt > 0 && this->map[this->player.x][this->player.y][0].type==EMPTY) {
@@ -216,21 +260,17 @@ void die(Game *this) {
 
 }
 
-void pollingPlayer(Game *this, char input) {
-    if (input == 'b' || input == 'B') {
+void pollingPlayer(Game *this, int input) {
+    if (input == SETBOMB) {
         placeBomb(this);
         return; // Early return as no movement is required
     }
     // Move player
     int newPlayerX = this->player.x;
     int newPlayerY = this->player.y;
-
-    switch (input) {
-        case 'w': newPlayerX--; break;
-        case 's': newPlayerX++; break;
-        case 'a': newPlayerY--; break;
-        case 'd': newPlayerY++; break;
-    }
+    
+    moveOneStep(this->player.x, this->player.y, input, &newPlayerX, &newPlayerY
+        , &(this->player.frac_x), &(this->player.frac_y), this->player.speed);
 
     // Check if new position is valid
     if (isMoveable(this, newPlayerX, newPlayerY)) {
@@ -258,7 +298,6 @@ void pollingPlayer(Game *this, char input) {
         this->map[this->player.x][this->player.y][1].type = PLAYER;
     }
 }
-
 void calculateNextMove(int x, int y, int direction, int *new_x, int *new_y) {
     switch (direction) {
         case UP: *new_x = x - 1; *new_y = y; break; // Move up
@@ -363,7 +402,7 @@ void poolingMonster(Game *this) {
             int before_x;
             int before_y;
             calculateNextMove(this->monsters[i].x, this->monsters[i].y,
-                              monster_from, &before_x, &before_y);
+                              monster_from, &before_x, &before_y);       
             if (direct_able >= 2 && isMoveableMonster(this, before_x, before_y)) {
                 this->monsters[i].direction = changeDirection(this, i);
             }
@@ -371,7 +410,10 @@ void poolingMonster(Game *this) {
             int move = this->monsters[i].direction;
             int newMonsterX = this->monsters[i].x;
             int newMonsterY = this->monsters[i].y;
-            calculateNextMove(this->monsters[i].x, this->monsters[i].y, move, &newMonsterX, &newMonsterY);
+            //if moveonestep didn't move the players, which meansnothing will
+            // happen here.
+            moveOneStep(this->monsters[i].x, this->monsters[i].y, move, &newMonsterX, &newMonsterY
+            , &(this->monsters[i].frac_x), &(this->monsters[i].frac_y), this->monsters[i].speed);
 
             // Check if new position is valid
             if (isMoveableMonster(this, newMonsterX, newMonsterY)) {
@@ -546,6 +588,22 @@ void read(Game *this) {
     fclose(file);
 }
 
+int ReadKey(){
+	//char key_table = {'w','a'};
+	short ret_value;
+	ret_value = GetAsyncKeyState('W');
+	if(ret_value & 0x0001){	return UP;	}
+	ret_value = GetAsyncKeyState('A');
+	if(ret_value & 0x0001){	return LEFT;	}
+	ret_value = GetAsyncKeyState('S');
+	if(ret_value & 0x0001){	return DOWN;	}
+	ret_value = GetAsyncKeyState('D');
+	if(ret_value & 0x0001){	return RIGHT;	}
+	ret_value = GetAsyncKeyState('B');
+	if(ret_value & 0x0001){	return SETBOMB;	}
+	return -1;  //没有任何输入
+} 
+
 int main() {
     setbuf(stdout,NULL);
     Game game;
@@ -555,16 +613,17 @@ int main() {
     while (1) {
         draw(&game);
         printf("Move (WASD) or Place Bomb (B): ");
-        char input = getchar();
-        if (input != '\n') {
+        //char input = getchar();
+        char input = ReadKey();
+        if (input != -1) {
             pollingPlayer(&game, input);
+        }
             poolingMonster(&game);
             poolingBomb(&game);
             poolingTool(&game);
             poolingSuccess(&game);
-        }
         // Additional logic here for bomb timer countdown and explosion
-
+        Sleep(100); 
         system("cls"); // or system("cls") on Windows
     }
     return 0;
