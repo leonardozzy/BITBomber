@@ -43,8 +43,12 @@
 #define BOMB_TIMER 30
 #define FIRE_TIMER 1
 #define TOOL_TIMER 10
+#define INVISIBLE_TIMER 5
 
 #define FRAC_RANGE 100
+
+#define NORMAL 0
+#define INVISIBLE 1
 
 struct Object {
     int type;
@@ -60,6 +64,8 @@ struct Player {
     int bomb_cnt;
     int life;
     int speed;
+    int status;
+    int timer;
 };
 
 struct Monster {
@@ -152,6 +158,7 @@ void initGame(Game *this) {
     this->player.bomb_cnt = 1;
     this->player.life = 2;
     this->player.speed = PLAYER_1_SPEED;
+    this->player.status = NORMAL;
     this->map[0][0][1].type = PLAYER;
 
     level_init(this);
@@ -249,15 +256,17 @@ void placeBomb(Game *this) {
 }
 
 void die(Game *this) {
-    this->player.life--;
-    if (this->player.life == 0) {
-        puts("Game Over!");
-        exit(0); // End the game
+    if (this->player.status != INVISIBLE) {
+        this->player.life--;
+        if (this->player.life == 0) {
+            puts("Game Over!");
+            exit(0); // End the game
+        }
+        this->map[this->player.x][this->player.y][1].type = EMPTY;
+        this->player.x = this->player.y = 1;
+        this->map[this->player.x][this->player.y][1].type = PLAYER;
+        setInvisible(this, &this->player);
     }
-    this->map[this->player.x][this->player.y][1].type = EMPTY;
-    this->player.x = this->player.y = 1;
-    this->map[this->player.x][this->player.y][1].type = PLAYER;
-
 }
 
 void pollingPlayer(Game *this, int input) {
@@ -265,6 +274,14 @@ void pollingPlayer(Game *this, int input) {
         placeBomb(this);
         return; // Early return as no movement is required
     }
+    //deal with player status
+    if (this->player.status == INVISIBLE) {
+		this->player.timer--;
+		if (this->player.timer == 0) {
+			this->player.status = NORMAL;
+		}
+	}
+
     // Move player
     int newPlayerX = this->player.x;
     int newPlayerY = this->player.y;
@@ -298,6 +315,16 @@ void pollingPlayer(Game *this, int input) {
         this->map[this->player.x][this->player.y][1].type = PLAYER;
     }
 }
+
+int setInvisible(Game *this, struct Player *player) {
+	if (player->status == NORMAL) {
+		player->status = INVISIBLE;
+		player->timer = INVISIBLE_TIMER;
+		return 1;
+	}
+	return 0;
+}
+
 void calculateNextMove(int x, int y, int direction, int *new_x, int *new_y) {
     switch (direction) {
         case UP: *new_x = x - 1; *new_y = y; break; // Move up
