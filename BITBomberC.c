@@ -17,8 +17,8 @@
 #define MONSTER_2 42
 #define MONSTER_3 43
 //关于地图的define
-#define ROW 11
-#define COL 13
+#define ROW 13
+#define COL 15
 #define DEPTH 3
 #define MAX_MONSTER 10
 #define MAX_BOMB 5
@@ -138,8 +138,8 @@ void initGame(Game *this) {
     memset(this->tools, 0, MAX_TOOL * sizeof(struct Tool));
 
     // 初始化玩家
-    this->player.x = 0;
-    this->player.y = 0;
+    this->player.x = 1;
+    this->player.y = 1;
     this->player.bomb_range = 1;
     this->player.bomb_cnt = 1;
     this->player.life = 2;
@@ -213,7 +213,7 @@ void die(Game *this) {
         exit(0); // End the game
     }
     this->map[this->player.x][this->player.y][1].type = EMPTY;
-    this->player.x = this->player.y = 0;
+    this->player.x = this->player.y = 1;
     this->map[this->player.x][this->player.y][1].type = PLAYER;
 
 }
