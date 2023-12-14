@@ -184,6 +184,10 @@ drawUtf16String	proto graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFon
 drawGbString	proto graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
 drawSolidRect	proto graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
 calcMapOffset	proto x:dword,y:dword,z:dword
+initMonster	proto    index:dword,x:dword,y:dword,speed:dword
+initBoss    proto    x:dword,y:dword
+initLevel	proto
+initGame	proto
 
 ;const string definition
 .const
@@ -192,6 +196,13 @@ WINDOW_NAME	byte	"BIT BOMBERMAN",0	;窗口显示名
 GP_INPUT	GdiplusStartupInput	<1,0,0,0>
 MSGBOX_WINDOW_FAIL_TEXT	byte	"窗口创建失败！",0
 MSGBOX_ERROR_TITLE	byte	"错误",0
+FILENAME1	byte	"/level/1.level",0
+FILENAME2	byte	"/level/2.level",0
+FILENAME3	byte	"/level/3.level",0
+FILENAME4	byte	"/level/4.level",0
+LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
+OPEN_FILE_READ_ONLY	byte	"r",0
+ONE_INT_FORMAT	byte	"%d",0
 
 ;跨文件零初始化全局变量声明，其实可以不memset
 .data?
