@@ -128,14 +128,8 @@ void level_init(Game *this) {
 }
 
 void initGame(Game *this) {
+    memset(this, 0, sizeof(Game));
     this->level = 1;
-    this->monster_num = 0;
-    this->bomb_num = 0;
-    this->tool_num = 0;
-    memset(&this->player, 0, sizeof(struct Player));
-    memset(this->monsters, 0, MAX_MONSTER * sizeof(struct Monster));
-    memset(this->bombs, 0, MAX_BOMB * sizeof(struct Bomb));
-    memset(this->tools, 0, MAX_TOOL * sizeof(struct Tool));
 
     // 初始化玩家
     this->player.x = 1;
@@ -236,25 +230,11 @@ void pollingPlayer(Game *this, char input) {
 
     // Check if new position is valid
     if (isMoveable(this, newPlayerX, newPlayerY)) {
-
         // Check for collision with monsters
-        //int collisionWithMonster = 0;
         if (this->map[newPlayerX][newPlayerY][1].type == MONSTER) {
             die(this);
             return;
         }
-
-        //for (int i = 0; i < this->monster_num; i++) {   // todo monster_num?
-        //    if (this->monsters[i].x == newPlayerX && this->monsters[i].y == newPlayerY) {
-        //        collisionWithMonster = 1;
-        //        break;
-       //     }
-       // }
-
-       // if (collisionWithMonster) {
-        //    die(this);
-       //     return;
-       // }
         if (this->map[newPlayerX][newPlayerY][0].type == TOOL) {
             int tool_index = this->map[newPlayerX][newPlayerY][0].id;
             switch (this->tools[tool_index].type) {
@@ -425,18 +405,6 @@ int placeTool(Game *this, int x, int y) {
 }
 
 void clear(Game *this, int x, int y) {
-    /*
-    for (int l = 0; l < this->monster_num; l++) {   // todo monster_num???
-        if (this->monsters[l].x == x && this->monsters[l].y == y) {
-            // Kill the monster
-            this->map[this->monsters[l].x][this->monsters[l].y][1].type = EMPTY;
-            this->monsters[l].x = -1;
-            this->monsters[l].y = -1;
-            this->monster_num--;
-            break;
-        }
-    }*/
-
     if (this->map[x][y][1].type == MONSTER) {
         int id = this->map[x][y][1].id;
         this->monster_num--;
@@ -513,34 +481,6 @@ void dealBomb(Game *this, int x,int y,int range,void (*job)(Game *, int, int)){
             break;
         }
     }
-/*
-    for(int i = 0;i < 4;i++){
-        int dx = 0;
-        int dy = 0;
-        switch(i){
-            case 0:dx = -1;break;
-            case 1:dx = 1;break;
-            case 2:dy = -1;break;
-            case 3:dy = 1;break;
-        }
-        // deal in each direction
-        for (int j = 1; j <= range; j++) {
-            int new_x = x + dx * j;
-            int new_y = y + dy * j;
-            // Check if the new position is valid
-            if (IsDestroyable(this, new_x, new_y)) {
-                switch(type){
-                    case 0:explode(this, new_x,new_y);break;
-                    case 1:setFire(this, new_x,new_y);break;
-                    case 2:clearFire(this, new_x,new_y);break;
-                }
-            }else{
-                // Stop the explosion if the bomb encounters a wall
-                break;
-            }
-        }
-    }*/
-
 }
 
 void poolingBomb(Game *this) {
@@ -591,32 +531,14 @@ void poolingSuccess(Game *this) {
 
 void archive(Game *this) {
     FILE* file;
-    file = fopen("save.bb", "w");
+    file = fopen("save.bb", "wb");
     fwrite(this, sizeof(struct Game), 1, file);
-
-
-
-    fwrite(&this->player, 1, sizeof(struct Player), file);
-    fwrite(this->map, ROW * COL * DEPTH, sizeof(struct Object), file);
-    fwrite(this->monsters, MAX_MONSTER, sizeof(struct Monster), file);
-    fwrite(this->bombs, MAX_BOMB, sizeof(struct Bomb), file);
-    fwrite(this->tools, MAX_TOOL, sizeof(struct Tool), file);
-    fwrite(&this->level, 1, sizeof(int), file);
-    fwrite(&this->timer, 1, sizeof(int), file);
-    fwrite(&this->monster_num, 1, sizeof(int), file);
     fclose(file);
 }
 void read(Game *this) {
     FILE* file;
-    file = fopen("save.bb", "r");
-    fread(&this->player, 1, sizeof(struct Player), file);
-    fread(this->map, ROW * COL * DEPTH, sizeof(struct Object), file);
-    fread(this->monsters, MAX_MONSTER, sizeof(struct Monster), file);
-    fread(this->bombs, MAX_BOMB, sizeof(struct Bomb), file);
-    fread(this->tools, MAX_TOOL, sizeof(struct Tool), file);
-    fread(&this->level, 1, sizeof(int), file);
-    fread(&this->timer, 1, sizeof(int), file);
-    fread(&this->monster_num, 1, sizeof(int), file);
+    file = fopen("save.bb", "rb");
+    fread(this, sizeof(Game), 1, file);
     fclose(file);
 }
 
