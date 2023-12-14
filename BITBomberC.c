@@ -133,9 +133,9 @@ void initGame(Game *this) {
     // 初始化玩家
     this->player.x = 1;
     this->player.y = 1;
-    this->player.bomb_range = 4;
+    this->player.bomb_range = 1;
     this->player.bomb_cnt = 1;
-    this->player.life = 2000;
+    this->player.life = 2;
     this->player.speed = 1;
     this->map[0][0][1].type = PLAYER;
 
@@ -186,7 +186,7 @@ int isMoveable(Game *this, int x, int y) {
 }
 
 void placeBomb(Game *this) {
-    if (this->player.bomb_cnt > 0) {
+    if (this->player.bomb_cnt > 0 && this->map[this->player.x][this->player.y][0].type==EMPTY) {
         // Find an empty slot for a new bomb
         for (int i = 0; i < MAX_BOMB; i++) {
             if (this->bombs[i].timer <= 0) {  // Assuming a bomb's timer <= 0 means it's inactive
@@ -528,7 +528,6 @@ void poolingTool(Game *this) {
 void poolingSuccess(Game *this) {
     if (this->monster_num == 0) {
         puts("You Win!");
-        //exit(0);
         this->level++;
         level_init(this);
     }
