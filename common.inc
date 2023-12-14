@@ -180,11 +180,11 @@ StrDisp	ends
 drawImage	equ	GdipDrawImageRectI
 initResources	proto
 releaseResources	proto
-drawUtf16String	proto graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
-drawGbString	proto graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
-drawSolidRect	proto graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
+drawUtf16String	proto	graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
+drawGbString	proto	graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
+drawSolidRect	proto	graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
 
-calcMapOffset	proto x:dword,y:dword,z:dword
+calcMapOffset	proto	x:dword,y:dword,z:dword
 initMonster	proto    index:dword,x:dword,y:dword,speed:dword
 initBoss    proto    x:dword,y:dword
 initLevel	proto
@@ -202,6 +202,7 @@ setInvisiable	proto
 pollingTool	proto
 pollingSuccess	proto
 pollingBomb	proto
+placeTool	proto	x:dword,y:dword
 dealBomb	proto	x:dword,y:dword,range:dword,_job:dword
 isDestroyable	proto	x:dword,y:dword
 explode	proto	x:dword,y:dword
@@ -234,6 +235,7 @@ FILENAME4	byte	"/level/4.level",0
 LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
 OPEN_FILE_READ_ONLY	byte	"r",0
 ONE_INT_FORMAT	byte	"%d",0
+WIN_STR	byte	"You Win!",0
 
 ;跨文件零初始化全局变量声明，其实可以不memset
 .data?
