@@ -48,7 +48,7 @@
 //define connectting time
 #define BOMB_TIMER 30
 #define FIRE_TIMER 1
-#define TOOL_TIMER 10
+#define TOOL_TIMER 50
 #define INVISIBLE_TIMER 5
 #define COOL_TIME 30
 #define SKY_TIME 30
@@ -109,11 +109,13 @@ struct Tool {
     int timer;
     int type;
 };
+
 struct Attack{
 	int x;
 	int y;
 	int time;
 };
+
 struct Boss{
 	int x;
 	int y;
@@ -149,6 +151,7 @@ void monster_init(Game *this, int index, int x, int y, int speed) {
     this->monsters[index].speed = speed;
     this->monsters[index].valid = 1;
 }
+
 void boss_init(Game* this,int x,int y){
 	this->map[x][y][1].type = BOSS;
 	this->boss.x = x;
@@ -159,6 +162,7 @@ void boss_init(Game* this,int x,int y){
 	this->boss.sky_time = 0;
 	this->boss.life = BOSS_LIFE;
 }
+
 void level_init(Game *this) {
     memset(this->map,0,ROW * COL * DEPTH * sizeof(struct Object));
     FILE* file;
@@ -244,12 +248,14 @@ int isMoveableMonster(Game* this, int x, int y) {
         return 1;
     }
 }
+
 int isMoveable(Game *this, int x, int y) {
     if (this->map[x][y][0].type == BOMB || this->map[x][y][1].type == BOX || this->map[x][y][1].type == WALL) {
         return 0;
     }
     return 1;
 }
+
 void moveOneStep(int x, int y, int direction, int *new_x, int *new_y, int *frac_x, int *frac_y, int speed){
     switch (direction) {
         case UP:    *frac_x -= speed; break; // Move up
@@ -362,10 +368,10 @@ void pollingPlayer(Game *this, int input) {
     }
 }
 
-int setInvisible(Game *this, struct Player *player) {
-	if (player->status == NORMAL) {
-		player->status = INVISIBLE;
-		player->timer = INVISIBLE_TIMER;
+int setInvisible(Game *this) {
+	if (this->player.status == NORMAL) {
+		this->player.status = INVISIBLE;
+		this->player.timer = INVISIBLE_TIMER;
 		return 1;
 	}
 	return 0;
@@ -379,6 +385,7 @@ void calculateNextMove(int x, int y, int direction, int *new_x, int *new_y) {
         case RIGHT: *new_x = x; *new_y = y + 1; break; // Move right
     }
 }
+
 int changeDirection(Game *this, int index) {
     int direction[4] = { 1,1,1,1 };
     //去掉monster来的方向
