@@ -183,11 +183,42 @@ releaseResources	proto
 drawUtf16String	proto graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
 drawGbString	proto graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
 drawSolidRect	proto graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
+
 calcMapOffset	proto x:dword,y:dword,z:dword
 initMonster	proto    index:dword,x:dword,y:dword,speed:dword
 initBoss    proto    x:dword,y:dword
 initLevel	proto
 initGame	proto
+placeBomb	proto
+pollingPlayer	proto	input:dword
+isMoveable	proto	x:dword,y:dword
+isMoveableMonster	proto	x:dword,y:dword
+moveOneStep	proto	x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dword,frac_x:ptr dword,frac_y:ptr dword,speed:dword
+changeDirection	proto	index:dword
+calculateNextMove	proto	x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dword
+pollingMonster	proto
+die	proto
+setInvisiable	proto
+pollingTool	proto
+pollingSuccess	proto
+pollingBomb	proto
+dealBomb	proto	x:dword,y:dword,range:dword,_job:dword
+isDestroyable	proto	x:dword,y:dword
+explode	proto	x:dword,y:dword
+setFire	proto	x:dword,y:dword
+clearFire	proto	x:dword,y:dword
+clear	proto	x:dword,y:dword
+preAttack	proto	x:dword,y:dword
+makeAttack	proto	x:dword,y:dword
+makeDrop	proto	x:dword,y:dword
+dealAttack	proto	x:dword,y:dword,_job:dword
+pollingAttack	proto
+bossAttack	proto
+pollingBoss	proto
+bossDrop	proto
+archive	proto
+read	proto
+readKey	proto
 
 ;const string definition
 .const
