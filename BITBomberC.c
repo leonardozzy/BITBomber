@@ -133,9 +133,9 @@ void initGame(Game *this) {
     // 初始化玩家
     this->player.x = 1;
     this->player.y = 1;
-    this->player.bomb_range = 1;
+    this->player.bomb_range = 4;
     this->player.bomb_cnt = 1;
-    this->player.life = 2;
+    this->player.life = 2000;
     this->player.speed = 1;
     this->map[0][0][1].type = PLAYER;
 
@@ -170,6 +170,14 @@ void draw(Game *this) {
     puts("----------------------------------------");
 }
 
+int isMoveableMonster(Game* this, int x, int y) {
+    if (!isMoveable(this, x, y) || this->map[x][y][1].type == MONSTER) {
+		return 0;
+	}
+    else {
+        return 1;
+    }
+}
 int isMoveable(Game *this, int x, int y) {
     if (this->map[x][y][0].type == BOMB || this->map[x][y][1].type == BOX || this->map[x][y][1].type == WALL) {
         return 0;
@@ -274,7 +282,7 @@ int changeDirection(Game *this, int index) {
         int newX = this->monsters[index].x;
         int newY = this->monsters[index].y;
         calculateNextMove(this->monsters[index].x, this->monsters[index].y, j, &newX, &newY);
-        if (!isMoveable(this, newX, newY)) {
+        if (!isMoveableMonster(this, newX, newY)) {
             direction[j] = 0;
         }
     }
@@ -347,7 +355,7 @@ void poolingMonster(Game *this) {
                         newY++;
                         break; // Move right
                 }
-                if (isMoveable(this, newX, newY) && monster_from != j) {
+                if (isMoveableMonster(this, newX, newY) && monster_from != j) {
                     direct_able++;
                 }
             }
@@ -356,7 +364,7 @@ void poolingMonster(Game *this) {
             int before_y;
             calculateNextMove(this->monsters[i].x, this->monsters[i].y,
                               monster_from, &before_x, &before_y);
-            if (direct_able >= 2 && isMoveable(this, before_x, before_y)) {
+            if (direct_able >= 2 && isMoveableMonster(this, before_x, before_y)) {
                 this->monsters[i].direction = changeDirection(this, i);
             }
 
@@ -366,7 +374,7 @@ void poolingMonster(Game *this) {
             calculateNextMove(this->monsters[i].x, this->monsters[i].y, move, &newMonsterX, &newMonsterY);
 
             // Check if new position is valid
-            if (isMoveable(this, newMonsterX, newMonsterY)) {
+            if (isMoveableMonster(this, newMonsterX, newMonsterY)) {
                 // Check if monster encounters the player
                 if (newMonsterX == this->player.x && newMonsterY == this->player.y) {
                     die(this);
@@ -554,6 +562,7 @@ int main() {
             poolingMonster(&game);
             poolingBomb(&game);
             poolingTool(&game);
+            poolingSuccess(&game);
         }
         // Additional logic here for bomb timer countdown and explosion
 
