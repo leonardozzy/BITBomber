@@ -284,5 +284,33 @@ pop ebx
 moveOneStep endp
 
 
+ReadKey Proc
+    invoke GetAsyncKeyState,'B'
+    .if eax & 0001H
+		mov eax,SETBOMB
+        ret
+    .endif
+    invoke GetAsyncKeyState,'W'
+    .if eax & 0001H
+		mov eax,UP
+        ret
+    .endif
+    invoke GetAsyncKeyState,'S'
+    .if eax & 0001H
+		mov eax,DOWN
+        ret
+    .endif
+    invoke GetAsyncKeyState,'A'
+    .if eax & 0001H
+		mov eax,LEFT
+        ret
+    .endif
+    invoke GetAsyncKeyState,'D'
+    .if eax & 0001H
+		mov eax,RIGHT
+        ret
+    .endif
+    ret
+ReadKey endp
 
 end 
