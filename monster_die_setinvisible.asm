@@ -2,7 +2,7 @@
 .model flat, stdcall
 option casemap:none
 
-includelib	common.inc
+include	common.inc
 
 .code
 
@@ -21,7 +21,7 @@ setInvisible proc
 	cmp eax,NORMAL
 	je l1_setInvisible
 	mov eax,0
-	jmp end
+	jmp end_setInvisible
 l1_setInvisible:
 	mov game.player.status,INVISIBLE
 	mov game.player.timer,INVISIBLE_TIMER
@@ -59,8 +59,8 @@ die proc
 	je l1_die
 	jmp l2_die
 l1_die:
-	invoke puts, offset str_GameOver
-	invoke exit,0
+	invoke crt_puts, offset GAMEOVER_STR
+	invoke crt_exit,0
 l2_die:
 	invoke calcMapOffset,game.player.x,game.player.y,1
 	mov game.map[eax*4] ,EMPTY
@@ -87,7 +87,7 @@ die endp
 ;    }
 ;}
 
-calculateNextMove proc stdcall x:dword,y:dword,direction:dword,new_x:dword,new_y:dowrd
+calculateNextMove proc stdcall x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dword
 	mov eax,direction
 	cmp eax,UP
 	je up_case
@@ -218,26 +218,32 @@ calculateNextMove endp
 ;}
 
 
-pollingMonster proc
-	push esi
-	push edi
-	push ebx
+pollingMonster	proc
 	local direct_able,monster_from:DWORD
-	;push 0 ;direct_able
-	;push 0 ;monster_from
 	local before_x,before_y:DWORD
 	local newX, newY:DWORD
 	local move,newMonsterX,newMonsterY:DWORD
+	push esi
+	push edi
+	push ebx
+	
+	;push 0 ;direct_able
+	;push 0 ;monster_from
 	mov ecx,0;i
 
 	cmp ecx,MAX_MONSTER
 	jge end_pollingMonster
 before1_pollingMonster:
+		push eax	
+		mov esi,sizeof(Monster)
+		mul	esi
+		mov esi,eax
+		pop eax
 		;if (this->monsters[i].valid)
-		cmp game.monsters[ecx*sizeof(monster)].valid,0
+		cmp game.monsters[esi].valid,0
 		je end_pollingMonster
 
-			mov eax,game.monsters[ecx*sizeof(monster)].direction
+			mov eax,game.monsters[esi].direction
 			cmp eax,UP
 			je up1_pollingMonster
 			cmp eax,DOWN
@@ -248,7 +254,7 @@ before1_pollingMonster:
 			je right1_pollingMonster
 			jmp next1_pollingMonster
 
-		up1_poolingMonster:
+		up1_pollingMonster:
 			mov monster_from,DOWN
 			jmp next1_pollingMonster
 		down1_pollingMonster:
@@ -266,8 +272,8 @@ before1_pollingMonster:
 		before2_pollingMonster:
 				;local newX, newY:DWORD
 
-				mov newX,game.monsters[ecx*sizeof(monster)].x
-				mov newY,game.monsters[ecx*sizeof(monster)].y
+				mov newX,game.monsters[esi].x
+				mov newY,game.monsters[esi].y
 				cmp edx,UP
 				je up2_switch_pollingMonster
 				cmp edx,DOWN
@@ -276,57 +282,61 @@ before1_pollingMonster:
 				je left2_switch_pollingMonster
 				cmp edx,RIGHT
 				je right2_switch_pollingMonster
-				jmp next2_pollingMonster
+				jmp next22_pollingMonster
 
 			up2_switch_pollingMonster:
 				sub newX,1
-				jmp next2_pollingMonster
+				jmp next22_pollingMonster
 			down2_switch_pollingMonster:
 				add newX,1
-				jmp next2_pollingMonster
+				jmp next22_pollingMonster
 
 			left2_switch_pollingMonster:
 				sub newY,1
-				jmp next2_pollingMonster
+				jmp next22_pollingMonster
 
 			right2_switch_pollingMonster:
 				add newY,1
-				jmp next2_pollingMonster
-			next2_pollingMonster:
+				jmp next22_pollingMonster
+			next22_pollingMonster:
 				cmp monster_from,edx
-				je next3_poolingMonster
-				invoke isMoveableMonster newX,newY
+				je next3_pollingMonster
+				invoke isMoveableMonster,newX,newY
 				cmp eax,0
-				je next3_poolingMonster
+				je next3_pollingMonster
 				add direct_able,1
-			next3_poolingMonster:
+			next3_pollingMonster:
 			inc edx
 			cmp edx,4
 			jl before2_pollingMonster
 		next2_pollingMonster:
 			;get last step from monster from
 			;
-			invoke calculateNextMove,game.monsters[ecx*sizeof(monster)].x,
-			game.monsters[ecx*sizeof(monster)].y,monster_from,offest before_x, offest before_y
+			invoke calculateNextMove,game.monsters[esi].x,
+									game.monsters[esi].y,
+									monster_from,
+									offest before_x,
+									offest before_y
 			cmp direct_able,2
 			jl next4_pollingMonster
 			invoke isMoveableMonster,before_x,before_y
 			cmp eax,0
 			je next4_pollingMonster
 			invoke changeDirection,ecx
-			mov game.monsters[ecx*sizeof(monster)].direction,eax
+			mov game.monsters[esi].direction,eax
 		next4_pollingMonster:
 			;local move,newMonsterX,newMonsterY:DWORD
-			mov move,game.monsters[ecx*sizeof(monster)].direction
-			mov newMonsterX,game.monsters[ecx*sizeof(monster)].x
-			mov newMonsterY,game.monsters[ecx*sizeof(monster)].y
-			invoke moveOneStep,game.monsters[ecx*sizeof(monster)].x,
-								game.monsters[ecx*sizeof(monster)].y,
+			mov move,game.monsters[esi].direction
+			mov newMonsterX,game.monsters[esi].x
+			mov newMonsterY,game.monsters[esi].y
+			invoke moveOneStep,game.monsters[esi].x,
+								game.monsters[esi].y,
 								move,
-								offest newMonsterX, offest newMonsterY, 
-								offest game.monsters[ecx*sizeof(monster)].frac_x,
-								offest game.monsters[ecx*sizeof(monster)].frac_y,
-								game.monsters[ecx*sizeof(monster)].speed
+								offest newMonsterX,
+								offest newMonsterY, 
+								offest game.monsters[esi].frac_x,
+								offest game.monsters[esi].frac_y,
+								game.monsters[esi].speed
 
 			invoke isMoveableMonster,newMonsterX,newMonsterY
 			cmp eax,0
@@ -340,10 +350,10 @@ before1_pollingMonster:
 
 			next5_pollingMonster:
 			;move the monster
-			invoke calcMapOffset,game.monsters[ecx*sizeof(monster)].x,game.monsters[ecx*sizeof(monster)].y,1
+			invoke calcMapOffset,game.monsters[esi].x,game.monstersesi].y,1
 			mov game.map[eax*4]._tpye,EMPTY
-			mov game.monsters[ecx*sizeof(monster)].x,newMonsterX
-			mov game.monsters[ecx*sizeof(monster)].y,newMonsterY
+			mov game.monsters[esi].x,newMonsterX
+			mov game.monsters[esi].y,newMonsterY
 			invoke calcMapOffset,newMonsterX,newMonsterY,1
 			mov game.map[eax*4]._tpye,MONSTER
 			invoke calcMapOffset,newMonsterX,newMonsterY,1
@@ -352,7 +362,7 @@ before1_pollingMonster:
 			jmp next7_pollingMonster
 		next6_pollingMonster:
 			invoke changeDirection,ecx
-			mov game.monsters[ecx*sizeof(monster)].direction,eax
+			mov game.monsters[ecx*sizeof(Monster)].direction,eax
 			jmp next7_pollingMonster
 		next7_pollingMonster:
 
@@ -421,16 +431,17 @@ pollingMonster endp
 
 
 changeDirection proc stdcall index:dword
-	push esi
-	push edi
-	push ebx
-
 	local direction[4]:DWORD
 	local monster_from:DWORD
 	local newX,newY:DWORD
 	local available_direction,new_direction:DWORD
 	local random_direction:DWORD
-	mov eax,game.monsters[index*sizeof(monster)].direction
+	push esi
+	push edi
+	push ebx
+
+
+	mov eax,game.monsters[index*sizeof(Monster)].direction
 	cmp eax,UP
 	je up1_switch_changeDirection
 	cmp eax,DOWN
@@ -463,15 +474,15 @@ before2_changeDirection:
 	cmp ecx,4
 	jge next2_changeDirection
 		;local newX,newY:DWORD
-		mov newX,game.monsters[index*sizeof(monster)].x
-		mov newY,game.monsters[index*sizeof(monster)].y
-		invoke calculateNextMove,game.monsters[index*sizeof(monster)].x,
-		game.monsters[index*sizeof(monster)].y,ecx,offest newX, offest newY
+		mov newX,game.monsters[index*sizeof(Monster)].x
+		mov newY,game.monsters[index*sizeof(Monster)].y
+		invoke calculateNextMove,game.monsters[index*sizeof(Monster)].x,
+		game.monsters[index*sizeof(Monster)].y,ecx,offest newX, offest newY
 		invoke isMoveableMonster,newX,newY
 		cmp eax,0
-		jne next3_changeDirection
+		jne next33_changeDirection
 		mov direction[ecx],0
-	next3_changeDirection:
+	next33_changeDirection:
 	inc ecx
 	jmp before2_changeDirection
 next2_changeDirection:
@@ -501,7 +512,7 @@ next3_changeDirection:
 next5_changeDirection:
 	;int random_direction = rand() % 10;
 	;local random_direction:DWORD
-	invoke rand
+	invoke crt_rand
 	mov esi,10
 	div esi
 	mov random_direction,edx
@@ -527,7 +538,7 @@ before6_changeDirection:
 	jmp before6_changeDirection
 next6_changeDirection:
 	mov eax,new_direction
-	mov game.monsters[index*sizeof(monster)].direction,eax
+	mov game.monsters[index*sizeof(Monster)].direction,eax
 	pop ebx
 	pop edi
 	pop esi
@@ -535,4 +546,4 @@ next6_changeDirection:
 changeDirection endp
 
 
-
+end
