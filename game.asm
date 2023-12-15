@@ -4,7 +4,7 @@ option casemap:none
 include common.inc
 .code
 
-clearFire proc	C	x:dword,y:dword
+clearFire proc	x:dword,y:dword
 	invoke calcMapOffset,x,y,2
 	mov game.map[eax*4]._type,EMPTY
 	ret
@@ -23,7 +23,7 @@ makeAttack proc C x:dword,y:dword
 	ret
 makeAttack ENDP
 
-dealAttack proc C x:dword,y:dword,jobFunc:dword
+dealAttack proc x:dword,y:dword,jobFunc:dword
 	push edi
 	push esi
 	mov ecx,x
@@ -62,42 +62,38 @@ end_dealAttack:
 	ret
 dealAttack ENDP
 
-pollingAttack proc C
-	mov ecx,0
+pollingAttack proc
+	push ebx
+	mov ebx,0
 loop_pollingAttack:
-	cmp ecx,MAX_ATTACK
+	cmp ebx,MAX_ATTACK*sizeof(Attack)
 	jle end_pollingAttack
-	cmp game.attacks[ecx].time,0
+	cmp game.attacks[ebx].time,0
 	jle noJob_pollingAttack
-	dec game.attacks[ecx].time
-	cmp game.attacks[ecx].time,ATTACK_TIME
+	dec game.attacks[ebx].time
+	cmp game.attacks[ebx].time,ATTACK_TIME
 	jle lessAttackTime_pollingAttack
-	push ecx
-	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,offset preAttack
-	pop ecx
+	invoke dealAttack,game.attacks[ebx].x,game.attacks[ebx].y,offset preAttack
 	jmp noJob_pollingAttack
 lessAttackTime_pollingAttack:
 	cmp game.attacks[ecx].time,0
 	je equalZeroTime_pollingAttack
-	push ecx
 	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,offset makeAttack
-	pop ecx
 	jmp noJob_pollingAttack
 equalZeroTime_pollingAttack:
-	push ecx
 	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,offset clearFire
-	pop ecx
 noJob_pollingAttack:
-	inc ecx
+	add ebx,sizeof(Attack)
 	jmp loop_pollingAttack
 end_pollingAttack:
+	pop ebx
 	ret
 pollingAttack ENDP
 
-bossAttack proc C
-	mov ecx,0
+bossAttack proc
+	xor ecx,ecx
 loop_bossAttack:
-	cmp ecx,MAX_ATTACK
+	cmp ecx,MAX_ATTACK*sizeof(Attack)
 	jle end_bossAttack
 	cmp game.attacks[ecx].time,0
 	jle continue_bossAttack
@@ -108,7 +104,7 @@ loop_bossAttack:
 	mov game.attacks[ecx].time,PRE_ATTACK_TIME + ATTACK_TIME
 	jmp end_bossAttack
 continue_bossAttack:
-	inc ecx
+	add ecx,sizeof(Attack)
 	jmp loop_bossAttack
 end_bossAttack:
 	ret
@@ -116,7 +112,7 @@ bossAttack ENDP
 
 bossDrop proc C
 	mov game.boss.in_map,1
-	;invoke dealAttack,game.boss.x,game.boss.y,offset clear;暂时注释，函数实现后取消注释
+	invoke dealAttack,game.boss.x,game.boss.y,offset clear
 bossDrop endp
 
 pollingBoss proc C
@@ -132,7 +128,7 @@ coolTimeEnd_pollingBoss:
 	mov eax,game.boss.x
 	mov edx,game.boss.y
 	invoke calcMapOffset,eax,edx,1
-	mov game.map[eax]._type,EMPTY
+	mov game.map[4*eax]._type,EMPTY
 	ret
 bossNotInMap_pollingBoss:
 	cmp game.boss.sky_time,0
@@ -165,7 +161,7 @@ bossWillDrop_pollingBoss:
 dropTimeEnd_pollingBoss:
 	invoke dealAttack,game.boss.x,game.boss.y,offset clearFire
 	invoke bossDrop
-	mov boss.cool_time,COOL_TIME
+	mov game.boss.cool_time,COOL_TIME
 end_pollingBoss:
 	ret
 pollingBoss endp
