@@ -187,23 +187,23 @@ push ebx
     mov edx, speed
     mov ecx, pfrac_x
     cmp direction, UP
-    je JOup_moveOneStep
+    jne JOup_moveOneStep
         sub [ecx], edx
         jmp dirSwEnd_moveOneStep
     JOup_moveOneStep:
     cmp direction, DOWN
-    je JOdown_moveOneStep
+    jne JOdown_moveOneStep
         add [ecx], edx
         jmp dirSwEnd_moveOneStep
     JOdown_moveOneStep:
     mov ecx, pfrac_y
     cmp direction, LEFT
-    je JOleft_moveOneStep
+    jne JOleft_moveOneStep
         sub [ecx], edx
         jmp dirSwEnd_moveOneStep
     JOleft_moveOneStep:
     cmp direction, RIGHT
-    je JOright_moveOneStep
+    jne JOright_moveOneStep
         add [ecx], edx
         jmp dirSwEnd_moveOneStep
     JOright_moveOneStep:
