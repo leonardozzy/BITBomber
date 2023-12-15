@@ -5,7 +5,6 @@ option	casemap:none
 include	common.inc
 
 .code
-;dx = edx ?
 placeBomb	proc	
 push ebx
     cmp game.player.bomb_cnt,0
@@ -40,7 +39,6 @@ push ebx
         add ecx, 16 ;add sizeof(Bomb) per loop
         cmp ecx, ebx
         jb ALLBOMB_LOOP_placeBomb
-
 ret_placeBomb:
 pop ebx
 	ret
@@ -53,30 +51,33 @@ push ebx
     cmp edx, SETBOMB
     jne JmpOver_placeBomb_pollingPlayer
         invoke placeBomb
-        jmp ret_pollingPlayer
+        jmp ret_pollingPlayer   ; Early return as no movement is required
     JmpOver_placeBomb_pollingPlayer:
+    ; deal with player status
     mov eax, game.player.status
     cmp eax, INVISIBLE
     jne JmpOverINVISIBLE_pollingPlayer
         mov eax, game.player.timer
         dec eax
-        mov game.player.status, eax
+        mov game.player.timer, eax
         cmp eax,0
         jne JmpOverINVISIBLE_pollingPlayer
             mov eax, NORMAL
             mov game.player.status, eax
     JmpOverINVISIBLE_pollingPlayer:
+    ; Move player
     mov eax, game.player.x
     mov newPlayerX, eax
     mov eax, game.player.y
     mov newPlayerY, eax
     invoke moveOneStep, game.player.x, game.player.y, input \
-        , offset newPlayerX, offset newPlayerY \
+        , addr newPlayerX, addr newPlayerY \
         , offset game.player.frac_x, offset game.player.frac_y, game.player.speed
     ; Check if new position is valid
     invoke isMoveable, newPlayerX, newPlayerY
     cmp eax, 0
     je JmpOver_isMoveable_pollingPlayer
+        ; Check for collision with monsters
         invoke calcMapOffset, newPlayerX, newPlayerY, 0
         cmp game.map[eax*4 + 4]._type, MONSTER
         jne JmpOverMonster_pollingPlayer
@@ -88,7 +89,8 @@ push ebx
         cmp game.map[eax*4]._type, TOOL
         jne JmpOverTool_pollingPlayer
             mov cx, game.map[eax*4].id
-            sal cx, 4  ;tool_index, *sizeof(tool)
+            sal cx, 4  ;tool_index *= sizeof(tool)
+            movzx ecx,cx
             mov ebx, game.tools[ecx]._type
             cmp ebx, 0
             jne JO0_pollingPlayer
@@ -154,7 +156,7 @@ isMoveable  proc    x:dword, y:dword
     je ret_0_isMoveable
     cmp cx, WALL
     je ret_0_isMoveable
-    mov eax,1
+    mov eax,1   ; none of above,ret 1
     jmp ret_isMoveable
 ret_0_isMoveable:
     mov eax, 0
@@ -170,7 +172,7 @@ isMoveableMonster   proc    x:dword, y:dword
     mov dx, game.map[eax*4]._type
     cmp dx, MONSTER
     je ret_0_isMoveableMonster
-    mov eax,1
+    mov eax,1   ; none of above,ret 1
     jmp ret_isMoveableMonster
 ret_0_isMoveableMonster:
     mov eax,0
@@ -189,15 +191,18 @@ push ebx
         sub [ecx], edx
         jmp dirSwEnd_moveOneStep
     JOup_moveOneStep:
+    cmp direction, DOWN
     je JOdown_moveOneStep
         add [ecx], edx
         jmp dirSwEnd_moveOneStep
     JOdown_moveOneStep:
     mov ecx, pfrac_y
+    cmp direction, LEFT
     je JOleft_moveOneStep
         sub [ecx], edx
         jmp dirSwEnd_moveOneStep
     JOleft_moveOneStep:
+    cmp direction, RIGHT
     je JOright_moveOneStep
         add [ecx], edx
         jmp dirSwEnd_moveOneStep
