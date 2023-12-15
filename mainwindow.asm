@@ -4,6 +4,10 @@ option	casemap:none
 
 include	common.inc
 
+.data
+gameStage	dword	LOGO
+frames	dword	0
+
 .code
 WindowProc	proc	hwnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 	local	ps:PAINTSTRUCT,hdc:HDC,hdcBuffer:HDC,memBitmap:HBITMAP,graphicsPtr:dword
@@ -20,6 +24,7 @@ WindowProcDefault:
 	ret
 WindowProcTimer:
 	;在这里进行每一刻的游戏逻辑更新
+	inc	frames
 	invoke	InvalidateRect,hwnd,NULL,TRUE	;通知重绘
 	jmp	ExitWindowProc
 WindowProcPaint:
@@ -34,6 +39,8 @@ WindowProcPaint:
 	invoke	GdipCreateFromHDC,hdcBuffer,addr graphicsPtr
 	;在这里使用graphicsPtr进行画图函数的调用，这只是一个示例
 	;invoke	drawSolidRect,graphicsPtr,0ffffffffh,0,0,WINDOW_WIDTH,WINDOW_HEIGHT
+
+	invoke	drawLogo,graphicsPtr,frames
 	invoke	BitBlt,hdc,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,hdcBuffer,0,0,SRCCOPY	;双缓冲绘图技术防止闪烁
 	;释放绘图资源
 	invoke	GdipReleaseDC,graphicsPtr,hdcBuffer

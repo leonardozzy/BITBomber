@@ -324,7 +324,7 @@ monster_clear:
     dec game.monster_num
     jmp exit_clear
 player_clear:
-    invoke  die
+    ;invoke  die    ;暂时注释，函数实现后取消注释
     jmp exit_clear
 box_clear:
     mov game.map[eax*4]._type,EMPTY
@@ -332,7 +332,7 @@ box_clear:
     and eax,3
     cmp eax,1
     jne exit_clear
-    invoke  placeTool,x,y
+    ;invoke  placeTool,x,y  ;暂时注释，函数实现后取消注释
     jmp exit_clear
 boss_clear:
     dec game.boss.life

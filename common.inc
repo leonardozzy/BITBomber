@@ -17,6 +17,10 @@ FONT_NAME_LEN	equ	16
 ;定死窗口高度宽度，数值可以以后再调
 WINDOW_WIDTH	equ	1000
 WINDOW_HEIGHT	equ	750
+LOGO_WIDTH	equ	400
+LOGO_HEIGHT	equ	400
+LOGO_X_POS	equ	300
+LOGO_Y_POS	equ	150
 
 EMPTY	equ	0
 WALL	equ	1
@@ -83,6 +87,12 @@ MAX_LIFE	equ	5
 MAX_RANGE	equ	4
 MAX_BOMB_CNT	equ	3
 MAX_SPEED	equ	5
+
+;define game stage
+LOGO	equ	0
+MAIN_MENU	equ	1
+STORY	equ	2
+IN_GAME	equ	3
 
 ;struct definition
 ;这样一个Object的大小就是4，便于比例变址寻址
@@ -177,12 +187,9 @@ StrDisp	struct	;前四个字段和RectF结构体相同，传RectF的指针时可以直接偷梁换柱
 StrDisp	ends
 
 ;function definition
-drawImage	equ	GdipDrawImageRectI
 initResources	proto
 releaseResources	proto
-drawUtf16String	proto	graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
-drawGbString	proto	graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
-drawSolidRect	proto	graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
+drawLogo	proto	graphicsPtr:dword,frames:dword
 
 calcMapOffset	proto	x:dword,y:dword,z:dword
 initMonster	proto    index:dword,x:dword,y:dword,speed:dword
@@ -228,10 +235,18 @@ WINDOW_NAME	byte	"BIT BOMBERMAN",0	;窗口显示名
 GP_INPUT	GdiplusStartupInput	<1,0,0,0>
 MSGBOX_WINDOW_FAIL_TEXT	byte	"窗口创建失败！",0
 MSGBOX_ERROR_TITLE	byte	"错误",0
-FILENAME1	byte	"/level/1.level",0
-FILENAME2	byte	"/level/2.level",0
-FILENAME3	byte	"/level/3.level",0
-FILENAME4	byte	"/level/4.level",0
+FILENAME1	byte	"./level/1.level",0
+FILENAME2	byte	"./level/2.level",0
+FILENAME3	byte	"./level/3.level",0
+FILENAME4	byte	"./level/4.level",0
+LOGO_PATH	byte	"./image/logo.png",0
+STORY_1	byte	"据说",0ah,0ah,"在文G126教室下方的地底深处",0ah,0ah,"沉睡着一只强大的恶龙",0ah,0ah,"它曾是这片土地上的主宰",0ah,0ah,"但在数百年前被一位传奇的勇士所封印",0ah,0ah,"然而",0ah,0ah,"由于一系列神秘的事件",0ah,0ah,"这条恶龙再次苏醒",0ah,0ah,"并对北理工校园发动了猛烈的进攻",0ah,0ah
+STORY_2	byte	"恶龙的出现引起了巨大的恐慌",0ah,0ah,"整个校园都笼罩在恶龙的阴影之下",0ah,0ah,"学生们惊恐地发现",0ah,0ah,"恶龙的力量无法用普通的手段抵挡",0ah,0ah,"校园里弥漫着绝望的氛围",0ah,0ah
+STORY_3	byte	"直到一天",0ah,0ah,"张华平老师",0ah,0ah,"一位在《汇编语言与接口技术》课程中崭露头角的教授",0ah,0ah,"意识到解救校园的唯一方法是利用古老的汇编技术",0ah,0ah,"唤醒这一代学生的力量",0ah,0ah
+STORY_4	byte	"于是",0ah,0ah,"张老师向他的学生们发出了紧急招募令",0ah,0ah,"在《汇编语言与接口技术》班级中",0ah,0ah,"一群年轻而充满激情的学生被选中",0ah,0ah,"他们将被授予MASM",0ah,0ah,"接受特殊的培训",0ah,0ah,"导引IA-32之力",0ah,0ah
+STORY_5	byte	"同学们在张老师的指导下",0ah,0ah,"深入学习汇编语言",0ah,0ah,"研究如何运用这些编程技术来制造强大的炸弹",0ah,0ah,"以对抗恶龙和它的爪牙",0ah,0ah,"在激烈的训练中",0ah,0ah,"同学们逐渐领悟到编程艺术的深奥之处",0ah,0ah,"他们的智慧和技能在不断地升华",0ah,0ah
+STORY_6	byte	"随着时间的推移",0ah,0ah,"同学们集结成一个强大的汇编战队",0ah,0ah,"他们肩负着解救北理工校园的责任",0ah,0ah,"他们穿梭在校园的教学楼中",0ah,0ah,"挑战各种由恶龙创造的机关陷阱",0ah,0ah,"解开一个个谜题",0ah,0ah,"最终进入到G126教室的最深处",0ah,0ah,"准备面对恶龙的最终一战……",0
+
 LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
 OPEN_FILE_READ_ONLY	byte	"r",0
 ONE_INT_FORMAT	byte	"%d",0
@@ -240,4 +255,5 @@ WIN_STR	byte	"You Win!",0
 ;跨文件零初始化全局变量声明，其实可以不memset
 .data?
 game	Game	<>	;common game object
+
 
