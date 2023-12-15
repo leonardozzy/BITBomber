@@ -19,16 +19,20 @@ loop1_draw:
 loop2_draw:
     cmp j,COL
     je  exitLoop2_draw
-    mov k,1
+    mov tmp,'.'
+    mov k,0
 loop3_draw:
-    ;cmp k,DEPTH
-    ;je  exitLoop3_draw
+    cmp k,DEPTH
+    je  exitLoop3_draw
     invoke  calcMapOffset,i,j,k
     movzx   eax,game.map[eax*4]._type
+    cmp eax,EMPTY
+    je  loop3NoDraw_draw
     movzx   edx,[eax+CHAR_MAP]
     mov tmp,edx
-    ;inc k
-    ;jmp loop3_draw
+loop3NoDraw_draw:
+    inc k
+    jmp loop3_draw
 exitLoop3_draw:
     invoke  crt_putchar,tmp
     inc j
@@ -38,6 +42,12 @@ exitLoop2_draw:
     inc i
     jmp loop1_draw
 exitLoop1_draw:
+    invoke  crt_puts,offset SPLIT_STR
+    invoke  crt_printf,offset BOMB_RANGE_STR,game.player.bomb_range
+    invoke  crt_printf,offset BOMB_CNT_STR,game.player.bomb_cnt
+    invoke  crt_printf,offset SPEED_STR,game.player.speed
+    invoke  crt_printf,offset MONSTER_NUM_STR,game.monster_num
+    invoke  crt_puts,offset SPLIT_STR
     ret
 draw    endp
 
@@ -48,6 +58,9 @@ start:
 loop_start:
     invoke  draw
     invoke  readKey
+    ;push    eax
+    ;invoke  crt_printf,offset PRINT_INT_STR,eax
+    ;pop eax
     cmp eax,-1
     je  noPlayer_start
     invoke  pollingPlayer,eax
@@ -59,6 +72,6 @@ noPlayer_start:
     invoke  pollingBoss
     invoke  pollingAttack
     invoke  Sleep,100
-    ;invoke  crt_system,offset CLS_STR
+    invoke  crt_system,offset CLS_STR
     jmp loop_start
 end start

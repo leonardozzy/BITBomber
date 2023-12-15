@@ -80,24 +80,24 @@ setMonster1_initLevel:
     mov num,MONSTER
     mov edx,game.monster_num
     mov game.map[ebx*4].id,dx
-    inc game.monster_num
     invoke  initMonster,game.monster_num,esi,edi,MONSTER_1_SPEED
+    inc game.monster_num
     mov num,4
     jmp setMap_initLevel
 setMonster2_initLevel:
     mov num,MONSTER
     mov edx,game.monster_num
     mov game.map[ebx*4].id,dx
-    inc game.monster_num
     invoke  initMonster,game.monster_num,esi,edi,MONSTER_2_SPEED
+    inc game.monster_num
     mov num,4
     jmp setMap_initLevel
 setMonster3_initLevel:
     mov num,MONSTER
     mov edx,game.monster_num
     mov game.map[ebx*4].id,dx
-    inc game.monster_num
     invoke  initMonster,game.monster_num,esi,edi,MONSTER_3_SPEED
+    inc game.monster_num
     mov num,4
     jmp setMap_initLevel
 setBoss_initLevel:
@@ -136,7 +136,6 @@ initGame    proc
     mov game.player.speed,PLAYER_1_SPEED
     mov game.player.status,NORMAL
     invoke  calcMapOffset,0,0,1
-   ; mov game.map[eax*4]._type,PLAYER
     invoke  initLevel
     ret
 initGame    endp
@@ -188,6 +187,8 @@ setFire_pollingBomb:
     invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,game.bombs[ebx].range,offset setFire
     jmp loopAdd_pollingBomb
 clearFire_pollingBomb:
+    invoke  calcMapOffset,game.bombs[ebx].x,game.bombs[ebx].y,0
+    mov game.map[eax*4]._type,EMPTY
     invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,game.bombs[ebx].range,offset clearFire
 loopAdd_pollingBomb:
     add ebx,sizeof Bomb
@@ -255,7 +256,7 @@ loop3_dealBomb:
     jg  exitLoop3_dealBomb
     invoke  isDestroyable,x,ebx
     test    eax,eax
-    jz  exitLoop1_dealBomb
+    jz  exitLoop3_dealBomb
     push    ebx
     push    x
     call    _job
@@ -287,7 +288,7 @@ isDestroyable   proc    x:dword,y:dword
     invoke  calcMapOffset,x,y,1
     cmp game.map[4*eax]._type,WALL
     je  retZero_isDestroyable
-    invoke  calcMapOffset,x,y,0
+    dec eax
     cmp game.map[4*eax]._type,BOMB
     je  retZero_isDestroyable
     mov eax,1
@@ -349,12 +350,6 @@ boss_clear:
     invoke  crt_exit,0
     jmp exit_clear
 clear   endp
-
-;clearFire   proc    x:dword,y:dword
-;    invoke  calcMapOffset,x,y,2
-;    mov game.map[eax*4]._type,EMPTY
-;   ret
-;clearFire   endp
 
 placeTool   proc    x:dword,y:dword
     ;ebx£ºtoolsÊý×éÆ«ÒÆÁ¿

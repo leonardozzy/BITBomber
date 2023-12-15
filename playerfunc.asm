@@ -5,7 +5,6 @@ include common.inc
 extrn   game:Game
 .code
 placeBomb	proc	
-push ebx
     cmp game.player.bomb_cnt,0
     jng ret_placeBomb
     invoke calcMapOffset,game.player.x,game.player.y,0
@@ -13,9 +12,7 @@ push ebx
     jne ret_placeBomb
     ;;;if (this->player.bomb_cnt > 0 && this->map[this->player.x][this->player.y][0].type==EMPTY) {
     ; Find an empty slot for a new bomb
-    mov ebx,MAX_BOMB
-    sal ebx,4   ;ebx = MAX_BOMB * sizeof(Bomb)=16
-    mov ecx,0
+    xor ecx,ecx
     ALLBOMB_LOOP_placeBomb:
         cmp game.bombs[ecx].timer, 0    ;Assuming a bomb's timer <= 0 means it's inactive
         jg ALLBOMB_LOOPEND_placeBomb 
@@ -23,46 +20,34 @@ push ebx
             mov game.bombs[ecx].x, edx
             mov edx, game.player.y
             mov game.bombs[ecx].y, edx
-            mov edx, BOMB_TIMER
-            add edx, FIRE_TIMER
-            mov game.bombs[ecx].timer, edx    ;Set a timer for the bomb
+            mov game.bombs[ecx].timer, BOMB_TIMER+FIRE_TIMER    ;Set a timer for the bomb
             mov edx, game.player.bomb_range
             mov game.bombs[ecx].range, edx
-            mov dx , BOMB
-            mov game.map[4*eax]._type, dx
-            mov edx, game.player.bomb_cnt
-            dec edx
-            mov game.player.bomb_cnt, edx
+            mov game.map[4*eax]._type, BOMB
+            dec game.player.bomb_cnt
             jmp ret_placeBomb
         ALLBOMB_LOOPEND_placeBomb:
-        add ecx, 16 ;add sizeof(Bomb) per loop
-        cmp ecx, ebx
+        add ecx, sizeof Bomb ;add sizeof(Bomb) per loop
+        cmp ecx, MAX_BOMB*sizeof Bomb
         jb ALLBOMB_LOOP_placeBomb
 ret_placeBomb:
-pop ebx
 	ret
 placeBomb	endp
 
 pollingPlayer	proc	input:dword
 	local	newPlayerX:dword, newPlayerY:dword
-push ebx
-    mov input, edx
-    cmp edx, SETBOMB
+    cmp input, SETBOMB
     jne JmpOver_placeBomb_pollingPlayer
         invoke placeBomb
         jmp ret_pollingPlayer   ; Early return as no movement is required
     JmpOver_placeBomb_pollingPlayer:
     ; deal with player status
-    mov eax, game.player.status
-    cmp eax, INVISIBLE
+    cmp game.player.status,INVISIBLE
     jne JmpOverINVISIBLE_pollingPlayer
-        mov eax, game.player.timer
-        dec eax
-        mov game.player.timer, eax
-        cmp eax,0
+        dec game.player.timer
+        cmp game.player.timer,0
         jne JmpOverINVISIBLE_pollingPlayer
-            mov eax, NORMAL
-            mov game.player.status, eax
+            mov game.player.status, NORMAL
     JmpOverINVISIBLE_pollingPlayer:
     ; Move player
     mov eax, game.player.x
@@ -74,56 +59,42 @@ push ebx
         , offset game.player.frac_x, offset game.player.frac_y, game.player.speed
     ; Check if new position is valid
     invoke isMoveable, newPlayerX, newPlayerY
-    cmp eax, 0
-    je JmpOver_isMoveable_pollingPlayer
+    test    eax,eax
+    jz JmpOver_isMoveable_pollingPlayer
         ; Check for collision with monsters
         invoke calcMapOffset, newPlayerX, newPlayerY, 0
         cmp game.map[eax*4 + 4]._type, MONSTER
         jne JmpOverMonster_pollingPlayer
-            push eax
             invoke die
-            pop eax
             jmp ret_pollingPlayer
         JmpOverMonster_pollingPlayer:
         cmp game.map[eax*4]._type, TOOL
         jne JmpOverTool_pollingPlayer
-            mov cx, game.map[eax*4].id
-            sal cx, 4  ;tool_index *= sizeof(tool)
-            movzx ecx,cx
-            mov ebx, game.tools[ecx]._type
-            cmp ebx, 0
+            movzx   ecx,game.map[eax*4].id
+            sal ecx, 4  ;tool_index *= sizeof(tool)
+            cmp game.tools[ecx]._type, 0
             jne JO0_pollingPlayer
-                mov edx, game.player.life
-                inc edx
-                mov game.player.life ,edx
+                inc game.player.life
                 jmp ToolSwEnd_pollingPlayer
             JO0_pollingPlayer:
-            cmp ebx, 1
+            cmp game.tools[ecx]._type, 1
             jne JO1_pollingPlayer
-                mov edx, game.player.bomb_range
-                inc edx
-                mov game.player.bomb_range, edx
+                inc game.player.bomb_range
                 jmp ToolSwEnd_pollingPlayer
             JO1_pollingPlayer:
-            cmp ebx, 2
+            cmp game.tools[ecx]._type, 2
             jne JO2_pollingPlayer
-                mov edx, game.player.bomb_cnt
-                inc edx
-                mov game.player.bomb_cnt, edx
+                inc game.player.bomb_cnt
                 jmp ToolSwEnd_pollingPlayer
             JO2_pollingPlayer:
-            cmp ebx, 3
+            cmp game.tools[ecx]._type, 3
             jne JO3_pollingPlayer
-                mov edx, game.player.speed
-                inc edx
-                mov game.player.speed, edx
+                inc game.player.speed
                 jmp ToolSwEnd_pollingPlayer
             JO3_pollingPlayer:
-            cmp ebx, 4
+            cmp game.tools[ecx]._type, 4
             jne JO4_pollingPlayer
-                mov edx, game.timer
-                add edx, 30
-                mov game.timer, edx
+                add game.timer,30
                 jmp ToolSwEnd_pollingPlayer
             JO4_pollingPlayer:
             ToolSwEnd_pollingPlayer:
@@ -141,40 +112,34 @@ push ebx
         mov game.map[eax*4], PLAYER
     JmpOver_isMoveable_pollingPlayer:
 ret_pollingPlayer:
-pop ebx
 	ret
 pollingPlayer	endp
 
 isMoveable  proc    x:dword, y:dword
     invoke calcMapOffset, x, y, 0
-    mov cx, game.map[eax*4]._type
-    cmp cx, BOMB
+    cmp game.map[eax*4]._type,BOMB
     je ret_0_isMoveable
-    mov cx, game.map[eax*4+4]._type
-    cmp cx, BOX
+    cmp game.map[eax*4+4]._type,BOX
     je ret_0_isMoveable
-    cmp cx, WALL
+    cmp game.map[eax*4+4]._type,WALL
     je ret_0_isMoveable
     mov eax,1   ; none of above,ret 1
     jmp ret_isMoveable
 ret_0_isMoveable:
-    mov eax, 0
+    xor eax,eax
 ret_isMoveable:
     ret
 isMoveable  endp
 
 isMoveableMonster   proc    x:dword, y:dword
     invoke isMoveable, x, y
-    cmp eax, 0
-    je ret_0_isMoveableMonster
+    test    eax,eax
+    jz ret_isMoveableMonster
     invoke calcMapOffset, x, y, 1
-    mov dx, game.map[eax*4]._type
-    cmp dx, MONSTER
-    je ret_0_isMoveableMonster
-    mov eax,1   ; none of above,ret 1
-    jmp ret_isMoveableMonster
-ret_0_isMoveableMonster:
+    cmp game.map[eax*4]._type,MONSTER
     mov eax,0
+    je ret_isMoveableMonster
+    inc eax ; none of above,ret 1
 ret_isMoveableMonster:
     ret
 isMoveableMonster   endp
@@ -207,14 +172,12 @@ push ebx
         jmp dirSwEnd_moveOneStep
     JOright_moveOneStep:
     dirSwEnd_moveOneStep:
-    mov ebx, FRAC_RANGE
-    sal ebx,1   ;ebx = 2*FRAC_RANGE
+    mov ebx, 2*FRAC_RANGE   ;ebx = 2*FRAC_RANGE
     mov ecx, pfrac_x
-    mov eax, FRAC_RANGE
-    cmp [ecx], eax
+    cmp dword ptr [ecx],FRAC_RANGE
     jng JOxgreat_moveOneStep
         mov eax, x
-        add eax, 1
+        inc eax
         mov edx, pnew_x
         mov [edx],eax
         mov eax, y
@@ -224,12 +187,10 @@ push ebx
         sub [edx], ebx
         jmp fracOverSwEnd_moveOneStep
     JOxgreat_moveOneStep:
-    mov eax, FRAC_RANGE
-    neg eax
-    cmp [ecx], eax
+    cmp dword ptr [ecx], -FRAC_RANGE
     jnl JOxless_moveOneStep
         mov eax, x
-        sub eax, 1
+        dec eax
         mov edx, pnew_x
         mov [edx],eax
         mov eax, y
@@ -240,29 +201,26 @@ push ebx
         jmp fracOverSwEnd_moveOneStep
     JOxless_moveOneStep:
     mov ecx, pfrac_y
-    mov eax, FRAC_RANGE
-    cmp [ecx], eax
+    cmp dword ptr [ecx], FRAC_RANGE
     jng JOygreat_moveOneStep
         mov eax, x
         mov edx, pnew_x
         mov [edx],eax
         mov eax, y
-        add eax, 1
+        inc eax
         mov edx, pnew_y
         mov [edx],eax
         mov edx, pfrac_y
         sub [edx], ebx
         jmp fracOverSwEnd_moveOneStep
     JOygreat_moveOneStep:
-    mov eax, FRAC_RANGE
-    neg eax
-    cmp [ecx], eax
+    cmp dword ptr [ecx], -FRAC_RANGE
     jnl JOyless_moveOneStep
         mov eax, x
         mov edx, pnew_x
         mov [edx],eax
         mov eax, y
-        sub eax, 1
+        dec eax
         mov edx, pnew_y
         mov [edx],eax
         mov edx, pfrac_y
@@ -309,6 +267,7 @@ readKey Proc
 		mov eax,RIGHT
         ret
     .endif
+    mov eax,-1
     ret
 readKey endp
 
