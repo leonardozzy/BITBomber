@@ -473,7 +473,8 @@ next5_changeDirection:
 	;int random_direction = rand() % 10;
 	local random_direction:DWORD
 	invoke rand
-	div 10
+	mov esi,10
+	div esi
 	mov random_direction,edx
 	mov ecx,0;j
 before6_changeDirection:
@@ -481,14 +482,16 @@ before6_changeDirection:
 	jge next6_changeDirection
 		inc new_direction
 		mov eax,new_direction
-		div 4
+		mov esi,4
+		div esi
 		mov new_direction,edx
 		while1_changeDirection:
 			cmp direction[new_direction],1
 			je next7_changeDirection
 			inc new_direction
 			mov eax,new_direction
-			div 4
+			mov esi,4
+			div esi
 			mov new_direction,edx
 		next7_changeDirection:
 	inc ecx
