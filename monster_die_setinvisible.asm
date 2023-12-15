@@ -230,11 +230,12 @@ pollingMonster	proc
 	;push 0 ;direct_able
 	;push 0 ;monster_from
 	mov ecx,0;i
-
+	;for (int i = 0; i < MAX_MONSTER; i++)
 	cmp ecx,MAX_MONSTER
 	jge end_pollingMonster
-before1_pollingMonster:
+before1_for_pollingMonster:
 		push eax	
+		mov eax,ecx;BUG!!!
 		mov esi,sizeof(Monster)
 		mul	esi
 		mov esi,eax
@@ -313,7 +314,6 @@ before1_pollingMonster:
 			jl before2_pollingMonster
 		next2_pollingMonster:
 			;get last step from monster from
-			;
 			invoke calculateNextMove,game.monsters[esi].x,
 									game.monsters[esi].y,
 									monster_from,
@@ -342,7 +342,7 @@ before1_pollingMonster:
 								addr game.monsters[esi].frac_x,
 								addr game.monsters[esi].frac_y,
 								game.monsters[esi].speed
-
+			;Check if new position is valid
 			invoke isMoveableMonster,newMonsterX,newMonsterY
 			cmp eax,0
 			je next6_pollingMonster
@@ -382,7 +382,7 @@ before1_pollingMonster:
 
 	inc ecx
 	cmp ecx,MAX_MONSTER
-	jl before1_pollingMonster
+	jl before1_for_pollingMonster
 end_pollingMonster:
 	;pop eax
 	;pop eax
@@ -452,7 +452,8 @@ changeDirection proc stdcall index:dword
 	local random_direction:DWORD
 	push esi
 	push edi
-	push eax	
+	push eax
+	mov eax,index;BUG!!!
 	mov edi,sizeof(Monster)
 	mul	edi
 	mov edi,eax
