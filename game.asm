@@ -1,7 +1,8 @@
-.386
+.486
 .model flat, stdcall
 option casemap:none
 include common.inc
+extrn   game:Game
 .code
 
 clearFire proc	x:dword,y:dword
@@ -10,13 +11,13 @@ clearFire proc	x:dword,y:dword
 	ret
 clearFire ENDP
 
-preAttack proc C x:dword,y:dword
+preAttack proc x:dword,y:dword
 	invoke calcMapOffset,x,y,2
 	mov game.map[eax*4]._type,ATTACK
 	ret
 preAttack ENDP
 
-makeAttack proc C x:dword,y:dword
+makeAttack proc x:dword,y:dword
 	invoke calcMapOffset,x,y,2
 	mov game.map[eax*4]._type,BLUEFIRE
 	;invoke clear,x,y;ÔÝÊ±×¢ÊÍ
@@ -110,12 +111,12 @@ end_bossAttack:
 	ret
 bossAttack ENDP
 
-bossDrop proc C
+bossDrop proc
 	mov game.boss.in_map,1
 	invoke dealAttack,game.boss.x,game.boss.y,offset clear
 bossDrop endp
 
-pollingBoss proc C
+pollingBoss proc
 	cmp game.boss.in_map,0
 	je bossNotInMap_pollingBoss
 	dec game.boss.cool_time

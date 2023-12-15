@@ -1,9 +1,8 @@
 .486
 .model	flat,stdcall
 option	casemap:none
-
-include	common.inc
-
+include common.inc
+extrn   game:Game
 .code
 placeBomb	proc	
 push ebx
@@ -284,7 +283,7 @@ pop ebx
 moveOneStep endp
 
 
-ReadKey Proc
+readKey Proc
     invoke GetAsyncKeyState,'B'
     .if eax & 0001H
 		mov eax,SETBOMB
@@ -311,6 +310,6 @@ ReadKey Proc
         ret
     .endif
     ret
-ReadKey endp
+readKey endp
 
 end 

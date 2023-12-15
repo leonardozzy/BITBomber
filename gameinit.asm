@@ -1,8 +1,10 @@
 .486
 .model	flat,stdcall
 option	casemap:none
-
+public  game
 include common.inc
+.data
+game	Game	<>	;common game object
 
 .code
 initMonster	proc    index:dword,x:dword,y:dword,speed:dword
@@ -40,7 +42,7 @@ initBoss    endp
 
 initLevel   proc
     local   file:dword,num:dword
-    invoke  crt_memset,game.map,0,ROW*COL*DEPTH*sizeof Object
+    invoke  crt_memset,offset game.map,0,ROW*COL*DEPTH*sizeof Object
     mov edx,game.level
     invoke  crt_fopen,LEVEL_FILE_NAMES[4*edx-4],offset OPEN_FILE_READ_ONLY
     test    eax,eax
@@ -73,12 +75,14 @@ innerLoop_initLevel:
     je  setMonster3_initLevel
     cmp num,BOSS
     je  setBoss_initLevel
+    jmp setMap_initLevel
 setMonster1_initLevel:
     mov num,MONSTER
     mov edx,game.monster_num
     mov game.map[ebx*4].id,dx
     inc game.monster_num
     invoke  initMonster,game.monster_num,esi,edi,MONSTER_1_SPEED
+    mov num,4
     jmp setMap_initLevel
 setMonster2_initLevel:
     mov num,MONSTER
@@ -86,6 +90,7 @@ setMonster2_initLevel:
     mov game.map[ebx*4].id,dx
     inc game.monster_num
     invoke  initMonster,game.monster_num,esi,edi,MONSTER_2_SPEED
+    mov num,4
     jmp setMap_initLevel
 setMonster3_initLevel:
     mov num,MONSTER
@@ -93,6 +98,7 @@ setMonster3_initLevel:
     mov game.map[ebx*4].id,dx
     inc game.monster_num
     invoke  initMonster,game.monster_num,esi,edi,MONSTER_3_SPEED
+    mov num,4
     jmp setMap_initLevel
 setBoss_initLevel:
     invoke  initBoss,esi,edi
@@ -110,6 +116,7 @@ exitOuterLoop_initLevel:
     mov eax,game.timer
     mov game.level_timer,eax
     invoke  crt_fclose,file
+    ;invoke  crt_printf,offset ADDR_STR,offset game.map
     pop edi
     pop esi
     pop ebx
@@ -129,7 +136,7 @@ initGame    proc
     mov game.player.speed,PLAYER_1_SPEED
     mov game.player.status,NORMAL
     invoke  calcMapOffset,0,0,1
-    mov game.map[eax*4]._type,PLAYER
+   ; mov game.map[eax*4]._type,PLAYER
     invoke  initLevel
     ret
 initGame    endp
@@ -343,11 +350,11 @@ boss_clear:
     jmp exit_clear
 clear   endp
 
-clearFire   proc    x:dword,y:dword
-    invoke  calcMapOffset,x,y,2
-    mov game.map[eax*4]._type,EMPTY
-    ret
-clearFire   endp
+;clearFire   proc    x:dword,y:dword
+;    invoke  calcMapOffset,x,y,2
+;    mov game.map[eax*4]._type,EMPTY
+;   ret
+;clearFire   endp
 
 placeTool   proc    x:dword,y:dword
     ;ebx£ºtoolsÊý×éÆ«ÒÆÁ¿
@@ -395,6 +402,7 @@ archive proc    path1:ptr byte
     mov file,eax
     invoke  crt_fwrite,offset game,sizeof Game,1,eax
     invoke  crt_fclose,file
+    ret
 archive endp
 
 load    proc    path1:ptr byte
@@ -403,6 +411,7 @@ load    proc    path1:ptr byte
     mov file,eax
     invoke  crt_fread,offset game,sizeof Game,1,eax
     invoke  crt_fclose,file
+    ret
 load    endp
 
 end

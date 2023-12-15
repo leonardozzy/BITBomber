@@ -9,15 +9,15 @@ include common.inc
 ;真实偏移量还需乘上sizeof Object（目前是4，使用时可以直接比例变址寻址哦）。
 ;尽量少调用。
 calcMapOffset	proc x:dword,y:dword,z:dword
-	mov	eax,z
-	mov	edx,ROW*COL
+	mov	eax,x
+	mov	edx,COL*DEPTH
 	mul	edx
 	mov	ecx,eax
 	mov	eax,y
-	mov	edx,ROW
+	mov	edx,DEPTH
 	mul	edx
 	add	eax,ecx
-	add	eax,x
+	add	eax,z
 	ret
 calcMapOffset	endp
 

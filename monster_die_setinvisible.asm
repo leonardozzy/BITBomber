@@ -3,6 +3,7 @@
 option casemap:none
 
 include	common.inc
+extrn	game:Game
 
 .code
 
