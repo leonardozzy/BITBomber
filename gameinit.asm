@@ -324,7 +324,7 @@ monster_clear:
     dec game.monster_num
     jmp exit_clear
 player_clear:
-    ;invoke  die    ;暂时注释，函数实现后取消注释
+    invoke  die
     jmp exit_clear
 box_clear:
     mov game.map[eax*4]._type,EMPTY
@@ -332,7 +332,7 @@ box_clear:
     and eax,3
     cmp eax,1
     jne exit_clear
-    ;invoke  placeTool,x,y  ;暂时注释，函数实现后取消注释
+    invoke  placeTool,x,y
     jmp exit_clear
 boss_clear:
     dec game.boss.life
@@ -348,5 +348,61 @@ clearFire   proc    x:dword,y:dword
     mov game.map[eax*4]._type,EMPTY
     ret
 clearFire   endp
+
+placeTool   proc    x:dword,y:dword
+    ;ebx：tools数组偏移量
+    push    ebx
+    xor ebx,ebx
+loop_placeTool:
+    cmp ebx,MAX_TOOL*sizeof Tool
+    je  exitLoop_placeTool
+    cmp game.tools[ebx].timer,0
+    jne loopAdd_placeTool
+    mov eax,x
+    mov game.tools[ebx].x,eax
+    mov eax,y
+    mov game.tools[ebx].y,eax
+    invoke  crt_rand
+    xor edx,edx
+    mov ecx,5
+    div ecx
+    mov game.tools[ebx]._type,eax
+    mov game.tools[ebx].timer,TOOL_TIMER
+    mov eax,ebx
+    xor edx,edx
+    mov ecx,sizeof Tool
+    div ecx
+    ;ebx：tool id
+    mov ebx,eax
+    invoke  calcMapOffset,x,y,0
+    mov game.map[eax*4]._type,TOOL
+    mov game.map[eax*4].id,bx
+    pop ebx
+    mov eax,1
+    ret
+loopAdd_placeTool:
+    add ebx,sizeof Tool
+    jmp loop_placeTool
+exitLoop_placeTool:
+    pop ebx
+    xor eax,eax
+    ret
+placeTool   endp
+
+archive proc    path1:ptr byte
+    local   file:ptr FILE
+    invoke  crt_fopen,path1,offset OPEN_BFILE_WRITE_ONLY
+    mov file,eax
+    invoke  crt_fwrite,offset game,sizeof Game,1,eax
+    invoke  crt_fclose,file
+archive endp
+
+load    proc    path1:ptr byte
+    local   file:ptr FILE
+    invoke  crt_fopen,path1,offset OPEN_BFILE_READ_ONLY
+    mov file,eax
+    invoke  crt_fread,offset game,sizeof Game,1,eax
+    invoke  crt_fclose,file
+load    endp
 
 end

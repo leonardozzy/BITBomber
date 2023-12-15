@@ -224,8 +224,8 @@ pollingAttack	proto
 bossAttack	proto
 pollingBoss	proto
 bossDrop	proto
-archive	proto
-read	proto
+archive	proto	path1:ptr byte
+load	proto	path1:ptr byte
 readKey	proto
 
 ;const string definition
@@ -249,6 +249,8 @@ STORY_6	byte	"随着时间的推移",0ah,0ah,"同学们集结成一个强大的汇编战队",0ah,0ah,"
 
 LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
 OPEN_FILE_READ_ONLY	byte	"r",0
+OPEN_BFILE_READ_ONLY	byte	"rb",0
+OPEN_BFILE_WRITE_ONLY	byte	"wb",0
 ONE_INT_FORMAT	byte	"%d",0
 WIN_STR	byte	"You Win!",0
 
