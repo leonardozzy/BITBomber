@@ -3,9 +3,20 @@
 option	casemap:none
 
 include	common.inc
-extrn   game:Game
+public  game
+
+.data?
+game    Game    <>
+
 .const
 CHAR_MAP    byte    ".#PBM=TFDWA"
+CLS_STR	byte	"cls",0
+SPLIT_STR	byte	"----------------------------------------",0
+LIFE_STR	byte	"Life: %d",0ah,0
+BOMB_RANGE_STR	byte	"Bomb Range: %d",0ah,0
+BOMB_CNT_STR	byte	"Bomb Count: %d",0ah,0
+SPEED_STR	byte	"Speed: %d",0ah,0
+MONSTER_NUM_STR	byte	"Monster Num: %d",0ah,0
 
 .code
 draw    proc
