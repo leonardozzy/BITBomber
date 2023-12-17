@@ -57,10 +57,10 @@ MONSTER_3	equ	43
 FRAMES_PER_SEC	equ	30
 
 ;define speed
-PLAYER_1_SPEED	equ	12
-MONSTER_1_SPEED	equ	9
-MONSTER_2_SPEED	equ	13
-MONSTER_3_SPEED	equ	16
+PLAYER_1_SPEED	equ	15
+MONSTER_1_SPEED	equ	10
+MONSTER_2_SPEED	equ	15
+MONSTER_3_SPEED	equ	20
 ;新帧数下的速度
 
 ;define map_size
@@ -87,10 +87,10 @@ GAMEPAUSE	equ 5
 GAMESTART	equ 6
 
 ;define time
-INVISIBLE_TIMER	equ	90
-BOMB_TIMER	equ	90
+INVISIBLE_TIMER	equ	75
+BOMB_TIMER	equ	75
 FIRE_TIMER	equ	12
-TOOL_TIMER	equ 150
+TOOL_TIMER	equ 180
 ;boss时间再调
 COOL_TIME	equ	30
 SKY_TIME	equ	30
@@ -225,6 +225,13 @@ StrDisp	struct	;前四个字段和RectF结构体相同，传RectF的指针时可以直接偷梁换柱
 	vAlign	dword	?
 StrDisp	ends
 
+BitmapInfo	struct
+	hBitmap	HBITMAP	?
+	hdcMem	HDC	?
+	_width	dword	?
+	height	dword	?
+BitmapInfo	ends
+
 MainWinp	struct	;游戏外层主窗口逻辑部分全局变量
 	winState	dword	?
 	frames	dword	?	;启动时画logo等状态的帧数，用于淡入淡出等
@@ -238,7 +245,8 @@ drawGbString	proto	graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,s
 drawSolidRect	proto	graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
 initResources	proto
 releaseResources	proto
-drawWindow	proto	graphicsPtr:dword
+drawWindow	proto	graphicsPtr:dword,hdcBuffer:HDC
+drawMap	proto	graphicsPtr:dword,hdcBuffer:HDC
 
 calcMapOffset	proto	x:dword,y:dword,z:dword
 initMonster	proto    index:dword,x:dword,y:dword,speed:dword
@@ -249,7 +257,7 @@ placeBomb	proto
 pollingPlayer	proto	input:dword
 isMoveable	proto	x:dword,y:dword
 isMoveableMonster	proto	x:dword,y:dword
-moveOneStep	proto	x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dword,frac_x:ptr dword,frac_y:ptr dword,speed:dword
+moveOneStep	proto	x:dword,y:dword,direction:dword,pnew_x:ptr dword,pnew_y:ptr dword,pfrac_x:ptr dword,pfrac_y:ptr dword,speed:dword,_type:word
 changeDirection	proto	index:dword
 calculateNextMove	proto	x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dword
 pollingMonster	proto

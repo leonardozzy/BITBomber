@@ -44,7 +44,7 @@ PAUSEPAGE_IMG	equ	89
 IMG_CNT	equ	90
 
 DRAW_GAME_X_START	equ	40
-DRAW_GAME_Y_START	equ	70
+DRAW_GAME_Y_START	equ	90
 ELEMENT_WIDTH	equ	60
 ELEMENT_HEIGHT	equ	60
 DRAW_Y_STEP	equ	ELEMENT_HEIGHT-16
@@ -54,7 +54,6 @@ LOGO_HEIGHT	equ	400
 LOGO_X_POS	equ	300
 LOGO_Y_POS	equ	150
 .data
-
 DENGXIAN_FONT	StrFont	<FONT_NAME_LEN dup(?),12.0,0ffffffffh,FontStyleRegular>
 
 .data?
@@ -62,6 +61,10 @@ bitmapPtrs	dword	200 dup(?)
 logoBitmapPtr	dword	?
 startPageBitmapPtr	dword	?
 storyUtf16Str	word	1024 dup(?)
+bg1Info	BitmapInfo	<>
+bg2Info	BitmapInfo	<>
+wallInfo	BitmapInfo	<>
+boxInfo	BitmapInfo	<>
 
 .const
 PLAYER1_UP1_PATH	byte	"./images/player1_up1.png",0
@@ -142,19 +145,19 @@ BLUE_FIRE3_PATH	byte	"./images/blue_fire3.png",0
 BLUE_FIRE4_PATH	byte	"./images/blue_fire4.png",0
 BOMB1_PATH	byte	"./images/bomb1.png",0
 BOMB2_PATH	byte	"./images/bomb2.png",0
-WALL_PATH	byte	"./images/wall.png",0
-BOX_PATH	byte	"./images/box.png",0
+WALL_PATH	byte	"./images/wall.bmp",0
+BOX_PATH	byte	"./images/box.bmp",0
 LIFE_TOOL_PATH	byte	"./images/life_tool.png",0
 BOMB_RANGE_TOOL_PATH	byte	"./images/bomb_range_tool.png",0
 BOMB_CNT_TOOL_PATH	byte	"./images/bomb_cnt_tool.png",0
 TIME_TOOL_PATH	byte	"./images/time_tool.png",0
 SPEED_TOOL_PATH	byte	"./images/speed_tool.png",0
-BG1_PATH	byte	"./images/bg1.png",0
-BG2_PATH	byte	"./images/bg2.png",0
+BG1_PATH	byte	"./images/bg1.bmp",0
+BG2_PATH	byte	"./images/bg2.bmp",0
 LOGO_PATH	byte	"./images/logo.png",0
 HOMEPAGE_PATH	byte	"./images/start.png",0
 PAUSEPAGE_PATH	byte	"./images/start.png",0
-DENGXIAN	byte	"等线",0
+;DENGXIAN	byte	"等线",0
 ONE_INT_FMT	byte	"%d",0
 TIME_FMT	byte	"%d:%02d",0
 align	4
@@ -228,6 +231,33 @@ drawSolidRect	proc	graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,he
 	ret
 drawSolidRect	endp
 
+initBmp	proc	path:ptr byte,info:ptr BitmapInfo
+	local	bmpInfo:BITMAP
+	push	ebx
+	invoke	LoadImage,NULL,path,IMAGE_BITMAP,0,0,LR_LOADFROMFILE
+	mov	ebx,info
+	mov	[ebx].BitmapInfo.hBitmap,eax
+	invoke	GetObject,[ebx].BitmapInfo.hBitmap,sizeof(BITMAP),addr bmpInfo
+	mov	eax,bmpInfo.bmWidth
+	mov	[ebx].BitmapInfo._width,eax
+	mov	eax,bmpInfo.bmHeight
+	mov	[ebx].BitmapInfo.height,eax
+	invoke	CreateCompatibleDC,NULL
+	mov	[ebx].BitmapInfo.hdcMem,eax
+	invoke	SelectObject,eax,[ebx].BitmapInfo.hBitmap
+	pop	ebx
+	ret
+initBmp	endp
+
+deleteBmp	proc	info:ptr BitmapInfo
+	push	ebx
+	mov	ebx,info
+	invoke	DeleteDC,[ebx].BitmapInfo.hdcMem
+	invoke	DeleteObject,[ebx].BitmapInfo.hBitmap
+	pop	ebx
+	ret
+deleteBmp	endp
+
 ;加载图片资源、初始化UTF-16字符串等
 initResources	proc
 	local	utf16Str[512]:word
@@ -244,6 +274,10 @@ loop_initResources:
 exitLoop_initResources:
 	lea	eax,DENGXIAN_FONT.fontName
 	invoke	MultiByteToWideChar,CP_ACP,NULL,offset DENGXIAN,-1,eax,2*FONT_NAME_LEN
+	invoke	initBmp,offset WALL_PATH,offset wallInfo
+	invoke	initBmp,offset BOX_PATH,offset boxInfo
+	invoke	initBmp,offset BG1_PATH,offset bg1Info
+	invoke	initBmp,offset BG2_PATH,offset bg2Info
 	pop	ebx
 	ret
 initResources	endp
@@ -259,6 +293,10 @@ loop_releaseResources:
 	inc	ebx
 	jmp	loop_releaseResources
 exitLoop_releaseResources:
+	invoke	deleteBmp,offset wallInfo
+	invoke	deleteBmp,offset boxInfo
+	invoke	deleteBmp,offset bg1Info
+	invoke	deleteBmp,offset bg2Info
 	pop	ebx
 	ret
 releaseResources	endp
@@ -288,7 +326,7 @@ calcDrawPos	proc	xPos:dword,yPos:dword,frac_x:dword,frac_y:dword,drawXPos:ptr dw
 	ret
 calcDrawPos	endp
 
-drawMap	proc	graphicsPtr:dword
+drawMap	proc	graphicsPtr:dword,hdcBuffer:HDC
 	;ebx：地图偏移量，esi:xPos，edi:yPos
 	local	layer:dword,id:dword,drawXPos:dword,drawYPos:dword,monsterSpeed:dword
 	local	tempStr[13]:byte
@@ -297,10 +335,14 @@ drawMap	proc	graphicsPtr:dword
 	push	edi
 	cmp	game.level,4
 	je	drawBossBG_drawMap
-	invoke	drawImage,graphicsPtr,bitmapPtrs[BG1_IMG*4],0,0,WINDOW_WIDTH,WINDOW_HEIGHT
+	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,SRCCOPY
+	;invoke	StretchBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,bg1Info._width,bg1Info.height,SRCCOPY
+	;invoke	drawImage,graphicsPtr,bitmapPtrs[BG1_IMG*4],0,0,WINDOW_WIDTH,WINDOW_HEIGHT
 	jmp	endDrawBG_drawMap
 drawBossBG_drawMap:
-	invoke	drawImage,graphicsPtr,bitmapPtrs[BG2_IMG*4],0,0,WINDOW_WIDTH,WINDOW_HEIGHT
+	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg2Info.hdcMem,0,0,SRCCOPY
+	;invoke	StretchBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg2Info.hdcMem,0,0,bg2Info._width,bg2Info.height,SRCCOPY
+	;invoke	drawImage,graphicsPtr,bitmapPtrs[BG2_IMG*4],0,0,WINDOW_WIDTH,WINDOW_HEIGHT
 endDrawBG_drawMap:
 	xor	ebx,ebx
 	mov	esi,DRAW_GAME_X_START
@@ -312,7 +354,9 @@ mainLoop_drawMap:
 	mov	id,edx
 	jmp	[DRAW_MAP_JMP_TBL+eax*4]
 drawWall_drawMap	label	dword
-	invoke	drawImage,graphicsPtr,bitmapPtrs[WALL_IMG*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
+	;invoke	StretchBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,wallInfo.hdcMem,0,0,wallInfo._width,wallInfo.height,SRCCOPY
+	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,wallInfo.hdcMem,0,0,SRCCOPY
+	;invoke	drawImage,graphicsPtr,bitmapPtrs[WALL_IMG*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
 	jmp	exitSwitch_drawMap
 drawPlayer_drawMap	label	dword
 	mov	eax,game.player.timer
@@ -378,7 +422,9 @@ drawMonster2_drawMap:
 	invoke	drawImage,graphicsPtr,bitmapPtrs[MON2_UP_IMG*4+edx*4],drawXPos,drawYPos,ELEMENT_WIDTH,ELEMENT_HEIGHT
 	jmp	exitSwitch_drawMap
 drawBox_drawMap	label	dword
-	invoke	drawImage,graphicsPtr,bitmapPtrs[BOX_IMG*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
+	;invoke	StretchBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,boxInfo.hdcMem,0,0,boxInfo._width,boxInfo.height,SRCCOPY
+	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,boxInfo.hdcMem,0,0,SRCCOPY
+	;invoke	drawImage,graphicsPtr,bitmapPtrs[BOX_IMG*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
 	jmp	exitSwitch_drawMap
 drawTool_drawMap	label	dword
 	mov	eax,id
@@ -416,14 +462,24 @@ exitSwitch_drawMap:
 	cmp	edi,DRAW_GAME_Y_START+DRAW_Y_STEP*ROW
 	jne	mainLoop_drawMap
 exitMainLoop_drawMap:
+;150 350 500 650 850
+	;invoke	SetTextColor,hdcBuffer,0ffffffh
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.life
-	invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset LIFE_STR_DISP
+	invoke	crt_strlen,addr tempStr
+	invoke	TextOut,hdcBuffer,150,30,addr tempStr,eax
+	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset LIFE_STR_DISP
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.speed
-	invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset SPEED_STR_DISP
+	invoke	crt_strlen,addr tempStr
+	invoke	TextOut,hdcBuffer,350,30,addr tempStr,eax
+	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset SPEED_STR_DISP
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.bomb_cnt
-	invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset CNT_STR_DISP
+	invoke	crt_strlen,addr tempStr
+	invoke	TextOut,hdcBuffer,650,30,addr tempStr,eax
+	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset CNT_STR_DISP
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.bomb_range
-	invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset RANGE_STR_DISP
+	invoke	crt_strlen,addr tempStr
+	invoke	TextOut,hdcBuffer,850,30,addr tempStr,eax
+	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset RANGE_STR_DISP
 	mov	eax,game.timer
 	xor	edx,edx
 	mov	ecx,FRAMES_PER_SEC
@@ -432,7 +488,10 @@ exitMainLoop_drawMap:
 	mov	ecx,60	;1min=60s
 	div	ecx	;eax是分，edx是秒
 	invoke	crt_sprintf,addr tempStr,offset TIME_FMT,eax,edx
-	invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset TIME_STR_DISP
+	invoke	crt_strlen,addr tempStr
+	invoke	TextOut,hdcBuffer,500,30,addr tempStr,eax
+
+	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset TIME_STR_DISP
 	pop	edi
 	pop	esi
 	pop	ebx
@@ -505,7 +564,7 @@ ret_drawStory:
 	ret
 drawStory	endp
 
-drawWindow	proc	graphicsPtr:dword
+drawWindow	proc	graphicsPtr:dword,hdcBuffer:HDC
 	cmp mainwinp.winState, winState_logoPage
 	je logoPage_drawWindow
 	cmp mainwinp.winState, winState_startPage
@@ -527,7 +586,7 @@ onStory_drawWindow:
 	invoke	drawStory, graphicsPtr
 	jmp ret_drawWindow
 onGame_drawWindow:
-	invoke	drawMap, graphicsPtr
+	invoke	drawMap, graphicsPtr,hdcBuffer
 	jmp ret_drawWindow
 pauseGame_drawWindow:
 	invoke	drawImage,graphicsPtr,bitmapPtrs[PAUSEPAGE_IMG*4],0,0,WINDOW_WIDTH,WINDOW_WIDTH
