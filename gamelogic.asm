@@ -22,7 +22,8 @@ LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset
 TOOL_TYPE_JMP_TBL   dword   offset addLife_pollingPlayer,offset addRange_pollingPlayer,offset addCnt_pollingPlayer,offset addSpeed_pollingPlayer,offset addTime_pollingPlayer
 MOVE_ONE_STEP_JMP_TBL   dword   offset direUp_moveOneStep,offset direDown_moveOneStep,offset direLeft_moveOneStep,offset direRight_moveOneStep
 CALC_NEXT_MOVE_JMP_TBL  dword   offset direUp_calculateNextMove,offset direDown_calculateNextMove,offset direLeft_calculateNextMove,offset direRight_calculateNextMove
-POLL_MONSTER_JMP_TBL    dword   offset direUp_pollingMonster,offset direDown_pollingMonster,offset direLeft_pollingMonster,offset direRight_pollingMonster
+;POLL_MONSTER_JMP_TBL    dword   offset direUp_pollingMonster,offset direDown_pollingMonster,offset direLeft_pollingMonster,offset direRight_pollingMonster
+FROM_DIRECTION_TBL  dword   DOWN,UP,RIGHT,LEFT
 
 .code
 placeBomb	proc	
@@ -63,12 +64,15 @@ pollingPlayer	proc	input:dword
         jmp ret_pollingPlayer   ; Early return as no movement is required
     JmpOver_placeBomb_pollingPlayer:
     ; deal with player status
-    cmp game.player.status,INVISIBLE
-    jne JmpOverINVISIBLE_pollingPlayer
-        dec game.player.timer
-        cmp game.player.timer,0
-        jne JmpOverINVISIBLE_pollingPlayer
-            mov game.player.status, NORMAL
+    cmp game.player.timer,0
+    je  JmpOverINVISIBLE_pollingPlayer
+    dec game.player.timer
+    ;cmp game.player.status,INVISIBLE
+    ;jne JmpOverINVISIBLE_pollingPlayer
+        ;dec game.player.timer
+        ;cmp game.player.timer,0
+        ;jne JmpOverINVISIBLE_pollingPlayer
+            ;mov game.player.status, NORMAL
     JmpOverINVISIBLE_pollingPlayer:
     ; Move player
     mov eax, game.player.x
@@ -92,7 +96,7 @@ pollingPlayer	proc	input:dword
         cmp game.map[eax*4]._type, TOOL
         jne JmpOverTool_pollingPlayer
             movzx   ecx,game.map[eax*4].id
-            sal ecx, 4  ;tool_index *= sizeof(tool)   考虑万一改变sizeof Tool
+            sal ecx, 4  ;tool_index *= sizeof(tool)   考虑万一改变sizeof Tool，这个地方要改
             mov edx,game.tools[ecx]._type
             jmp [TOOL_TYPE_JMP_TBL+edx*4]
             addLife_pollingPlayer label dword
@@ -136,10 +140,9 @@ isMoveable  proc    x:dword, y:dword
     cmp game.map[eax*4+4]._type,WALL
     je ret_0_isMoveable
     mov eax,1   ; none of above,ret 1
-    jmp ret_isMoveable
+    ret
 ret_0_isMoveable:
     xor eax,eax
-ret_isMoveable:
     ret
 isMoveable  endp
 
@@ -159,32 +162,27 @@ isMoveableMonster   endp
 moveOneStep proc    x:dword, y:dword, direction:dword \
     , pnew_x:ptr dword, pnew_y:ptr dword, pfrac_x:ptr dword \
     , pfrac_y:ptr dword, speed:dword
-local ismove
+local ismove:dword
 mov ismove,0
 push ebx
     mov edx, speed
-    mov ecx, pfrac_x
-    cmp direction, UP
-    jne JOup_moveOneStep
-        sub [ecx], edx
-        jmp dirSwEnd_moveOneStep
-    JOup_moveOneStep:
-    cmp direction, DOWN
-    jne JOdown_moveOneStep
-        add [ecx], edx
-        jmp dirSwEnd_moveOneStep
-    JOdown_moveOneStep:
-    mov ecx, pfrac_y
-    cmp direction, LEFT
-    jne JOleft_moveOneStep
-        sub [ecx], edx
-        jmp dirSwEnd_moveOneStep
-    JOleft_moveOneStep:
-    cmp direction, RIGHT
-    jne JOright_moveOneStep
-        add [ecx], edx
-        jmp dirSwEnd_moveOneStep
-    JOright_moveOneStep:
+    mov eax,direction
+    jmp [MOVE_ONE_STEP_JMP_TBL+eax*4]
+    direUp_moveOneStep  label   dword
+    mov ecx,pfrac_x
+    sub [ecx],edx
+    jmp dirSwEnd_moveOneStep
+    direDown_moveOneStep    label   dword
+    mov ecx,pfrac_x
+    add [ecx],edx
+    jmp dirSwEnd_moveOneStep
+    direLeft_moveOneStep    label   dword
+    mov ecx,pfrac_y
+    sub [ecx],edx
+    jmp dirSwEnd_moveOneStep
+    direRight_moveOneStep   label   dword
+    mov ecx,pfrac_y
+    add [ecx],edx
     dirSwEnd_moveOneStep:
     mov ebx, 2*FRAC_RANGE   ;ebx = 2*FRAC_RANGE
     mov ecx, pfrac_x
@@ -304,17 +302,17 @@ readKey endp
 ;	return 0;
 ;}
 
-setInvisible proc
-	xor	eax,eax
-	cmp	game.player.status,NORMAL
-	je l1_setInvisible
-	ret
-l1_setInvisible:
-	mov game.player.status,INVISIBLE
-	mov game.player.timer,INVISIBLE_TIMER
-	inc	eax
-	ret
-setInvisible endp
+;setInvisible proc
+	;xor	eax,eax
+	;cmp	game.player.status,NORMAL
+	;je l1_setInvisible
+	;ret
+;l1_setInvisible:
+	;mov game.player.status,INVISIBLE
+	;mov game.player.timer,INVISIBLE_TIMER
+	;inc	eax
+	;ret
+;setInvisible endp
 
 
 ;void die(Game *this) {
@@ -333,8 +331,10 @@ setInvisible endp
 ;}
 
 die proc
-	cmp	game.player.status,INVISIBLE
-	je end_die
+    cmp game.player.timer,0
+    jg  end_die
+	;cmp	game.player.status,INVISIBLE
+	;je end_die
 	dec	game.player.life
 	cmp game.player.life,0
 	je l1_die
@@ -349,7 +349,8 @@ l2_die:
 	mov game.player.y,1
 	invoke calcMapOffset,game.player.x,game.player.y,1
 	mov game.map[eax*4]._type ,PLAYER
-	invoke setInvisible
+    mov game.player.timer,INVISIBLE_TIMER
+	;invoke setInvisible
 	mov eax,game.level_timer
 	mov game.timer,eax
 end_die:
@@ -367,16 +368,9 @@ die endp
 ;}
 
 calculateNextMove proc stdcall x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dword
-	cmp direction,UP
-	je up_case
-	cmp direction,DOWN
-	je down_case
-	cmp direction,LEFT
-	je left_case
-	cmp direction,RIGHT
-	je right_case
-	jmp end_calculateNextMove
-up_case:
+    mov eax,direction
+    jmp [CALC_NEXT_MOVE_JMP_TBL+eax*4]
+    direUp_calculateNextMove    label   dword
 	mov ecx,x
 	dec	ecx
 	mov	eax,new_x
@@ -384,8 +378,8 @@ up_case:
 	mov	ecx,y
 	mov	eax,new_y
 	mov	[eax],ecx
-	jmp end_calculateNextMove
-down_case:
+    ret
+    direDown_calculateNextMove    label   dword
 	mov	ecx,x
 	inc	ecx
 	mov	eax,new_x
@@ -393,8 +387,8 @@ down_case:
 	mov	ecx,y
 	mov	eax,new_y
 	mov	[eax],ecx
-	jmp end_calculateNextMove
-left_case:
+	ret
+    direLeft_calculateNextMove    label   dword
 	mov	ecx,x
 	mov	eax,new_x
 	mov	[eax],ecx
@@ -402,9 +396,8 @@ left_case:
 	dec	ecx
 	mov	eax,new_y
 	mov	[eax],ecx
-	jmp end_calculateNextMove
-;        case RIGHT: *new_x = x; *new_y = y + 1; break; // Move right
-right_case:
+	ret
+    direRight_calculateNextMove    label   dword
 	mov	ecx,x
 	mov	eax,new_x
 	mov	[eax],ecx
@@ -412,71 +405,75 @@ right_case:
 	inc	ecx
 	mov	eax,new_y
 	mov	[eax],ecx
-end_calculateNextMove:
 	ret
 calculateNextMove endp
 
 
-getFromDriection proc direction:dword
-	cmp direction,UP
-	je up_getFromDriection
-	cmp direction,DOWN
-	je down_getFromDriection
-	cmp direction,LEFT
-	je left_getFromDriection
-	cmp direction,RIGHT
-	je right_getFromDriection
-	ret
-
-	up_getFromDriection:
-	mov eax,DOWN
-	ret
-	down_getFromDriection:
-	mov eax,UP
-	ret
-	left_getFromDriection:
-	mov eax,RIGHT
-	ret
-	right_getFromDriection:
-	mov eax,LEFT
-	ret
-	
-
-getFromDriection endp
+;getFromDriection proc direction:dword
+;	cmp direction,UP
+;	je up_getFromDriection
+;	cmp direction,DOWN
+;	je down_getFromDriection
+;	cmp direction,LEFT
+;	je left_getFromDriection
+;	cmp direction,RIGHT
+;	je right_getFromDriection
+;	ret
+;
+;	up_getFromDriection:
+;	mov eax,DOWN
+;	ret
+;	down_getFromDriection:
+;	mov eax,UP
+;	ret
+;	left_getFromDriection:
+;	mov eax,RIGHT
+;	ret
+;	right_getFromDriection:
+;	mov eax,LEFT
+;	ret
+;	
+;
+;getFromDriection endp
 
 
 
 pollingMonster	proc
-	local i:DWORD
-	local monsteroffset:DWORD
+	;local i:DWORD
+	;local monsteroffset:DWORD
 	local tmp1,tmp2:DWORD
 	push ebx
-	mov i,0
+    push    esi
+    xor esi,esi
+	;mov i,0
 	outer_for_pollingMonster:
-		mov eax,i
+        mov eax,esi
+		;mov eax,i
 		mov ebx,sizeof(Monster)
 		mul ebx
-		mov monsteroffset,eax
+        mov ebx,eax
+		;mov monsteroffset,eax
 
 		;if (this->monsters[i].valid)
-		mov ebx,monsteroffset
+		;mov ebx,monsteroffset
 		mov eax,game.monsters[ebx].valid
 		cmp eax,0
 		je MonsterNotValid_pollingMonster
-			mov ebx,monsteroffset
+			;mov ebx,monsteroffset
 			invoke moveOneStep,game.monsters[ebx].x,game.monsters[ebx].y \
 							,game.monsters[ebx].direction,addr tmp1,addr tmp2 \
 							,addr game.monsters[ebx].frac_x ,addr game.monsters[ebx].frac_y\
 							,game.monsters[ebx].speed
 			cmp eax,1
 			jne notMoveCell_pollingMonster
-				invoke movMonsterToNextCell	,i
+				invoke movMonsterToNextCell	,esi
 			notMoveCell_pollingMonster:
 
 		MonsterNotValid_pollingMonster:
-	inc i
-	cmp i,MAX_MONSTER
+	inc esi
+	cmp esi,MAX_MONSTER
 	jl outer_for_pollingMonster
+    pop esi
 	pop ebx
 	ret
 pollingMonster endp
@@ -505,7 +502,8 @@ movMonsterToNextCell proc index:dword
 
 	mov ebx,monsteroffset
 	mov esi,game.monsters[ebx].direction
-	invoke getFromDriection,esi				
+	;invoke getFromDriection,esi		
+    mov eax,[FROM_DIRECTION_TBL+esi*4]
 	mov monster_from,eax
 	mov j,0
 	inner_for_movMonsterToNextCell:
@@ -638,7 +636,9 @@ changeDirection	proc	index:dword
 	mov	direction[4],1
 	mov	direction[8],1
 	mov	direction[12],1
-	invoke getFromDriection,game.monsters[ebx].direction
+    mov eax,game.monsters[ebx].direction
+    mov eax,[FROM_DIRECTION_TBL+eax*4]
+	;invoke getFromDriection,game.monsters[ebx].direction
 	mov	monster_from,eax
 	mov	eax,monster_from
 	mov	direction[eax*4],0
@@ -717,7 +717,7 @@ changeDirection	endp
 
 
 
-clearFire proc	x:dword,y:dword
+clearFire proc	x:dword,y:dword,id:dword
 	invoke calcMapOffset,x,y,2
 	mov game.map[eax*4]._type,EMPTY
 	ret
@@ -1006,8 +1006,7 @@ initGame    proc
     mov game.player.bomb_cnt,1
     mov game.player.life,2
     mov game.player.speed,PLAYER_1_SPEED
-    mov game.player.status,NORMAL
-    invoke  calcMapOffset,0,0,1
+    mov game.player.timer,0
     invoke  initLevel
     ret
 initGame    endp
@@ -1082,8 +1081,13 @@ pollingSuccess  endp
 
 dealBomb    proc    x:dword,y:dword,range:dword,_job:dword
     ;ebx：循环变量，esi：循环界
+    local   id:dword
+    invoke  calcMapOffset,x,y,0
+    movzx   eax,game.map[eax*4].id
+    mov id,eax
     push    ebx
     push    esi
+    push    eax ;id
     push    y
     push    x
     call    _job
@@ -1097,6 +1101,7 @@ loop1_dealBomb:
     invoke  isDestroyable,ebx,y
     test    eax,eax
     jz  exitLoop1_dealBomb
+    push    id
     push    y
     push    ebx
     call    _job
@@ -1113,6 +1118,7 @@ loop2_dealBomb:
     invoke  isDestroyable,ebx,y
     test    eax,eax
     jz  exitLoop2_dealBomb
+    push    id
     push    y
     push    ebx
     call    _job
@@ -1129,6 +1135,7 @@ loop3_dealBomb:
     invoke  isDestroyable,x,ebx
     test    eax,eax
     jz  exitLoop3_dealBomb
+    push    id
     push    ebx
     push    x
     call    _job
@@ -1145,6 +1152,7 @@ loop4_dealBomb:
     invoke  isDestroyable,x,ebx
     test    eax,eax
     jz  exitLoop4_dealBomb
+    push    id
     push    ebx
     push    x
     call    _job
@@ -1170,16 +1178,20 @@ retZero_isDestroyable:
     ret
 isDestroyable   endp
 
-explode proc    x:dword,y:dword
+explode proc    x:dword,y:dword,id:dword
     invoke  calcMapOffset,x,y,2
     mov game.map[eax*4]._type,FIRE
+    mov edx,id
+    mov game.map[eax*4].id,dx
     invoke  clear,x,y
     ret
 explode endp
 
-setFire proc    x:dword,y:dword
+setFire proc    x:dword,y:dword,id:dword
     invoke  calcMapOffset,x,y,2
     mov game.map[eax*4]._type,FIRE
+    mov edx,id
+    mov game.map[eax*4].id,dx
     ret
 setFire endp
 
