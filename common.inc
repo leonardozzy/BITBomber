@@ -207,8 +207,6 @@ moveOneStep	proto	x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dwor
 changeDirection	proto	index:dword
 calculateNextMove	proto	x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dword
 pollingMonster	proto
-movMonsterToNextCell proto index:dword
-getFromDriection proto direction:dword
 die	proto
 setInvisiable	proto
 pollingTool	proto
@@ -241,34 +239,11 @@ WINDOW_NAME	byte	"BIT BOMBERMAN",0	;窗口显示名
 GP_INPUT	GdiplusStartupInput	<1,0,0,0>
 MSGBOX_WINDOW_FAIL_TEXT	byte	"窗口创建失败！",0
 MSGBOX_ERROR_TITLE	byte	"错误",0
-FILENAME1	byte	"./level/1.level",0
-FILENAME2	byte	"./level/2.level",0
-FILENAME3	byte	"./level/3.level",0
-FILENAME4	byte	"./level/4.level",0
-LOGO_PATH	byte	"./image/logo.png",0
 STORY_1	byte	"在文G126教室下方的地底深处，沉睡着一只强大的恶龙，它曾是这片土地上的主宰，但在数百年前被一位传奇的勇士所封印。",0
 STORY_2	byte	"然而，由于一系列神秘的事件，这条恶龙再次苏醒，并对北理工校园发动了猛烈的进攻。学生们惊恐地发现，恶龙的力量无法用普通的手段抵挡，整个校园都笼罩在恶龙的阴影之下，校园里弥漫着绝望的氛围。",0
 STORY_3	byte	"直到一天，张华平老师，一位在《汇编语言与接口技术》课程中崭露头角的教授，意识到解救校园的唯一方法是利用古老的汇编语言，唤醒这一代学生的力量。",0
 STORY_4	byte	"于是，张老师向他班级的学生们发出紧急动员令。同学们被授予“MASM”，在张老师的指导下，导引IA-32之力，制造强大的汇编炸弹，以对抗恶龙和它的爪牙。在学习中，同学们逐渐领悟到汇编艺术的深奥之处，他们的智慧和技能在不断地升华。",0
 STORY_5	byte	"随着时间的推移，同学们集结成一个强大的汇编战队，他们肩负着解救北理工校园的责任。他们穿梭在校园的教学楼中，挑战各种由恶龙创造的机关陷阱，解开一个个谜题，最终进入到文G126教室的最深处，准备面对恶龙的最终一战……",0
-
-LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
-OPEN_FILE_READ_ONLY	byte	"r",0
-OPEN_BFILE_READ_ONLY	byte	"rb",0
-OPEN_BFILE_WRITE_ONLY	byte	"wb",0
-ONE_INT_FORMAT	byte	"%d",0
-WIN_STR	byte	"You Win!",0
-GAMEOVER_STR	byte "Game Over!",0
-CLS_STR	byte	"cls",0
-;ADDR_STR	byte	"0x%08x",0
-;PRINT_INT_STR	byte	"%d",0ah,0
-
-SPLIT_STR	byte	"----------------------------------------",0
-LIFE_STR	byte	"Life: %d",0ah,0
-BOMB_RANGE_STR	byte	"Bomb Range: %d",0ah,0
-BOMB_CNT_STR	byte	"Bomb Count: %d",0ah,0
-SPEED_STR	byte	"Speed: %d",0ah,0
-MONSTER_NUM_STR	byte	"Monster Num: %d",0ah,0
 
 endif
 

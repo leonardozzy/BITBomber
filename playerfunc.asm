@@ -147,8 +147,6 @@ isMoveableMonster   endp
 moveOneStep proc    x:dword, y:dword, direction:dword \
     , pnew_x:ptr dword, pnew_y:ptr dword, pfrac_x:ptr dword \
     , pfrac_y:ptr dword, speed:dword
-local ismove
-mov ismove,0
 push ebx
     mov edx, speed
     mov ecx, pfrac_x
@@ -187,7 +185,6 @@ push ebx
         mov [edx],eax
         mov edx, pfrac_x
         sub [edx], ebx
-        mov ismove,1
         jmp fracOverSwEnd_moveOneStep
     JOxgreat_moveOneStep:
     cmp dword ptr [ecx], -FRAC_RANGE
@@ -201,8 +198,6 @@ push ebx
         mov [edx],eax
         mov edx, pfrac_x
         add [edx], ebx
-        mov ismove,1
-
         jmp fracOverSwEnd_moveOneStep
     JOxless_moveOneStep:
     mov ecx, pfrac_y
@@ -217,8 +212,6 @@ push ebx
         mov [edx],eax
         mov edx, pfrac_y
         sub [edx], ebx
-        mov ismove,1
-
         jmp fracOverSwEnd_moveOneStep
     JOygreat_moveOneStep:
     cmp dword ptr [ecx], -FRAC_RANGE
@@ -232,8 +225,6 @@ push ebx
         mov [edx],eax
         mov edx, pfrac_y
         add [edx], ebx
-        mov ismove,1
-
         jmp fracOverSwEnd_moveOneStep
     JOyless_moveOneStep:
         mov eax, x
@@ -245,7 +236,6 @@ push ebx
         jmp ret_moveOneStep
     fracOverSwEnd_moveOneStep:
 ret_moveOneStep:
-mov eax, ismove
 pop ebx
     ret
 moveOneStep endp
