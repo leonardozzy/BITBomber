@@ -21,4 +21,25 @@ calcMapOffset	proc x:dword,y:dword,z:dword
 	ret
 calcMapOffset	endp
 
+;判断mousexy是否在xy，x+w y+h范围内，鼠标点击按键检测
+isMouseInButton proc mousex:word, mousey:word, x:word,y:word,w:word,h:word
+	mov dx,mousex
+	cmp dx,x
+	jb notIn_isMouseInButton
+	sub dx,x
+	cmp dx,w
+	ja notIn_isMouseInButton
+	mov dx,mousey
+	cmp dx,y
+	jb notIn_isMouseInButton
+	sub dx,y
+	cmp dx,h
+	ja notIn_isMouseInButton
+	mov eax,1
+	ret
+notIn_isMouseInButton:
+	mov eax,0
+	ret
+isMouseInButton endp
+
 end

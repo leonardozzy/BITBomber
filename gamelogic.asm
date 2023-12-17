@@ -10,6 +10,7 @@ FILENAME1	byte	"./level/1.level",0
 FILENAME2	byte	"./level/2.level",0
 FILENAME3	byte	"./level/3.level",0
 FILENAME4	byte	"./level/4.level",0
+FILENAMESAVE	byte	"./save/save.db",0
 OPEN_FILE_READ_ONLY	byte	"r",0
 OPEN_BFILE_READ_ONLY	byte	"rb",0
 OPEN_BFILE_WRITE_ONLY	byte	"wb",0
@@ -170,19 +171,19 @@ push ebx
     mov eax,direction
     jmp [MOVE_ONE_STEP_JMP_TBL+eax*4]
     direUp_moveOneStep  label   dword
-    mov ecx,pfrac_x
+    mov ecx,pfrac_y
     sub [ecx],edx
     jmp dirSwEnd_moveOneStep
     direDown_moveOneStep    label   dword
-    mov ecx,pfrac_x
+    mov ecx,pfrac_y
     add [ecx],edx
     jmp dirSwEnd_moveOneStep
     direLeft_moveOneStep    label   dword
-    mov ecx,pfrac_y
+    mov ecx,pfrac_x
     sub [ecx],edx
     jmp dirSwEnd_moveOneStep
     direRight_moveOneStep   label   dword
-    mov ecx,pfrac_y
+    mov ecx,pfrac_x
     add [ecx],edx
     dirSwEnd_moveOneStep:
     mov ebx, 2*FRAC_RANGE   ;ebx = 2*FRAC_RANGE
@@ -263,35 +264,6 @@ moveOneStep endp
 
 
 
-readKey Proc
-    invoke GetAsyncKeyState,'B'
-    .if eax & 0001H
-		mov eax,SETBOMB
-        ret
-    .endif
-    invoke GetAsyncKeyState,'W'
-    .if eax & 0001H
-		mov eax,UP
-        ret
-    .endif
-    invoke GetAsyncKeyState,'S'
-    .if eax & 0001H
-		mov eax,DOWN
-        ret
-    .endif
-    invoke GetAsyncKeyState,'A'
-    .if eax & 0001H
-		mov eax,LEFT
-        ret
-    .endif
-    invoke GetAsyncKeyState,'D'
-    .if eax & 0001H
-		mov eax,RIGHT
-        ret
-    .endif
-    mov eax,-1
-    ret
-readKey endp
 
 
 ;int setInvisible(Game *this) {
@@ -518,16 +490,16 @@ movMonsterToNextCell proc index:dword
 		mov eax,game.monsters[ebx].y
 		mov newY,eax
         jmp [MOV_MONSTER_TO_NEXT_CELL_JMP_TBL+esi*4]
-        up1_switch_movMonsterToNextCell label   dword
+up1_switch_movMonsterToNextCell label   dword
         dec newX
         jmp end_switch1_movMonsterToNextCell
-        down1_switch_movMonsterToNextCell   label   dword
+down1_switch_movMonsterToNextCell   label   dword
         inc newX
         jmp end_switch1_movMonsterToNextCell
-        left1_switch_movMonsterToNextCell   label   dword
+left1_switch_movMonsterToNextCell   label   dword
         dec newY
         jmp end_switch1_movMonsterToNextCell
-        right1_switch_movMonsterToNextCell   label   dword
+right1_switch_movMonsterToNextCell   label   dword
 		inc newY
 		end_switch1_movMonsterToNextCell:
 
@@ -638,7 +610,7 @@ changeDirection	proc	index:dword
 	mov	direction[eax*4],0
     xor esi,esi
 	;mov j,0
-	loop1_changeDirection:
+	loop1:
 		mov eax,game.monsters[ebx].x
 		mov	newX,eax
 		mov eax,game.monsters[ebx].y
@@ -646,41 +618,41 @@ changeDirection	proc	index:dword
 		invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,esi,addr newX,addr newY
 		invoke isMoveableMonster,newX,newY
 		test eax,eax
-		jnz not_movable_direction_changeDirection
+		jnz not_movable_direction
 			;mov eax,j
 			mov	direction[esi*4],0
-		not_movable_direction_changeDirection:
+		not_movable_direction:
 	;inc j
 	;cmp j,4
     inc esi
 	cmp esi,4
-	jl loop1_changeDirection
+	jl loop1
 	;chose the available direction randomly
 	;local	new_direction:dword,available_direction:dword
 	mov available_direction,0
 	mov new_direction,0
 	;mov j,0
     xor esi,esi
-	loop2_changeDirection:
+	loop2:
 		;mov eax,j
 		cmp direction[esi*4],1
-		jne count_avail_direction_changeDirection
+		jne count_avail_direction
 			;mov eax,j
 			mov new_direction,esi
 			inc available_direction
-		count_avail_direction_changeDirection:
+		count_avail_direction:
 
 	;inc j
 	;cmp j,4
     inc esi
     cmp esi,4
-	jl loop2_changeDirection
+	jl loop2
 
 	cmp available_direction,0
-	jne have_available_direction_changeDirection
+	jne have_available_direction
 		mov eax,monster_from
-		jmp end_func_changeDirection
-	have_available_direction_changeDirection:
+		jmp end_func
+	have_available_direction:
 
 	invoke crt_rand
 	xor edx,edx
@@ -691,26 +663,26 @@ changeDirection	proc	index:dword
 	;mov j,0
     xor esi,esi
 	cmp edx,0
-	je end_loop3_changeDirection
+	je end_loop3
 	loop3:
 		inc new_direction
 		and new_direction,3
-		while_loop_changeDirection:
+		while_loop:
 		mov eax,new_direction
 		cmp direction[eax*4],1
-		je find_next_direction_changeDirection
+		je find_next_direction
 		inc new_direction
 		and new_direction,3
-		jmp while_loop_changeDirection
-		find_next_direction_changeDirection:
+		jmp while_loop
+		find_next_direction:
 	inc esi
 	;mov eax,j
 	cmp esi,edx
-	jl loop3_changeDirection
-	end_loop3_changeDirection:
+	jl loop3
+	end_loop3:
 	mov eax,new_direction
 	mov game.monsters[ebx].direction,eax
-	end_func_changeDirection:
+	end_func:
 	pop	esi
 	pop	ebx
 	ret
@@ -1276,18 +1248,18 @@ exitLoop_placeTool:
     ret
 placeTool   endp
 
-archive proc    path1:ptr byte
+archive proc
     local   file:ptr FILE
-    invoke  crt_fopen,path1,offset OPEN_BFILE_WRITE_ONLY
+    invoke  crt_fopen,offset FILENAMESAVE,offset OPEN_BFILE_WRITE_ONLY
     mov file,eax
     invoke  crt_fwrite,offset game,sizeof Game,1,eax
     invoke  crt_fclose,file
     ret
 archive endp
 
-load    proc    path1:ptr byte
+load    proc
     local   file:ptr FILE
-    invoke  crt_fopen,path1,offset OPEN_BFILE_READ_ONLY
+    invoke  crt_fopen,offset FILENAMESAVE,offset OPEN_BFILE_READ_ONLY
     mov file,eax
     invoke  crt_fread,offset game,sizeof Game,1,eax
     invoke  crt_fclose,file

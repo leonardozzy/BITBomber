@@ -3,11 +3,26 @@
 option	casemap:none
 
 include	common.inc
-extrn   game:Game
+public  game
+
+.data?
+game    Game    <>
+
 .const
 CHAR_MAP    byte    ".#PBM=TFDWA"
 
+DISPLAY_BY_CONSOLE equ <0>
+
+CLS_STR	byte	"cls",0
+SPLIT_STR	byte	"----------------------------------------",0
+LIFE_STR	byte	"Life: %d",0ah,0
+BOMB_RANGE_STR	byte	"Bomb Range: %d",0ah,0
+BOMB_CNT_STR	byte	"Bomb Count: %d",0ah,0
+SPEED_STR	byte	"Speed: %d",0ah,0
+MONSTER_NUM_STR	byte	"Monster Num: %d",0ah,0
+
 .code
+ifdef DISPLAY_BY_CONSOLE
 draw    proc
     local   i:dword,j:dword,k:dword,tmp:dword
    ; invoke  crt_printf,offset ADDR_STR,offset game.map
@@ -52,7 +67,7 @@ exitLoop1_draw:
     ret
 draw    endp
 
-start:
+testmain    proc
 	invoke  initGame
     invoke  crt_time,NULL
     invoke  crt_srand,eax
@@ -75,4 +90,14 @@ noPlayer_start:
     invoke  Sleep,100
     invoke  crt_system,offset CLS_STR
     jmp loop_start
-end start
+    ret
+testmain    endp
+elseif
+
+
+endif
+
+;start:
+;    invoke testmain
+;end start
+end

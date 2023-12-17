@@ -9,13 +9,33 @@ include	kernel32.inc
 include	gdi32.inc
 include	gdiplus.inc
 include	msvcrt.inc
+include	imm32.inc
+include winmm.inc
 includelib	user32.lib
 includelib	kernel32.lib
 includelib	gdi32.lib
 includelib	gdiplus.lib
 includelib	msvcrt.lib
+includelib	imm32.lib
+includelib winmm.lib
 
 FONT_NAME_LEN	equ	16
+
+
+;定死窗口高度宽度，数值可以以后再调
+WINDOW_WIDTH	equ	1000
+WINDOW_HEIGHT	equ	750
+;各按键的坐标（左上xy、宽高）用于画图和鼠标判断
+	;开始新游戏
+BUTT_STARTNEW_X equ 670
+BUTT_STARTNEW_Y equ 510
+BUTT_STARTNEW_W equ 200
+BUTT_STARTNEW_H equ 60
+	;继续游戏
+BUTT_CONTINUE_X equ 670
+BUTT_CONTINUE_Y equ 600
+BUTT_CONTINUE_W equ 200
+BUTT_CONTINUE_H equ 60
 
 EMPTY	equ	0
 WALL	equ	1
@@ -37,10 +57,10 @@ MONSTER_3	equ	43
 FRAMES_PER_SEC	equ	30
 
 ;define speed
-PLAYER_1_SPEED	equ	80
-MONSTER_1_SPEED	equ	60
-MONSTER_2_SPEED	equ	80
-MONSTER_3_SPEED	equ	90
+PLAYER_1_SPEED	equ	12
+MONSTER_1_SPEED	equ	9
+MONSTER_2_SPEED	equ	13
+MONSTER_3_SPEED	equ	16
 ;新帧数下的速度
 ;PLAYER_1_SPEED	equ	12
 ;MONSTER_1_SPEED	equ	9
@@ -67,6 +87,8 @@ DOWN	equ	1
 LEFT	equ	2
 RIGHT	equ	3
 SETBOMB	equ	4
+GAMEPAUSE	equ 5
+GAMESTART	equ 6
 
 ;define time
 INVISIBLE_TIMER	equ	5
@@ -116,6 +138,13 @@ LOGO	equ	0
 MAIN_MENU	equ	1
 STORY	equ	2
 IN_GAME	equ	3
+
+;enum mainWinp.state
+winState_logoPage	equ 1
+winState_startPage	equ 2
+winState_onStory	equ 3
+winState_onGame		equ 4
+winState_pauseGame	equ 5
 
 ;struct definition
 ;这样一个Object的大小就是4，便于比例变址寻址
@@ -211,6 +240,12 @@ StrDisp	struct	;前四个字段和RectF结构体相同，传RectF的指针时可以直接偷梁换柱
 	vAlign	dword	?
 StrDisp	ends
 
+MainWinp	struct	;游戏外层主窗口逻辑部分全局变量
+	winState	dword	?
+	frames	dword	?	;启动时画logo等状态的帧数，用于淡入淡出等
+	
+MainWinp	ends
+
 ;function definition
 drawImage	equ	GdipDrawImageRectI
 drawUtf16String	proto	graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
@@ -218,7 +253,7 @@ drawGbString	proto	graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,s
 drawSolidRect	proto	graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
 initResources	proto
 releaseResources	proto
-drawLogo	proto	graphicsPtr:dword,frames:dword
+drawWindow	proto	graphicsPtr:dword
 
 calcMapOffset	proto	x:dword,y:dword,z:dword
 initMonster	proto    index:dword,x:dword,y:dword,speed:dword
@@ -255,11 +290,14 @@ pollingAttack	proto
 bossAttack	proto
 pollingBoss	proto
 bossDrop	proto
-archive	proto	path1:ptr byte
-load	proto	path1:ptr byte
+archive	proto
+load	proto
 readKey	proto
 draw	proto
-
+mainLoop proto
+gameLoop proto  input:dword
+isMouseInButton proto mousex:word, mousey:word, x:word,y:word,w:word,h:word
+PlayMp3File proto hWin:dword, NameOfFile:dword
 
 ;这个地方要重新改，不要在inc文件里定义段了
 .const
