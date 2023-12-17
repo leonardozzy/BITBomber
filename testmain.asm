@@ -43,6 +43,7 @@ exitLoop2_draw:
     jmp loop1_draw
 exitLoop1_draw:
     invoke  crt_puts,offset SPLIT_STR
+    invoke  crt_printf,offset LIFE_STR,game.player.life
     invoke  crt_printf,offset BOMB_RANGE_STR,game.player.bomb_range
     invoke  crt_printf,offset BOMB_CNT_STR,game.player.bomb_cnt
     invoke  crt_printf,offset SPEED_STR,game.player.speed
