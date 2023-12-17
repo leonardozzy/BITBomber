@@ -518,16 +518,16 @@ movMonsterToNextCell proc index:dword
 		mov eax,game.monsters[ebx].y
 		mov newY,eax
         jmp [MOV_MONSTER_TO_NEXT_CELL_JMP_TBL+esi*4]
-up1_switch_movMonsterToNextCell label   dword
+        up1_switch_movMonsterToNextCell label   dword
         dec newX
         jmp end_switch1_movMonsterToNextCell
-down1_switch_movMonsterToNextCell   label   dword
+        down1_switch_movMonsterToNextCell   label   dword
         inc newX
         jmp end_switch1_movMonsterToNextCell
-left1_switch_movMonsterToNextCell   label   dword
+        left1_switch_movMonsterToNextCell   label   dword
         dec newY
         jmp end_switch1_movMonsterToNextCell
-right1_switch_movMonsterToNextCell   label   dword
+        right1_switch_movMonsterToNextCell   label   dword
 		inc newY
 		end_switch1_movMonsterToNextCell:
 
@@ -638,7 +638,7 @@ changeDirection	proc	index:dword
 	mov	direction[eax*4],0
     xor esi,esi
 	;mov j,0
-	loop1:
+	loop1_changeDirection:
 		mov eax,game.monsters[ebx].x
 		mov	newX,eax
 		mov eax,game.monsters[ebx].y
@@ -646,41 +646,41 @@ changeDirection	proc	index:dword
 		invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,esi,addr newX,addr newY
 		invoke isMoveableMonster,newX,newY
 		test eax,eax
-		jnz not_movable_direction
+		jnz not_movable_direction_changeDirection
 			;mov eax,j
 			mov	direction[esi*4],0
-		not_movable_direction:
+		not_movable_direction_changeDirection:
 	;inc j
 	;cmp j,4
     inc esi
 	cmp esi,4
-	jl loop1
+	jl loop1_changeDirection
 	;chose the available direction randomly
 	;local	new_direction:dword,available_direction:dword
 	mov available_direction,0
 	mov new_direction,0
 	;mov j,0
     xor esi,esi
-	loop2:
+	loop2_changeDirection:
 		;mov eax,j
 		cmp direction[esi*4],1
-		jne count_avail_direction
+		jne count_avail_direction_changeDirection
 			;mov eax,j
 			mov new_direction,esi
 			inc available_direction
-		count_avail_direction:
+		count_avail_direction_changeDirection:
 
 	;inc j
 	;cmp j,4
     inc esi
     cmp esi,4
-	jl loop2
+	jl loop2_changeDirection
 
 	cmp available_direction,0
-	jne have_available_direction
+	jne have_available_direction_changeDirection
 		mov eax,monster_from
-		jmp end_func
-	have_available_direction:
+		jmp end_func_changeDirection
+	have_available_direction_changeDirection:
 
 	invoke crt_rand
 	xor edx,edx
@@ -691,26 +691,26 @@ changeDirection	proc	index:dword
 	;mov j,0
     xor esi,esi
 	cmp edx,0
-	je end_loop3
+	je end_loop3_changeDirection
 	loop3:
 		inc new_direction
 		and new_direction,3
-		while_loop:
+		while_loop_changeDirection:
 		mov eax,new_direction
 		cmp direction[eax*4],1
-		je find_next_direction
+		je find_next_direction_changeDirection
 		inc new_direction
 		and new_direction,3
-		jmp while_loop
-		find_next_direction:
+		jmp while_loop_changeDirection
+		find_next_direction_changeDirection:
 	inc esi
 	;mov eax,j
 	cmp esi,edx
-	jl loop3
-	end_loop3:
+	jl loop3_changeDirection
+	end_loop3_changeDirection:
 	mov eax,new_direction
 	mov game.monsters[ebx].direction,eax
-	end_func:
+	end_func_changeDirection:
 	pop	esi
 	pop	ebx
 	ret
