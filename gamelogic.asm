@@ -6,17 +6,17 @@ include	common.inc
 extern  game:Game
 
 .const
-FILENAME1	byte	"./level/1.level",0
-FILENAME2	byte	"./level/2.level",0
-FILENAME3	byte	"./level/3.level",0
-FILENAME4	byte	"./level/4.level",0
-FILENAMESAVE	byte	"./save/save.db",0
+FILENAME1	byte	"./levels/1.level",0
+FILENAME2	byte	"./levels/2.level",0
+FILENAME3	byte	"./levels/3.level",0
+FILENAME4	byte	"./levels/4.level",0
+FILENAMESAVE	byte	"./save/save.bb",0
 OPEN_FILE_READ_ONLY	byte	"r",0
 OPEN_BFILE_READ_ONLY	byte	"rb",0
 OPEN_BFILE_WRITE_ONLY	byte	"wb",0
 ONE_INT_FORMAT	byte	"%d",0
-WIN_STR	byte	"You Win!",0
-GAMEOVER_STR	byte "Game Over!",0
+;WIN_STR	byte	"You Win!",0
+;GAMEOVER_STR	byte "Game Over!",0
 ;四字节对齐，提升读取效率
 align  4
 LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
@@ -65,6 +65,9 @@ pollingPlayer	proc	input:dword
         invoke placeBomb
         jmp ret_pollingPlayer   ; Early return as no movement is required
     JmpOver_placeBomb_pollingPlayer:
+    mov eax,input
+    mov game.player.direction,eax
+    mov game.player.isMove,MOVE
     ; deal with player status
     cmp game.player.timer,0
     je  JmpOverINVISIBLE_pollingPlayer
@@ -313,7 +316,7 @@ die proc
 	je l1_die
 	jmp l2_die
 l1_die:
-	invoke crt_puts, offset GAMEOVER_STR
+	;invoke crt_puts, offset GAMEOVER_STR
 	invoke crt_exit,0
 l2_die:
 	invoke calcMapOffset,game.player.x,game.player.y,1
@@ -887,6 +890,14 @@ initBoss    endp
 
 initLevel   proc
     local   file:dword,num:dword
+    ;reset player's pos
+    mov game.player.x,1
+    mov game.player.y,1
+    mov game.player.frac_x,0
+    mov game.player.frac_y,0
+    mov game.player.timer,0
+    mov game.player.isMove,STILL
+    mov game.player.direction,RIGHT
     invoke  crt_memset,offset game.map,0,ROW*COL*DEPTH*sizeof Object
     mov edx,game.level
     invoke  crt_fopen,LEVEL_FILE_NAMES[4*edx-4],offset OPEN_FILE_READ_ONLY
@@ -959,9 +970,11 @@ exitInnerLoop_initLevel:
 exitOuterLoop_initLevel:
     invoke  crt_fscanf,file,offset ONE_INT_FORMAT,offset game.timer
     mov eax,game.timer
+    mov edx,FRAMES_PER_SEC
+    mul edx
     mov game.level_timer,eax
+    mov game.timer,eax
     invoke  crt_fclose,file
-    ;invoke  crt_printf,offset ADDR_STR,offset game.map
     pop edi
     pop esi
     pop ebx
@@ -971,15 +984,10 @@ initLevel   endp
 initGame    proc
     invoke  crt_memset,offset game,0,sizeof Game
     mov game.level,1
-    mov game.player.x,1
-    mov game.player.y,1
-    mov game.player.frac_x,0
-    mov game.player.frac_y,0
     mov game.player.bomb_range,1
     mov game.player.bomb_cnt,1
     mov game.player.life,2
     mov game.player.speed,PLAYER_1_SPEED
-    mov game.player.timer,0
     invoke  initLevel
     ret
 initGame    endp
@@ -1045,8 +1053,8 @@ pollingBomb endp
 pollingSuccess  proc
     cmp game.monster_num,0
     jne exit_pollingSuccess
-    invoke  crt_puts,offset WIN_STR
-    dec game.level
+    ;invoke  crt_puts,offset WIN_STR
+    inc game.level
     invoke  initLevel
 exit_pollingSuccess:
     ret
@@ -1203,7 +1211,7 @@ boss_clear:
     dec game.boss.life
     cmp game.boss.life,0
     jne exit_clear
-    invoke  crt_puts,offset WIN_STR
+    ;invoke  crt_puts,offset WIN_STR
     invoke  crt_exit,0
     jmp exit_clear
 clear   endp
@@ -1265,4 +1273,24 @@ load    proc
     invoke  crt_fclose,file
     ret
 load    endp
+
+
+gameLoop proc   input:dword
+    cmp input,-1
+    je  noPlayer_gameLoop
+    invoke  pollingPlayer,input
+    jmp other_gameLoop
+noPlayer_gameLoop:
+    mov game.player.isMove,STILL
+other_gameLoop:
+    invoke  pollingMonster
+    invoke  pollingBomb
+    invoke  pollingTool
+    invoke  pollingSuccess
+    invoke  pollingBoss
+    invoke  pollingAttack
+	dec	game.timer
+	ret
+gameLoop endp
+
 end

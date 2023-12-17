@@ -43,10 +43,11 @@ HOMEPAGE_IMG	equ	88
 PAUSEPAGE_IMG	equ	89
 IMG_CNT	equ	90
 
-DRAW_GAME_X_START	equ	125
-DRAW_GAME_Y_START	equ	60
-ELEMENT_WIDTH	equ	50
-ELEMENT_HEIGHT	equ	50
+DRAW_GAME_X_START	equ	40
+DRAW_GAME_Y_START	equ	70
+ELEMENT_WIDTH	equ	60
+ELEMENT_HEIGHT	equ	60
+DRAW_Y_STEP	equ	ELEMENT_HEIGHT-16
 
 LOGO_WIDTH	equ	400
 LOGO_HEIGHT	equ	400
@@ -54,7 +55,7 @@ LOGO_X_POS	equ	300
 LOGO_Y_POS	equ	150
 .data
 
-DENGXIAN_FONT	StrFont	<FONT_NAME_LEN dup(?),12.0,0ff000000h,FontStyleRegular>
+DENGXIAN_FONT	StrFont	<FONT_NAME_LEN dup(?),12.0,0ffffffffh,FontStyleRegular>
 
 .data?
 bitmapPtrs	dword	200 dup(?)
@@ -274,7 +275,7 @@ calcDrawPos	proc	xPos:dword,yPos:dword,frac_x:dword,frac_y:dword,drawXPos:ptr dw
 	add	edx,eax
 	mov	eax,drawXPos
 	mov	[eax],edx
-	mov	edx,ELEMENT_HEIGHT
+	mov	edx,DRAW_Y_STEP
 	mov	eax,frac_y
 	imul	edx
 	mov	ecx,FRAC_RANGE
@@ -411,8 +412,8 @@ exitSwitch_drawMap:
 	cmp	esi,DRAW_GAME_X_START+ELEMENT_WIDTH*COL
 	jne	mainLoop_drawMap
 	mov	esi,DRAW_GAME_X_START
-	add	edi,ELEMENT_HEIGHT
-	cmp	edi,DRAW_GAME_Y_START+ELEMENT_HEIGHT*ROW
+	add	edi,DRAW_Y_STEP
+	cmp	edi,DRAW_GAME_Y_START+DRAW_Y_STEP*ROW
 	jne	mainLoop_drawMap
 exitMainLoop_drawMap:
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.life

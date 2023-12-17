@@ -24,7 +24,7 @@ FONT_NAME_LEN	equ	16
 
 ;定死窗口高度宽度，数值可以以后再调
 WINDOW_WIDTH	equ	1000
-WINDOW_HEIGHT	equ	900
+WINDOW_HEIGHT	equ	750
 ;各按键的坐标（左上xy、宽高）用于画图和鼠标判断
 	;开始新游戏
 BUTT_STARTNEW_X equ 670
@@ -57,15 +57,11 @@ MONSTER_3	equ	43
 FRAMES_PER_SEC	equ	30
 
 ;define speed
-PLAYER_1_SPEED	equ	20
-MONSTER_1_SPEED	equ	15
+PLAYER_1_SPEED	equ	12
+MONSTER_1_SPEED	equ	9
 MONSTER_2_SPEED	equ	13
 MONSTER_3_SPEED	equ	16
 ;新帧数下的速度
-;PLAYER_1_SPEED	equ	12
-;MONSTER_1_SPEED	equ	9
-;MONSTER_2_SPEED	equ	13
-;MONSTER_3_SPEED	equ	16
 
 ;define map_size
 ROW	equ	13
@@ -91,17 +87,6 @@ GAMEPAUSE	equ 5
 GAMESTART	equ 6
 
 ;define time
-;INVISIBLE_TIMER	equ	5
-;;BOMB_TIMER	equ	30
-;FIRE_TIMER	equ	1
-;TOOL_TIMER	equ 50
-;COOL_TIME	equ	30
-;SKY_TIME	equ	30
-;PRE_DROP_TIME	equ	10
-;PRE_ATTACK_TIME	equ	10
-;ATTACK_TIME	equ	5
-;ATTACK_FREQ	equ	10
-
 INVISIBLE_TIMER	equ	90
 BOMB_TIMER	equ	90
 FIRE_TIMER	equ	12
@@ -298,14 +283,6 @@ mainLoop proto
 gameLoop proto  input:dword
 isMouseInButton proto mousex:word, mousey:word, x:word,y:word,w:word,h:word
 PlayMp3File proto hWin:dword, NameOfFile:dword
-
-;这个地方要重新改，不要在inc文件里定义段了
-.const
-CLASS_NAME	byte	"MainWindow",0	;窗口类名
-WINDOW_NAME	byte	"BIT BOMBERMAN",0	;窗口显示名
-GP_INPUT	GdiplusStartupInput	<1,0,0,0>
-MSGBOX_WINDOW_FAIL_TEXT	byte	"窗口创建失败！",0
-MSGBOX_ERROR_TITLE	byte	"错误",0
 
 endif
 

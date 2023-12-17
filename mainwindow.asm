@@ -11,23 +11,13 @@ Mp3DeviceID dd 0
 .const 
 MAIN_BGM_SOUND_PATH	byte	"./sounds/Keygen.mp3",0
 Mp3Device   db "MPEGVideo",0
+CLASS_NAME	byte	"MainWindow",0	;窗口类名
+WINDOW_NAME	byte	"BIT BOMBERMAN",0	;窗口显示名
+GP_INPUT	GdiplusStartupInput	<1,0,0,0>
+MSGBOX_WINDOW_FAIL_TEXT	byte	"窗口创建失败！",0
+MSGBOX_ERROR_TITLE	byte	"错误",0
 
 .code
-
-
-gameLoop proc   input:dword
-    cmp input,-1
-    je  noPlayer_gameLoop
-    invoke  pollingPlayer,eax
-noPlayer_gameLoop:
-    invoke  pollingMonster
-    invoke  pollingBomb
-    invoke  pollingTool
-    invoke  pollingSuccess
-    invoke  pollingBoss
-    invoke  pollingAttack
-	ret
-gameLoop endp
 
 
 readKey Proc
