@@ -129,255 +129,219 @@ end_calculateNextMove:
 	ret
 calculateNextMove endp
 
-;void pollingMonster(Game *this) {
-;    for (int i = 0; i < MAX_MONSTER; i++) {
-;        if (this->monsters[i].valid) {
-;
-;            //判断下一步是否有两个及以上方向可走
-;            int direct_able = 0;
-;            int monster_from = 0;
-;            switch (this->monsters[i].direction) {
-;                case UP:
-;                    monster_from = DOWN;
-;                    break; // Move up
-;                case DOWN:
-;                    monster_from = UP;
-;                    break; // Move down
-;                case LEFT:
-;                    monster_from = RIGHT;
-;                    break; // Move left
-;                case RIGHT:
-;                    monster_from = LEFT;
-;                    break; // Move right
-;            }
-;            for (int j = 0; j < 4; j++) {
-;                int newX = this->monsters[i].x;
-;                int newY = this->monsters[i].y;
-;
-;                switch (j) {
-;                    case UP:
-;                        newX--;
-;                        break; // Move up
-;                    case DOWN:
-;                        newX++;
-;                        break; // Move down
-;                    case LEFT:
-;                        newY--;
-;                        break; // Move left
-;                    case RIGHT:
-;                        newY++;
-;                        break; // Move right
-;                }
-;                if (isMoveableMonster(this, newX, newY) && monster_from != j) {
-;                    direct_able++;
-;                }
-;            }
-;            //get last step from monster from
-;            int before_x;
-;            int before_y;
-;            calculateNextMove(this->monsters[i].x, this->monsters[i].y,
-;                              monster_from, &before_x, &before_y);       
-;            if (direct_able >= 2 && isMoveableMonster(this, before_x, before_y)) {
-;                this->monsters[i].direction = changeDirection(this, i);
-;            }
-;
-;            int move = this->monsters[i].direction;
-;            int newMonsterX = this->monsters[i].x;
-;            int newMonsterY = this->monsters[i].y;
-;            //if moveonestep didn't move the players, which meansnothing will
-;            // happen here.
-;            moveOneStep(this->monsters[i].x, this->monsters[i].y, move, &newMonsterX, &newMonsterY
-;            , &(this->monsters[i].frac_x), &(this->monsters[i].frac_y), this->monsters[i].speed);
-;
-;            // Check if new position is valid
-;            if (isMoveableMonster(this, newMonsterX, newMonsterY)) {
-;                // Check if monster encounters the player
-;                if (newMonsterX == this->player.x && newMonsterY == this->player.y) {
-;                    die(this);
-;                }
-;                // Move the monster
-;                this->map[this->monsters[i].x][this->monsters[i].y][1]._tpye = EMPTY;
-;                this->monsters[i].x = newMonsterX;
-;                this->monsters[i].y = newMonsterY;
-;                this->map[newMonsterX][newMonsterY][1]._tpye = MONSTER;
-;                this->map[newMonsterX][newMonsterY][1].id = i;
-;            } else {
-;                // Change direction if the monster encounters a wall
-;                this->monsters[i].direction = changeDirection(this, i);
-;
-;            }
-;        }
-;    }
-;}
-pollingMonster	proc
-	local	direct_able:dword,monster_from:dword,before_x:dword,before_y:dword
-	local	move:dword,newMonsterX:dword,newMonsterY:dword
-	push	ebx
-	push	esi
-	xor	ebx,ebx
-loop_pollingMonster:
-	cmp	ebx,MAX_MONSTER*sizeof Monster
-	je	exitLoop_pollingMonster
-	cmp	game.monsters[ebx].valid,0
-	je	loopAdd_pollingMonster
-	mov	eax,ebx
-	xor	edx,edx
-	mov	ecx,sizeof Monster
-	div	ecx
-	mov	esi,eax
-	mov	direct_able,0
-	cmp	game.monsters[ebx].direction,UP
-	je	monsterMoveUp_pollingMonster
-	cmp	game.monsters[ebx].direction,DOWN
-	je	monsterMoveDown_pollingMonster
-	cmp	game.monsters[ebx].direction,LEFT
-	je	monsterMoveLeft_pollingMonster
-	mov	monster_from,LEFT
-	jmp	exitSwitch1_pollingMonster
-monsterMoveUp_pollingMonster:
-	mov	monster_from,DOWN
-	jmp	exitSwitch1_pollingMonster
-monsterMoveDown_pollingMonster:
-	mov	monster_from,UP
-	jmp	exitSwitch1_pollingMonster
-monsterMoveLeft_pollingMonster:
-	mov	monster_from,RIGHT
-exitSwitch1_pollingMonster:
-	mov	eax,game.monsters[ebx].x
-	dec	eax
-	invoke	isMoveableMonster,eax,game.monsters[ebx].y
-	test	eax,eax
-	jz	judgeDirectAble2_pollingMonster
-	cmp	monster_from,UP
-	je	judgeDirectAble2_pollingMonster
-	inc	direct_able
-judgeDirectAble2_pollingMonster:
-	mov	eax,game.monsters[ebx].x
-	inc	eax
-	invoke	isMoveableMonster,eax,game.monsters[ebx].y
-	test	eax,eax
-	jz	judgeDirectAble3_pollingMonster
-	cmp	monster_from,DOWN
-	je	judgeDirectAble3_pollingMonster
-	inc	direct_able
-judgeDirectAble3_pollingMonster:
-	mov	eax,game.monsters[ebx].y
-	dec	eax
-	invoke	isMoveableMonster,game.monsters[ebx].x,eax
-	test	eax,eax
-	jz	judgeDirectAble4_pollingMonster
-	cmp	monster_from,LEFT
-	je	judgeDirectAble4_pollingMonster
-	inc	direct_able
-judgeDirectAble4_pollingMonster:
-	mov	eax,game.monsters[ebx].y
-	inc	eax
-	invoke	isMoveableMonster,game.monsters[ebx].x,eax
-	test	eax,eax
-	jz	endJudgeDirectAble_pollingMonster
-	cmp	monster_from,RIGHT
-	je	endJudgeDirectAble_pollingMonster
-	inc	direct_able
-endJudgeDirectAble_pollingMonster:
-	invoke	calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,monster_from,addr before_x,addr before_y
-	cmp	direct_able,2
-	jl	endChangeDire_pollingMonster
-	invoke	isMoveableMonster,before_x,before_y
-	test	eax,eax
-	jz	endChangeDire_pollingMonster
-	invoke	changeDirection,esi
-	mov	game.monsters[ebx].direction,eax
-endChangeDire_pollingMonster:
-	mov	eax,game.monsters[ebx].direction
-	mov	move,eax
-	lea	eax,game.monsters[ebx].frac_x
-	lea	edx,game.monsters[ebx].frac_y
-	invoke	moveOneStep,game.monsters[ebx].x,game.monsters[ebx].y,move,addr newMonsterX,addr newMonsterY,eax,edx,game.monsters[ebx].speed
-	invoke	isMoveableMonster,newMonsterX,newMonsterY
-	test	eax,eax
-	jz	finalChangeDire_pollingMonster
-	mov	eax,newMonsterX
-	cmp	eax,game.player.x
-	jne	exitPlayerDie_pollingMonster
-	mov	eax,newMonsterY
-	cmp	eax,game.player.y
-	jne	exitPlayerDie_pollingMonster
-	invoke	die
-exitPlayerDie_pollingMonster:
-	invoke	calcMapOffset,game.monsters[ebx].x,game.monsters[ebx].y,1
-	mov	game.map[eax*4]._type,EMPTY
-	mov	eax,newMonsterX
-	mov	game.monsters[ebx].x,eax
-	mov	eax,newMonsterY
-	mov	game.monsters[ebx].y,eax
-	invoke	calcMapOffset,newMonsterX,newMonsterY,1
-	mov	game.map[eax*4]._type,MONSTER
-	mov	game.map[eax*4].id,si
-	jmp	loopAdd_pollingMonster
-finalChangeDire_pollingMonster:
-	invoke	changeDirection,esi
-	mov	game.monsters[ebx].direction,eax
-loopAdd_pollingMonster:
-	add	ebx,sizeof Monster
-	jmp	loop_pollingMonster
-exitLoop_pollingMonster:
-	pop	esi
-	pop	ebx
+
+getFromDriection proc direction:dword
+	cmp direction,UP
+	je up_getFromDriection
+	cmp direction,DOWN
+	je down_getFromDriection
+	cmp direction,LEFT
+	je left_getFromDriection
+	cmp direction,RIGHT
+	je right_getFromDriection
 	ret
-pollingMonster	endp
+
+	up_getFromDriection:
+	mov eax,DOWN
+	ret
+	down_getFromDriection:
+	mov eax,UP
+	ret
+	left_getFromDriection:
+	mov eax,RIGHT
+	ret
+	right_getFromDriection:
+	mov eax,LEFT
+	ret
 	
-;int changeDirection(Game *this, int index) {
-;    int direction[4] = { 1,1,1,1 };
-;    //去掉monster来的方向
-;    int monster_from = 0;
-;    switch (this->monsters[index].direction) {
-;        case UP: monster_from = DOWN; break; // Move up
-;        case DOWN: monster_from = UP; break; // Move down
-;        case LEFT: monster_from = RIGHT; break; // Move left
-;        case RIGHT: monster_from = LEFT; break; // Move right
-;    }
-;    direction[monster_from] = 0;
-;    for (int j = 0; j < 4; j++) {
-;        int newX = this->monsters[index].x;
-;        int newY = this->monsters[index].y;
-;        calculateNextMove(this->monsters[index].x, this->monsters[index].y, j, &newX, &newY);
-;        if (!isMoveableMonster(this, newX, newY)) {
-;            direction[j] = 0;
-;        }
-;    }
-;    //chose the available direction randomly
-;    int available_direction = 0;
-;    int new_direction = 0;
-;    for (int j = 0; j < 4; j++) {
-;        if (direction[j] == 1) {
-;            new_direction = j;
-;            available_direction++;
-;        }
-;    }
-;    if (available_direction == 0) {
-;        return monster_from;
-;    }
-;    int random_direction = rand() % 10;
-;    for (int j = 0; j < random_direction; j++) {
-;        new_direction++;
-;        new_direction %= 4;
-;        while (1) {
-;            if (direction[new_direction] == 1) {
-;                break;
-;            }
-;            else {
-;                new_direction++;
-;                new_direction %= 4;
-;            }
-;        }
-;    }
-;    this->monsters[index].direction = new_direction;
-;    return new_direction;
-;}
+
+getFromDriection endp
+
+
+
+pollingMonster	proc
+	local i:DWORD
+	local monsteroffset:DWORD
+	local tmp1,tmp2:DWORD
+	push ebx
+	mov i,0
+	outer_for_pollingMonster:
+		mov eax,i
+		mov ebx,sizeof(Monster)
+		mul ebx
+		mov monsteroffset,eax
+
+		;if (this->monsters[i].valid)
+		mov ebx,monsteroffset
+		mov eax,game.monsters[ebx].valid
+		cmp eax,0
+		je MonsterNotValid_pollingMonster
+			mov ebx,monsteroffset
+			invoke moveOneStep,game.monsters[ebx].x,game.monsters[ebx].y \
+							,game.monsters[ebx].direction,addr tmp1,addr tmp2 \
+							,addr game.monsters[ebx].frac_x ,addr game.monsters[ebx].frac_y\
+							,game.monsters[ebx].speed
+			cmp eax,1
+			jne notMoveCell_pollingMonster
+				invoke movMonsterToNextCell	,i
+			notMoveCell_pollingMonster:
+
+		MonsterNotValid_pollingMonster:
+	inc i
+	cmp i,MAX_MONSTER
+	jl outer_for_pollingMonster
+	pop ebx
+	ret
+pollingMonster endp
+	
+
+
+movMonsterToNextCell proc index:dword
+	local i,j:DWORD
+	local direct_able,monster_from:DWORD
+	local newX,newY:DWORD
+	local before_x,before_y:DWORD
+	local move,newMonsterX,newMonsterY:DWORD
+	local monsteroffset:DWORD
+	push ebx
+	push esi
+	mov eax,index
+	mov i,eax
+	mov eax,i
+	mov ebx,sizeof(Monster)
+	mul ebx
+	mov monsteroffset,eax
+
+	;local direct_able,monster_from:DWORD
+	mov direct_able,0
+	mov monster_from,0
+
+	mov ebx,monsteroffset
+	mov esi,game.monsters[ebx].direction
+	invoke getFromDriection,esi				
+	mov monster_from,eax
+	mov j,0
+	inner_for_movMonsterToNextCell:
+		;local newX,newY:DWORD
+		mov ebx,monsteroffset
+		mov eax,game.monsters[ebx].x
+		mov newX,eax
+		mov eax,game.monsters[ebx].y
+		mov newY,eax
+
+		cmp j,UP
+		je up1_switch_movMonsterToNextCell
+		cmp j,DOWN
+		je down1_switch_movMonsterToNextCell
+		cmp j,LEFT
+		je left1_switch_movMonsterToNextCell
+		cmp j,RIGHT
+		je right1_switch_movMonsterToNextCell
+		jmp end_switch1_movMonsterToNextCell
+
+		up1_switch_movMonsterToNextCell:
+		dec newX
+		jmp end_switch1_movMonsterToNextCell
+		down1_switch_movMonsterToNextCell:
+		inc newX
+		jmp end_switch1_movMonsterToNextCell
+		left1_switch_movMonsterToNextCell:
+		dec newY
+		jmp end_switch1_movMonsterToNextCell
+		right1_switch_movMonsterToNextCell:
+		inc newY
+		jmp end_switch1_movMonsterToNextCell
+
+		end_switch1_movMonsterToNextCell:
+
+		;if (isMoveableMonster(this, newX, newY) && monster_from != j)
+		mov esi,monster_from
+		cmp esi,j
+		je	endif_isMoveableMonster_monster_from_movMonsterToNextCell
+		invoke isMoveableMonster,newX,newY
+		cmp eax,0
+		je endif_isMoveableMonster_monster_from_movMonsterToNextCell
+		inc direct_able
+
+		endif_isMoveableMonster_monster_from_movMonsterToNextCell:			
+				
+	inc j
+	cmp j,4
+	jl inner_for_movMonsterToNextCell
+				
+				
+	;get last step from monster from
+	get_last_step:
+	;local before_x,before_y:DWORD
+	mov ebx,monsteroffset
+	invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,monster_from,addr before_x,addr before_y
+	cmp direct_able,2
+	jl endif_is_corner_movMonsterToNextCell
+	invoke isMoveableMonster,before_x,before_y
+	cmp eax,0
+	je endif_is_corner_movMonsterToNextCell
+	invoke changeDirection,i
+
+				
+	mov ebx,monsteroffset
+	mov game.monsters[ebx].direction,eax
+	endif_is_corner_movMonsterToNextCell:
+
+	;local move,newMonsterX,newMonsterY:DWORD
+	mov ebx,monsteroffset
+	mov esi,game.monsters[ebx].direction
+	mov move,esi
+	mov esi,game.monsters[ebx].x
+	mov newMonsterX,esi
+	mov esi,game.monsters[ebx].y
+	mov newMonsterY,esi
+	invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,move,addr newMonsterX,addr newMonsterY
+	;check if new position is valid
+	invoke isMoveableMonster,newMonsterX,newMonsterY
+	cmp	eax,0
+	je middle_new_pos_not_valid_movMonsterToNextCell
+		mov eax,game.player.x
+		cmp eax,newMonsterX
+		jne end_inner2_if_movMonsterToNextCell
+		mov eax,game.player.y
+		cmp eax,newMonsterY
+		jne end_inner2_if_movMonsterToNextCell
+		invoke die
+		end_inner2_if_movMonsterToNextCell:
+
+		mov ebx,monsteroffset
+		invoke calcMapOffset,game.monsters[ebx].x,
+			game.monsters[ebx].y,1
+
+		mov game.map[eax*4]._type,EMPTY
+		mov eax,newMonsterX
+		mov game.monsters[ebx].x,eax
+		mov eax,newMonsterY
+		mov game.monsters[ebx].y,eax
+		invoke calcMapOffset,newMonsterX,newMonsterY,1
+					
+		mov game.map[eax*4]._type,MONSTER
+		mov esi,i
+		mov game.map[eax*4].id,cx
+
+		jmp end_new_pos_not_valid_movMonsterToNextCell
+	middle_new_pos_not_valid_movMonsterToNextCell:
+	mov ebx,monsteroffset
+	invoke changeDirection,i
+				
+	mov game.monsters[ebx].direction,eax
+	end_new_pos_not_valid_movMonsterToNextCell:
+	pop esi
+	pop ebx
+	ret
+movMonsterToNextCell endp
+
+
 changeDirection	proc	index:dword
 	local	direction[4]:dword,monster_from:dword,newX:dword,newY:dword
 	local	new_direction:dword,available_direction:dword,random_direction:dword
-	push	ebx
+	local	j:DWORD
+	push	ebx;monsteroffset
 	push	esi
 	mov	eax,index
 	mov	edx,sizeof Monster
@@ -387,83 +351,78 @@ changeDirection	proc	index:dword
 	mov	direction[4],1
 	mov	direction[8],1
 	mov	direction[12],1
-	mov	monster_from,0
-	cmp	game.monsters[ebx].direction,UP
-	je	monsterUp_changeDirection
-	cmp	game.monsters[ebx].direction,DOWN
-	je	monsterDown_changeDirection
-	cmp	game.monsters[ebx].direction,LEFT
-	je	monsterLeft_changeDirection
-	mov	monster_from,LEFT
-	jmp	exitSwitch1_changeDirection
-monsterUp_changeDirection:
-	mov	monster_from,DOWN
-	jmp	exitSwitch1_changeDirection
-monsterDown_changeDirection:
-	mov	monster_from,UP
-	jmp	exitSwitch1_changeDirection
-monsterLeft_changeDirection:
-	mov	monster_from,RIGHT
-exitSwitch1_changeDirection:
+	invoke getFromDriection,game.monsters[ebx].direction
+	mov	monster_from,eax
 	mov	eax,monster_from
 	mov	direction[eax*4],0
-	xor	esi,esi
-loop1_changeDirection:
-	cmp	esi,4
-	je	exitLoop1_changeDirection
-	invoke	calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,esi,addr newX,addr newY
-	invoke	isMoveableMonster,newX,newY
-	test	eax,eax
-	jnz	canMove_changeDirection
-	mov	direction[esi*4],0
-canMove_changeDirection:
-	inc	esi
-	jmp	loop1_changeDirection
-exitLoop1_changeDirection:
-	mov	new_direction,0
-	mov	available_direction,0
-	xor	esi,esi
-loop2_changeDirection:
-	cmp	esi,4
-	je	exitLoop2_changeDirection
-	cmp	direction[esi*4],0
-	je	loop2Add_changeDirection
-	mov	new_direction,esi
-	inc	available_direction
-loop2Add_changeDirection:
-	inc	esi
-	jmp	loop2_changeDirection
-exitLoop2_changeDirection:
-	cmp	available_direction,0
-	je	noAvailable_changeDirection
-	invoke	crt_rand
-	xor	edx,edx
-	mov	ecx,10
-	div	ecx
-	mov	random_direction,edx
-	xor	esi,esi
-loop3_changeDirection:
-	cmp	esi,random_direction
-	je	exitLoop3_changeDirection
-	inc	new_direction
-	and	new_direction,3
-loop4_changeDirection:
-	mov	eax,new_direction
-	cmp	direction[eax*4],0
-	jne	exitLoop4_changeDirection
-	inc	new_direction
-	and	new_direction,3
-	jmp	loop4_changeDirection
-exitLoop4_changeDirection:
-	inc	esi
-	jmp	loop3_changeDirection
-exitLoop3_changeDirection:
-	mov	eax,new_direction
-	mov	game.monsters[ebx].direction,eax
-	jmp	exit_changeDirection
-noAvailable_changeDirection:
-	mov	eax,monster_from
-exit_changeDirection:
+	mov j,0
+	loop1:
+		mov eax,game.monsters[ebx].x
+		mov	newX,eax
+		mov eax,game.monsters[ebx].y
+		mov newY,eax
+		invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,j,addr newX,addr newY
+		invoke isMoveableMonster,newX,newY
+		test eax,eax
+		jnz not_movable_direction
+			mov eax,j
+			mov	direction[eax*4],0
+		not_movable_direction:
+	inc j
+	cmp j,4
+	jl loop1
+	;chose the available direction randomly
+	;local	new_direction:dword,available_direction:dword
+	mov available_direction,0
+	mov new_direction,0
+	mov j,0
+	loop2:
+		mov eax,j
+		cmp direction[eax*4],1
+		jne count_avail_direction
+			mov eax,j
+			mov new_direction,eax
+			inc available_direction
+		count_avail_direction:
+
+	inc j
+	cmp j,4
+	jl loop2
+
+	cmp available_direction,0
+	jne have_available_direction
+		mov eax,monster_from
+		jmp end_func
+	have_available_direction:
+
+	invoke crt_rand
+	xor edx,edx
+	mov esi,10
+	div esi
+	mov random_direction,edx
+	; for (int j = 0; j < random_direction; j++)
+	mov j,0
+	cmp random_direction,0
+	je end_loop3
+	loop3:
+		inc new_direction
+		and new_direction,3
+		while_loop:
+		mov eax,new_direction
+		cmp direction[eax*4],1
+		je find_next_direction
+		inc new_direction
+		and new_direction,3
+		jmp while_loop
+		find_next_direction:
+	inc j
+	mov eax,j
+	cmp eax,random_direction
+	jl loop3
+	end_loop3:
+	mov eax,new_direction
+	mov game.monsters[ebx].direction,eax
+	end_func:
 	pop	esi
 	pop	ebx
 	ret
