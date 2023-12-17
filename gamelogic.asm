@@ -22,6 +22,7 @@ LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset
 TOOL_TYPE_JMP_TBL   dword   offset addLife_pollingPlayer,offset addRange_pollingPlayer,offset addCnt_pollingPlayer,offset addSpeed_pollingPlayer,offset addTime_pollingPlayer
 MOVE_ONE_STEP_JMP_TBL   dword   offset direUp_moveOneStep,offset direDown_moveOneStep,offset direLeft_moveOneStep,offset direRight_moveOneStep
 CALC_NEXT_MOVE_JMP_TBL  dword   offset direUp_calculateNextMove,offset direDown_calculateNextMove,offset direLeft_calculateNextMove,offset direRight_calculateNextMove
+MOV_MONSTER_TO_NEXT_CELL_JMP_TBL    dword   offset up1_switch_movMonsterToNextCell,offset down1_switch_movMonsterToNextCell,offset left1_switch_movMonsterToNextCell,offset right1_switch_movMonsterToNextCell
 ;POLL_MONSTER_JMP_TBL    dword   offset direUp_pollingMonster,offset direDown_pollingMonster,offset direLeft_pollingMonster,offset direRight_pollingMonster
 FROM_DIRECTION_TBL  dword   DOWN,UP,RIGHT,LEFT
 
@@ -481,67 +482,59 @@ pollingMonster endp
 
 
 movMonsterToNextCell proc index:dword
-	local i,j:DWORD
+    ;ebx: monsteroffset
+	;local i,j:DWORD
 	local direct_able,monster_from:DWORD
 	local newX,newY:DWORD
 	local before_x,before_y:DWORD
 	local move,newMonsterX,newMonsterY:DWORD
-	local monsteroffset:DWORD
+	;local monsteroffset:DWORD
 	push ebx
 	push esi
 	mov eax,index
-	mov i,eax
-	mov eax,i
+	;mov i,eax
+	;mov eax,i
 	mov ebx,sizeof(Monster)
 	mul ebx
-	mov monsteroffset,eax
+    mov ebx,eax
+	;mov monsteroffset,eax
 
 	;local direct_able,monster_from:DWORD
 	mov direct_able,0
 	mov monster_from,0
 
-	mov ebx,monsteroffset
-	mov esi,game.monsters[ebx].direction
+	;mov ebx,monsteroffset
+	mov eax,game.monsters[ebx].direction
 	;invoke getFromDriection,esi		
-    mov eax,[FROM_DIRECTION_TBL+esi*4]
+    mov eax,[FROM_DIRECTION_TBL+eax*4]
 	mov monster_from,eax
-	mov j,0
+	;mov j,0
+    xor esi,esi
 	inner_for_movMonsterToNextCell:
 		;local newX,newY:DWORD
-		mov ebx,monsteroffset
+		;mov ebx,monsteroffset
 		mov eax,game.monsters[ebx].x
 		mov newX,eax
 		mov eax,game.monsters[ebx].y
 		mov newY,eax
-
-		cmp j,UP
-		je up1_switch_movMonsterToNextCell
-		cmp j,DOWN
-		je down1_switch_movMonsterToNextCell
-		cmp j,LEFT
-		je left1_switch_movMonsterToNextCell
-		cmp j,RIGHT
-		je right1_switch_movMonsterToNextCell
-		jmp end_switch1_movMonsterToNextCell
-
-		up1_switch_movMonsterToNextCell:
-		dec newX
-		jmp end_switch1_movMonsterToNextCell
-		down1_switch_movMonsterToNextCell:
-		inc newX
-		jmp end_switch1_movMonsterToNextCell
-		left1_switch_movMonsterToNextCell:
-		dec newY
-		jmp end_switch1_movMonsterToNextCell
-		right1_switch_movMonsterToNextCell:
+        jmp [MOV_MONSTER_TO_NEXT_CELL_JMP_TBL+esi*4]
+up1_switch_movMonsterToNextCell label   dword
+        dec newX
+        jmp end_switch1_movMonsterToNextCell
+down1_switch_movMonsterToNextCell   label   dword
+        inc newX
+        jmp end_switch1_movMonsterToNextCell
+left1_switch_movMonsterToNextCell   label   dword
+        dec newY
+        jmp end_switch1_movMonsterToNextCell
+right1_switch_movMonsterToNextCell   label   dword
 		inc newY
-		jmp end_switch1_movMonsterToNextCell
-
 		end_switch1_movMonsterToNextCell:
 
 		;if (isMoveableMonster(this, newX, newY) && monster_from != j)
-		mov esi,monster_from
-		cmp esi,j
+		;mov eax,monster_from
+		;cmp eax,esi
+        cmp monster_from,esi
 		je	endif_isMoveableMonster_monster_from_movMonsterToNextCell
 		invoke isMoveableMonster,newX,newY
 		cmp eax,0
@@ -550,36 +543,36 @@ movMonsterToNextCell proc index:dword
 
 		endif_isMoveableMonster_monster_from_movMonsterToNextCell:			
 				
-	inc j
-	cmp j,4
+	inc esi
+	cmp esi,4
 	jl inner_for_movMonsterToNextCell
 				
 				
 	;get last step from monster from
 	get_last_step:
 	;local before_x,before_y:DWORD
-	mov ebx,monsteroffset
+	;mov ebx,monsteroffset
 	invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,monster_from,addr before_x,addr before_y
 	cmp direct_able,2
 	jl endif_is_corner_movMonsterToNextCell
 	invoke isMoveableMonster,before_x,before_y
 	cmp eax,0
 	je endif_is_corner_movMonsterToNextCell
-	invoke changeDirection,i
+	invoke changeDirection,index
 
 				
-	mov ebx,monsteroffset
+	;mov ebx,monsteroffset
 	mov game.monsters[ebx].direction,eax
 	endif_is_corner_movMonsterToNextCell:
 
 	;local move,newMonsterX,newMonsterY:DWORD
-	mov ebx,monsteroffset
-	mov esi,game.monsters[ebx].direction
-	mov move,esi
-	mov esi,game.monsters[ebx].x
-	mov newMonsterX,esi
-	mov esi,game.monsters[ebx].y
-	mov newMonsterY,esi
+	;mov ebx,monsteroffset
+	mov eax,game.monsters[ebx].direction
+	mov move,eax
+	mov eax,game.monsters[ebx].x
+	mov newMonsterX,eax
+	mov eax,game.monsters[ebx].y
+	mov newMonsterY,eax
 	invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,move,addr newMonsterX,addr newMonsterY
 	;check if new position is valid
 	invoke isMoveableMonster,newMonsterX,newMonsterY
@@ -594,7 +587,7 @@ movMonsterToNextCell proc index:dword
 		invoke die
 		end_inner2_if_movMonsterToNextCell:
 
-		mov ebx,monsteroffset
+		;mov ebx,monsteroffset
 		invoke calcMapOffset,game.monsters[ebx].x,
 			game.monsters[ebx].y,1
 
@@ -606,13 +599,13 @@ movMonsterToNextCell proc index:dword
 		invoke calcMapOffset,newMonsterX,newMonsterY,1
 					
 		mov game.map[eax*4]._type,MONSTER
-		mov esi,i
-		mov game.map[eax*4].id,cx
+		mov esi,index
+		mov game.map[eax*4].id,si
 
 		jmp end_new_pos_not_valid_movMonsterToNextCell
 	middle_new_pos_not_valid_movMonsterToNextCell:
-	mov ebx,monsteroffset
-	invoke changeDirection,i
+	;mov ebx,monsteroffset
+	invoke changeDirection,index
 				
 	mov game.monsters[ebx].direction,eax
 	end_new_pos_not_valid_movMonsterToNextCell:
@@ -624,8 +617,9 @@ movMonsterToNextCell endp
 
 changeDirection	proc	index:dword
 	local	direction[4]:dword,monster_from:dword,newX:dword,newY:dword
-	local	new_direction:dword,available_direction:dword,random_direction:dword
-	local	j:DWORD
+	local	new_direction:dword,available_direction:dword
+    ;random_direction:dword
+	;local	j:DWORD
 	push	ebx;monsteroffset
 	push	esi
 	mov	eax,index
@@ -640,40 +634,46 @@ changeDirection	proc	index:dword
     mov eax,[FROM_DIRECTION_TBL+eax*4]
 	;invoke getFromDriection,game.monsters[ebx].direction
 	mov	monster_from,eax
-	mov	eax,monster_from
+	;mov	eax,monster_from
 	mov	direction[eax*4],0
-	mov j,0
+    xor esi,esi
+	;mov j,0
 	loop1:
 		mov eax,game.monsters[ebx].x
 		mov	newX,eax
 		mov eax,game.monsters[ebx].y
 		mov newY,eax
-		invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,j,addr newX,addr newY
+		invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,esi,addr newX,addr newY
 		invoke isMoveableMonster,newX,newY
 		test eax,eax
 		jnz not_movable_direction
-			mov eax,j
-			mov	direction[eax*4],0
+			;mov eax,j
+			mov	direction[esi*4],0
 		not_movable_direction:
-	inc j
-	cmp j,4
+	;inc j
+	;cmp j,4
+    inc esi
+	cmp esi,4
 	jl loop1
 	;chose the available direction randomly
 	;local	new_direction:dword,available_direction:dword
 	mov available_direction,0
 	mov new_direction,0
-	mov j,0
+	;mov j,0
+    xor esi,esi
 	loop2:
-		mov eax,j
-		cmp direction[eax*4],1
+		;mov eax,j
+		cmp direction[esi*4],1
 		jne count_avail_direction
-			mov eax,j
-			mov new_direction,eax
+			;mov eax,j
+			mov new_direction,esi
 			inc available_direction
 		count_avail_direction:
 
-	inc j
-	cmp j,4
+	;inc j
+	;cmp j,4
+    inc esi
+    cmp esi,4
 	jl loop2
 
 	cmp available_direction,0
@@ -684,12 +684,13 @@ changeDirection	proc	index:dword
 
 	invoke crt_rand
 	xor edx,edx
-	mov esi,10
-	div esi
-	mov random_direction,edx
+	mov ecx,16
+	div ecx ;ramdom_direction in edx
+	;mov random_direction,edx
 	; for (int j = 0; j < random_direction; j++)
-	mov j,0
-	cmp random_direction,0
+	;mov j,0
+    xor esi,esi
+	cmp edx,0
 	je end_loop3
 	loop3:
 		inc new_direction
@@ -702,9 +703,9 @@ changeDirection	proc	index:dword
 		and new_direction,3
 		jmp while_loop
 		find_next_direction:
-	inc j
-	mov eax,j
-	cmp eax,random_direction
+	inc esi
+	;mov eax,j
+	cmp esi,edx
 	jl loop3
 	end_loop3:
 	mov eax,new_direction
