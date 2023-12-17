@@ -43,10 +43,10 @@ HOMEPAGE_IMG	equ	88
 PAUSEPAGE_IMG	equ	89
 IMG_CNT	equ	90
 
-DRAW_GAME_X_START	equ	128
-DRAW_GAME_Y_START	equ	64
-ELEMENT_WIDTH	equ	56
-ELEMENT_HEIGHT	equ	56
+DRAW_GAME_X_START	equ	125
+DRAW_GAME_Y_START	equ	60
+ELEMENT_WIDTH	equ	50
+ELEMENT_HEIGHT	equ	50
 
 LOGO_WIDTH	equ	400
 LOGO_HEIGHT	equ	400
@@ -269,6 +269,7 @@ calcDrawPos	proc	xPos:dword,yPos:dword,frac_x:dword,frac_y:dword,drawXPos:ptr dw
 	imul	edx
 	mov	ecx,FRAC_RANGE
 	idiv	ecx
+	sar	eax,1
 	mov	edx,xPos
 	add	edx,eax
 	mov	eax,drawXPos
@@ -278,6 +279,7 @@ calcDrawPos	proc	xPos:dword,yPos:dword,frac_x:dword,frac_y:dword,drawXPos:ptr dw
 	imul	edx
 	mov	ecx,FRAC_RANGE
 	idiv	ecx
+	sar	eax,1
 	mov	edx,yPos
 	add	edx,eax
 	mov	eax,drawYPos
@@ -326,9 +328,9 @@ drawPlayer_drawMap	label	dword
 	add	eax,edx
 playerNotMove_drawMap:
 	push	eax
-	invoke	calcDrawPos,esi,edi,game.player.frac_x,game.player.frac_y,addr drawXPos,addr drawYPos
+	invoke	calcDrawPos,esi,edi,game.player.frac_y,game.player.frac_x,addr drawXPos,addr drawYPos
 	pop	eax
-	invoke	drawImage,graphicsPtr,bitmapPtrs[PLY1_UP_IMG*4+eax*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
+	invoke	drawImage,graphicsPtr,bitmapPtrs[PLY1_UP_IMG*4+eax*4],drawXPos,drawYPos,ELEMENT_WIDTH,ELEMENT_HEIGHT
 	jmp	exitSwitch_drawMap
 drawBomb_drawMap	label	dword
 	mov	eax,id
@@ -352,8 +354,8 @@ drawMonster_drawMap	label	dword
 	push	edx
 	lea	edx,drawXPos
 	push	edx
-	push	game.monsters[eax].frac_y
 	push	game.monsters[eax].frac_x
+	push	game.monsters[eax].frac_y
 	push	edi
 	push	esi
 	call	calcDrawPos	;为什么要手动call呢？因为这个傻逼masm的addr运算符默认用eax来lea，把eax的值给干没了

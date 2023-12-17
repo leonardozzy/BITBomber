@@ -171,19 +171,19 @@ push ebx
     mov eax,direction
     jmp [MOVE_ONE_STEP_JMP_TBL+eax*4]
     direUp_moveOneStep  label   dword
-    mov ecx,pfrac_y
+    mov ecx,pfrac_x
     sub [ecx],edx
     jmp dirSwEnd_moveOneStep
     direDown_moveOneStep    label   dword
-    mov ecx,pfrac_y
+    mov ecx,pfrac_x
     add [ecx],edx
     jmp dirSwEnd_moveOneStep
     direLeft_moveOneStep    label   dword
-    mov ecx,pfrac_x
+    mov ecx,pfrac_y
     sub [ecx],edx
     jmp dirSwEnd_moveOneStep
     direRight_moveOneStep   label   dword
-    mov ecx,pfrac_x
+    mov ecx,pfrac_y
     add [ecx],edx
     dirSwEnd_moveOneStep:
     mov ebx, 2*FRAC_RANGE   ;ebx = 2*FRAC_RANGE
