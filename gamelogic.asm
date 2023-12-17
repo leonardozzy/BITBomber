@@ -962,6 +962,7 @@ setMonster3_initLevel:
     jmp setMap_initLevel
 setBoss_initLevel:
     invoke  initBoss,esi,edi
+    mov game.monster_num,1
     jmp setMap_initLevel
 setMap_initLevel:
     mov edx,num
@@ -988,7 +989,7 @@ initLevel   endp
 initGame    proc
     invoke  crt_memset,offset game,0,sizeof Game
     mov game.level,1
-    mov game.player.bomb_range,1
+    mov game.player.bomb_range,2
     mov game.player.bomb_cnt,1
     mov game.player.life,2
     mov game.player.speed,PLAYER_1_SPEED
@@ -1190,6 +1191,9 @@ clear   proc    x:dword,y:dword
     je  box_clear
     cmp game.map[eax*4]._type,BOSS
     je  boss_clear
+    invoke calcMapOffset,x,y,0
+    cmp game.map[eax*4]._type,TOOL
+    je tool_clear
 exit_clear:
     ret
 monster_clear:
@@ -1210,6 +1214,13 @@ box_clear:
     cmp eax,1
     jne exit_clear
     invoke  placeTool,x,y
+    jmp exit_clear
+tool_clear:
+    mov game.map[eax*4]._type,EMPTY
+    movzx eax,game.map[eax*4].id
+    mov edx,sizeof Tool
+    mul edx
+    mov game.tools[eax].timer,0
     jmp exit_clear
 boss_clear:
     dec game.boss.life
