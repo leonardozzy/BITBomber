@@ -60,6 +60,13 @@ placeBomb	endp
 
 pollingPlayer	proc	input:dword
 	local	newPlayerX:dword, newPlayerY:dword
+    mov game.player.isMove,STILL
+    cmp game.player.timer,0
+    je  JmpOverINVISIBLE_pollingPlayer
+    dec game.player.timer
+JmpOverINVISIBLE_pollingPlayer:
+    cmp input,0
+    jl  ret_pollingPlayer
     cmp input, SETBOMB
     jne JmpOver_placeBomb_pollingPlayer
         invoke placeBomb
@@ -69,16 +76,13 @@ pollingPlayer	proc	input:dword
     mov game.player.direction,eax
     mov game.player.isMove,MOVE
     ; deal with player status
-    cmp game.player.timer,0
-    je  JmpOverINVISIBLE_pollingPlayer
-    dec game.player.timer
+
     ;cmp game.player.status,INVISIBLE
     ;jne JmpOverINVISIBLE_pollingPlayer
         ;dec game.player.timer
         ;cmp game.player.timer,0
         ;jne JmpOverINVISIBLE_pollingPlayer
             ;mov game.player.status, NORMAL
-    JmpOverINVISIBLE_pollingPlayer:
     ; Move player
     mov eax, game.player.x
     mov newPlayerX, eax
@@ -1276,12 +1280,13 @@ load    endp
 
 
 gameLoop proc   input:dword
-    cmp input,-1
-    je  noPlayer_gameLoop
     invoke  pollingPlayer,input
-    jmp other_gameLoop
-noPlayer_gameLoop:
-    mov game.player.isMove,STILL
+    ;cmp input,-1
+    ;je  noPlayer_gameLoop
+    ;invoke  pollingPlayer,input
+    ;jmp other_gameLoop
+;noPlayer_gameLoop:
+   ; mov game.player.isMove,STILL
 other_gameLoop:
     invoke  pollingMonster
     invoke  pollingBomb
