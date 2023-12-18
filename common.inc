@@ -48,6 +48,7 @@ FIRE	equ	7
 BOSS	equ	8
 BLUEFIRE	equ	9
 ATTACK	equ	10
+BOSS_FLY	equ	11
 
 MONSTER_1	equ	41
 MONSTER_2	equ	42
@@ -57,10 +58,10 @@ MONSTER_3	equ	43
 FRAMES_PER_SEC	equ	30
 
 ;define speed
-PLAYER_1_SPEED	equ	15
-MONSTER_1_SPEED	equ	10
-MONSTER_2_SPEED	equ	15
-MONSTER_3_SPEED	equ	20
+PLAYER_1_SPEED	equ	12
+MONSTER_1_SPEED	equ	8
+MONSTER_2_SPEED	equ	12
+MONSTER_3_SPEED	equ	16
 ;新帧数下的速度
 
 ;define map_size
@@ -87,17 +88,17 @@ GAMEPAUSE	equ 5
 GAMESTART	equ 6
 
 ;define time
-INVISIBLE_TIMER	equ	75
+INVISIBLE_TIMER	equ	100
 BOMB_TIMER	equ	75
 FIRE_TIMER	equ	12
 TOOL_TIMER	equ 180
 ;boss时间再调
-COOL_TIME	equ	30
-SKY_TIME	equ	30
-PRE_DROP_TIME	equ	10
-PRE_ATTACK_TIME	equ	10
-ATTACK_TIME	equ	5
-ATTACK_FREQ	equ	10
+COOL_TIME	equ	200
+SKY_TIME	equ	500
+PRE_DROP_TIME	equ	60
+PRE_ATTACK_TIME	equ	60
+ATTACK_TIME	equ	12
+ATTACK_FREQ	equ	100
 
 FRAC_RANGE	equ	100
 
@@ -114,9 +115,10 @@ TIME_TOOL	equ	4
 
 ;define max upgrades
 MAX_LIFE	equ	5
-MAX_RANGE	equ	4
-MAX_BOMB_CNT	equ	3
-MAX_SPEED	equ	5
+MAX_BOMB_RANGE	equ	5
+MAX_BOMB_CNT	equ	5
+MAX_SPEED	equ	16
+TIME_INCREMENT	equ	20
 
 ;define game stage
 LOGO	equ	0
@@ -125,11 +127,11 @@ STORY	equ	2
 IN_GAME	equ	3
 
 ;enum mainWinp.state
-winState_logoPage	equ 1
-winState_startPage	equ 2
-winState_onStory	equ 3
-winState_onGame		equ 4
-winState_pauseGame	equ 5
+winState_logoPage	equ 0
+winState_startPage	equ 1
+winState_onStory	equ 2
+winState_onGame		equ 3
+winState_pauseGame	equ 4
 
 ;struct definition
 ;这样一个Object的大小就是4，便于比例变址寻址
@@ -190,7 +192,7 @@ Boss	ends
 Attack	struct
 	x	dword	?
 	y	dword	?
-	time	dword	?
+	timer	dword	?
 Attack	ends
 
 Game	struct
@@ -269,16 +271,16 @@ pollingTool	proto
 pollingSuccess	proto
 pollingBomb	proto
 placeTool	proto	x:dword,y:dword
-dealBomb	proto	x:dword,y:dword,range:dword,_job:dword
+dealBomb	proto	x:dword,y:dword,id:dword,range:dword,_job:dword
 isDestroyable	proto	x:dword,y:dword
 explode	proto	x:dword,y:dword,id:dword
 setFire	proto	x:dword,y:dword,id:dword
 clearFire	proto	x:dword,y:dword,id:dword
 clear	proto	x:dword,y:dword
-preAttack	proto	x:dword,y:dword
-makeAttack	proto	x:dword,y:dword
+preAttack	proto	x:dword,y:dword,id:dword
+makeAttack	proto	x:dword,y:dword,id:dword
 makeDrop	proto	x:dword,y:dword
-dealAttack	proto	x:dword,y:dword,_job:dword
+dealAttack	proto	x:dword,y:dword,id:dword,_job:dword
 pollingAttack	proto
 bossAttack	proto
 pollingBoss	proto

@@ -171,20 +171,22 @@ IMG_PATHS5	dword	offset MONSTER2_UP1_PATH,offset MONSTER2_UP2_PATH,offset MONSTE
 					offset MONSTER2_DOWN1_PATH,offset MONSTER2_DOWN2_PATH,offset MONSTER2_DOWN3_PATH,offset MONSTER2_DOWN4_PATH
 IMG_PATHS6	dword	offset MONSTER2_LEFT1_PATH,offset MONSTER2_LEFT2_PATH,offset MONSTER2_LEFT3_PATH,offset MONSTER2_LEFT4_PATH,
 					offset MONSTER2_RIGHT1_PATH,offset MONSTER2_RIGHT2_PATH,offset MONSTER2_RIGHT3_PATH,offset MONSTER2_RIGHT4_PATH
-IMG_PATH7	dword	offset MONSTER3_UP1_PATH,offset MONSTER3_UP2_PATH,offset MONSTER3_UP3_PATH,offset MONSTER3_UP4_PATH,
+IMG_PATHS7	dword	offset MONSTER3_UP1_PATH,offset MONSTER3_UP2_PATH,offset MONSTER3_UP3_PATH,offset MONSTER3_UP4_PATH,
 					offset MONSTER3_DOWN1_PATH,offset MONSTER3_DOWN2_PATH,offset MONSTER3_DOWN3_PATH,offset MONSTER3_DOWN4_PATH
-IMG_PATH8	dword	offset MONSTER3_LEFT1_PATH,offset MONSTER3_LEFT2_PATH,offset MONSTER3_LEFT3_PATH,offset MONSTER3_LEFT4_PATH,
+IMG_PATHS8	dword	offset MONSTER3_LEFT1_PATH,offset MONSTER3_LEFT2_PATH,offset MONSTER3_LEFT3_PATH,offset MONSTER3_LEFT4_PATH,
 					offset MONSTER3_RIGHT1_PATH,offset MONSTER3_RIGHT2_PATH,offset MONSTER3_RIGHT3_PATH,offset MONSTER3_RIGHT4_PATH
-IMG_PATH9	dword	offset DRAGON1_PATH,offset DRAGON2_PATH,offset DRAGON3_PATH,offset DRAGON4_PATH,
+IMG_PATHS9	dword	offset DRAGON1_PATH,offset DRAGON2_PATH,offset DRAGON3_PATH,offset DRAGON4_PATH,
 					offset FIRE1_PATH,offset FIRE2_PATH,offset FIRE3_PATH,offset FIRE4_PATH
-IMG_PATH10	dword	offset BLUE_FIRE1_PATH,offset BLUE_FIRE2_PATH,offset BLUE_FIRE3_PATH,offset BLUE_FIRE4_PATH,
+IMG_PATHS10	dword	offset BLUE_FIRE1_PATH,offset BLUE_FIRE2_PATH,offset BLUE_FIRE3_PATH,offset BLUE_FIRE4_PATH,
 					offset BOMB1_PATH,offset BOMB2_PATH
-IMG_PATH11	dword	offset LIFE_TOOL_PATH,offset BOMB_RANGE_TOOL_PATH,offset BOMB_CNT_TOOL_PATH,offset SPEED_TOOL_PATH,offset TIME_TOOL_PATH,
+IMG_PATHS11	dword	offset LIFE_TOOL_PATH,offset BOMB_RANGE_TOOL_PATH,offset BOMB_CNT_TOOL_PATH,offset SPEED_TOOL_PATH,offset TIME_TOOL_PATH,
 					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH
-
-
 DRAW_MAP_JMP_TBL	dword	offset drawEmpty_drawMap,offset drawWall_drawMap,offset drawPlayer_drawMap,offset drawBomb_drawMap,offset drawMonster_drawMap,
 							offset drawBox_drawMap,offset drawTool_drawMap,offset drawFire_drawMap,offset drawBoss_drawMap,offset drawBlueFire_drawMap,offset drawAttack_drawMap
+;BOSS_X_OFFSET	dword	-37,
+;BOSS_Y_OFFSET	dword	-60,
+;BOSS_WIDTH	dword	135,
+;BOSS_HEIGHT	dword	180,
 ;LIFE_STR_DISP	StrDisp	<150.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
 ;SPEED_STR_DISP	StrDisp	<350.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
 ;TIME_STR_DISP	StrDisp	<468.0,16.0,64.0,32.0,StringAlignmentCenter,StringAlignmentCenter>
@@ -444,11 +446,21 @@ drawFire_drawMap	label	dword
 	invoke	drawImage,graphicsPtr,bitmapPtrs[FIRE_IMG*4+eax*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
 	jmp	exitSwitch_drawMap
 drawBoss_drawMap	label	dword
+	;cool_time不为零，画在地面上的boss
+	;cool_time为零，根据sky_time考虑是否画boss，sky_time接近0
 drawBlueFire_drawMap	label	dword
+	;第0张图是火焰消失，第3张图是火焰刚出来
+	mov	eax,id
+	mov	edx,sizeof Attack
+	mul	edx
+	mov	eax,game.attacks[eax].timer
+	shr	eax,2	;分频待定
+	and	eax,3
+	invoke	drawImage,graphicsPtr,bitmapPtrs[BFIRE_IMG*4+eax*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
+	jmp	exitSwitch_drawMap
 drawAttack_drawMap	label	dword
 drawEmpty_drawMap	label	dword
 exitSwitch_drawMap:
-	
 	inc	ebx
 	inc	layer
 	cmp	layer,3
