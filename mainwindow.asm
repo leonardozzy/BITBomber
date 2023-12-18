@@ -18,55 +18,51 @@ MSGBOX_WINDOW_FAIL_TEXT	byte	"窗口创建失败！",0
 MSGBOX_ERROR_TITLE	byte	"错误",0
 
 .code
-
-
 readKey Proc
-    invoke GetAsyncKeyState,'B'
-    test eax, 0001H
-	jnz keyB_readKey
-    invoke GetAsyncKeyState,'W'
-    test eax, 0001H
-	jnz keyW_readKey
-    invoke GetAsyncKeyState,'S'
-    test eax, 0001H
-	jnz keyS_readKey
-    invoke GetAsyncKeyState,'A'
-    test eax, 0001H
-	jnz keyA_readKey
-    invoke GetAsyncKeyState,'D'
-    test eax, 0001H
-	jnz keyD_readKey
-    invoke GetAsyncKeyState,'P'
-    test eax, 0001H
-	jnz keyP_readKey
-    invoke GetAsyncKeyState,'R'
-    test eax, 0001H
-	jnz keyR_readKey
-    mov eax,-1
-    jmp ret_readKey
+	invoke	GetKeyState,VK_B
+	test	eax,8000h
+	jnz	keyB_readKey
+	invoke	GetKeyState,VK_W
+	test	eax,8000h
+	jnz	keyW_readKey
+	invoke	GetKeyState,VK_S
+	test	eax,8000h
+	jnz	keyS_readKey
+	invoke	GetKeyState,VK_A
+	test	eax,8000h
+	jnz	keyA_readKey
+	invoke	GetKeyState,VK_D
+	test	eax,8000h
+	jnz	keyD_readKey
+	invoke	GetKeyState,VK_ESCAPE
+	test	eax,8000h
+	jnz	keyEsc_readKey
+	invoke	GetKeyState,VK_R
+	test	eax,8000h
+	jnz	keyR_readKey
+	mov	eax,-1
+	ret
 keyB_readKey:
     mov eax,SETBOMB
-    jmp ret_readKey
+	ret
 keyW_readKey:
     mov eax,UP
-    jmp ret_readKey
+	ret
 keyS_readKey:
     mov eax,DOWN
-    jmp ret_readKey
+	ret
 keyA_readKey:
     mov eax,LEFT
-    jmp ret_readKey
+	ret
 keyD_readKey:
     mov eax,RIGHT
-    jmp ret_readKey
-keyP_readKey:
+	ret
+keyEsc_readKey:
     mov eax,GAMEPAUSE
-    jmp ret_readKey
+	ret
 keyR_readKey:
     mov eax,GAMESTART
-    jmp ret_readKey
-ret_readKey:
-    ret
+	ret
 readKey endp
 
 OnLButtonUp proc wParam:WPARAM, lParam:LPARAM
@@ -183,6 +179,7 @@ PlayMp3File endp
 
 WindowProc	proc	hwnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 	local	ps:PAINTSTRUCT,hdc:HDC,hdcBuffer:HDC,memBitmap:HBITMAP,graphicsPtr:dword
+	;这个地方没法跳转表
 	cmp	uMsg,WM_TIMER
 	je	WindowProcTimer
 	cmp	uMsg,WM_CREATE
@@ -212,9 +209,8 @@ WindowProcPaint:
 	mov	memBitmap,eax
 	invoke	SelectObject,hdcBuffer,eax
 	invoke	GdipCreateFromHDC,hdcBuffer,addr graphicsPtr
-	;在这里使用graphicsPtr进行画图函数的调用，这只是一个示例
-	;invoke	drawSolidRect,graphicsPtr,0ffffffffh,0,0,WINDOW_WIDTH,WINDOW_HEIGHT
-	invoke	drawWindow,graphicsPtr
+	;在这里使用graphicsPtr进行画图函数的调用
+	invoke	drawWindow,graphicsPtr,hdcBuffer
 	invoke	BitBlt,hdc,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,hdcBuffer,0,0,SRCCOPY	;双缓冲绘图技术防止闪烁
 	;释放绘图资源
 	invoke	GdipReleaseDC,graphicsPtr,hdcBuffer
@@ -224,8 +220,8 @@ WindowProcPaint:
 	invoke	EndPaint,hwnd,addr ps
 	jmp	ExitWindowProc
 WindowProcCreate:
-	invoke PlayMp3File,hwnd,ADDR MAIN_BGM_SOUND_PATH	;放音乐
-	invoke ImmAssociateContext, hwnd, NULL	;qjh测试功能，禁用输入法
+	invoke	PlayMp3File,hwnd,ADDR MAIN_BGM_SOUND_PATH	;放音乐
+	invoke	ImmAssociateContext, hwnd, NULL	;qjh测试功能，禁用输入法
 	invoke	SetTimer,hwnd,1,20,NULL	;暂定每20ms更新一次状态，但实测频率低于理论值
 	jmp	ExitWindowProc
 WindowProcDestroy:

@@ -28,20 +28,16 @@ DRA_IMG	equ	64
 FIRE_IMG	equ	68
 BFIRE_IMG	equ	72
 BOMB_IMG	equ	76
-WALL_IMG	equ	78
-BOX_IMG	equ	79
-TOOL_IMG	equ	80
-LIFE_TOOL_IMG	equ	80
-RANGE_TOOL_IMG	equ	81
-CNT_TOOL_IMG	equ	82
-SPEED_TOOL_IMG	equ	83
-TIME_TOOL_IMG	equ	84
-BG1_IMG	equ	85
-BG2_IMG	equ	86
-LOGO_IMG	equ	87
-HOMEPAGE_IMG	equ	88
-PAUSEPAGE_IMG	equ	89
-IMG_CNT	equ	90
+TOOL_IMG	equ	78
+LIFE_TOOL_IMG	equ	78
+RANGE_TOOL_IMG	equ	79
+CNT_TOOL_IMG	equ	80
+SPEED_TOOL_IMG	equ	81
+TIME_TOOL_IMG	equ	82
+LOGO_IMG	equ	83
+HOMEPAGE_IMG	equ	84
+PAUSEPAGE_IMG	equ	85
+IMG_CNT	equ	86
 
 DRAW_GAME_X_START	equ	40
 DRAW_GAME_Y_START	equ	90
@@ -57,7 +53,7 @@ LOGO_Y_POS	equ	150
 DENGXIAN_FONT	StrFont	<FONT_NAME_LEN dup(?),12.0,0ffffffffh,FontStyleRegular>
 
 .data?
-bitmapPtrs	dword	200 dup(?)
+bitmapPtrs	dword	100 dup(?)
 logoBitmapPtr	dword	?
 startPageBitmapPtr	dword	?
 storyUtf16Str	word	1024 dup(?)
@@ -65,6 +61,7 @@ bg1Info	BitmapInfo	<>
 bg2Info	BitmapInfo	<>
 wallInfo	BitmapInfo	<>
 boxInfo	BitmapInfo	<>
+hFont1	HFONT	?
 
 .const
 PLAYER1_UP1_PATH	byte	"./images/player1_up1.png",0
@@ -157,7 +154,8 @@ BG2_PATH	byte	"./images/bg2.bmp",0
 LOGO_PATH	byte	"./images/logo.png",0
 HOMEPAGE_PATH	byte	"./images/start.png",0
 PAUSEPAGE_PATH	byte	"./images/start.png",0
-;DENGXIAN	byte	"等线",0
+DENGXIAN	byte	"等线",0
+ARIAL_NAME	byte	"Arial",0
 ONE_INT_FMT	byte	"%d",0
 TIME_FMT	byte	"%d:%02d",0
 align	4
@@ -180,20 +178,22 @@ IMG_PATH8	dword	offset MONSTER3_LEFT1_PATH,offset MONSTER3_LEFT2_PATH,offset MON
 IMG_PATH9	dword	offset DRAGON1_PATH,offset DRAGON2_PATH,offset DRAGON3_PATH,offset DRAGON4_PATH,
 					offset FIRE1_PATH,offset FIRE2_PATH,offset FIRE3_PATH,offset FIRE4_PATH
 IMG_PATH10	dword	offset BLUE_FIRE1_PATH,offset BLUE_FIRE2_PATH,offset BLUE_FIRE3_PATH,offset BLUE_FIRE4_PATH,
-					offset BOMB1_PATH,offset BOMB2_PATH,offset WALL_PATH,offset BOX_PATH
+					offset BOMB1_PATH,offset BOMB2_PATH
 IMG_PATH11	dword	offset LIFE_TOOL_PATH,offset BOMB_RANGE_TOOL_PATH,offset BOMB_CNT_TOOL_PATH,offset SPEED_TOOL_PATH,offset TIME_TOOL_PATH,
-					offset BG1_PATH,offset BG2_PATH,offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH
+					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH
+
+
 DRAW_MAP_JMP_TBL	dword	offset drawEmpty_drawMap,offset drawWall_drawMap,offset drawPlayer_drawMap,offset drawBomb_drawMap,offset drawMonster_drawMap,
 							offset drawBox_drawMap,offset drawTool_drawMap,offset drawFire_drawMap,offset drawBoss_drawMap,offset drawBlueFire_drawMap,offset drawAttack_drawMap
-LIFE_STR_DISP	StrDisp	<150.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
-SPEED_STR_DISP	StrDisp	<350.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
-TIME_STR_DISP	StrDisp	<468.0,16.0,64.0,32.0,StringAlignmentCenter,StringAlignmentCenter>
-CNT_STR_DISP	StrDisp	<650.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
-RANGE_STR_DISP	StrDisp	<850.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
+;LIFE_STR_DISP	StrDisp	<150.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
+;SPEED_STR_DISP	StrDisp	<350.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
+;TIME_STR_DISP	StrDisp	<468.0,16.0,64.0,32.0,StringAlignmentCenter,StringAlignmentCenter>
+;CNT_STR_DISP	StrDisp	<650.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
+;RANGE_STR_DISP	StrDisp	<850.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
 
 
 .code
-;根据指定的StrFont和StrDisp在屏幕上绘制UTF-16字符串
+;根据指定的StrFont和StrDisp在屏幕上绘制UTF-16字符串，有性能问题，仅在必须绘制无背景字符串时调用
 drawUtf16String	proc	graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
 	local	fontFamilyPtr:dword,fontPtr:dword,stringFormatPtr:dword,brushPtr:dword
 	push	ebx
@@ -214,7 +214,7 @@ drawUtf16String	proc	graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont
 	ret
 drawUtf16String	endp
 
-;根据指定的StrFont和StrDisp在屏幕上绘制GB系列的字符串
+;根据指定的StrFont和StrDisp在屏幕上绘制GB系列的字符串，有性能问题，仅在必须绘制无背景字符串时调用
 drawGbString	proc	graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
 	local	str1[512]:word
 	invoke	MultiByteToWideChar,CP_ACP,NULL,strToShow,-1,addr str1,sizeof str1
@@ -222,7 +222,7 @@ drawGbString	proc	graphicsPtr:dword,strToShow:ptr byte,strFontPtr:ptr StrFont,st
 	ret
 drawGbString	endp
 
-;在屏幕上填充矩形
+;在屏幕上填充矩形，有性能问题，仅在必须绘制透明矩形时调用
 drawSolidRect	proc	graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,height:dword
 	local	brushPtr:dword
 	invoke	GdipCreateSolidFill,color,addr brushPtr
@@ -231,6 +231,10 @@ drawSolidRect	proc	graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,he
 	ret
 drawSolidRect	endp
 
+;GdipDrawImageRectI（drawImage）有*严重*的性能问题，仅在必须绘制有透明通道的png时调用
+;绘制普通图像请使用GDI的BilBlt等
+
+;初始化bmp
 initBmp	proc	path:ptr byte,info:ptr BitmapInfo
 	local	bmpInfo:BITMAP
 	push	ebx
@@ -249,6 +253,7 @@ initBmp	proc	path:ptr byte,info:ptr BitmapInfo
 	ret
 initBmp	endp
 
+;删除bmp
 deleteBmp	proc	info:ptr BitmapInfo
 	push	ebx
 	mov	ebx,info
@@ -278,6 +283,8 @@ exitLoop_initResources:
 	invoke	initBmp,offset BOX_PATH,offset boxInfo
 	invoke	initBmp,offset BG1_PATH,offset bg1Info
 	invoke	initBmp,offset BG2_PATH,offset bg2Info
+	invoke	CreateFont,30,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS,CLIP_DEFAULT_PRECIS,ANTIALIASED_QUALITY,FF_DONTCARE,offset ARIAL_NAME
+	mov	hFont1,eax
 	pop	ebx
 	ret
 initResources	endp
@@ -297,6 +304,7 @@ exitLoop_releaseResources:
 	invoke	deleteBmp,offset boxInfo
 	invoke	deleteBmp,offset bg1Info
 	invoke	deleteBmp,offset bg2Info
+	invoke	DeleteObject,hFont1
 	pop	ebx
 	ret
 releaseResources	endp
@@ -335,14 +343,10 @@ drawMap	proc	graphicsPtr:dword,hdcBuffer:HDC
 	push	edi
 	cmp	game.level,4
 	je	drawBossBG_drawMap
-	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,SRCCOPY
-	;invoke	StretchBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,bg1Info._width,bg1Info.height,SRCCOPY
-	;invoke	drawImage,graphicsPtr,bitmapPtrs[BG1_IMG*4],0,0,WINDOW_WIDTH,WINDOW_HEIGHT
+	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,SRCCOPY	;加速
 	jmp	endDrawBG_drawMap
 drawBossBG_drawMap:
-	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg2Info.hdcMem,0,0,SRCCOPY
-	;invoke	StretchBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg2Info.hdcMem,0,0,bg2Info._width,bg2Info.height,SRCCOPY
-	;invoke	drawImage,graphicsPtr,bitmapPtrs[BG2_IMG*4],0,0,WINDOW_WIDTH,WINDOW_HEIGHT
+	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg2Info.hdcMem,0,0,SRCCOPY	;加速
 endDrawBG_drawMap:
 	xor	ebx,ebx
 	mov	esi,DRAW_GAME_X_START
@@ -354,9 +358,7 @@ mainLoop_drawMap:
 	mov	id,edx
 	jmp	[DRAW_MAP_JMP_TBL+eax*4]
 drawWall_drawMap	label	dword
-	;invoke	StretchBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,wallInfo.hdcMem,0,0,wallInfo._width,wallInfo.height,SRCCOPY
-	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,wallInfo.hdcMem,0,0,SRCCOPY
-	;invoke	drawImage,graphicsPtr,bitmapPtrs[WALL_IMG*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
+	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,wallInfo.hdcMem,0,0,SRCCOPY	;加速
 	jmp	exitSwitch_drawMap
 drawPlayer_drawMap	label	dword
 	mov	eax,game.player.timer
@@ -422,9 +424,7 @@ drawMonster2_drawMap:
 	invoke	drawImage,graphicsPtr,bitmapPtrs[MON2_UP_IMG*4+edx*4],drawXPos,drawYPos,ELEMENT_WIDTH,ELEMENT_HEIGHT
 	jmp	exitSwitch_drawMap
 drawBox_drawMap	label	dword
-	;invoke	StretchBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,boxInfo.hdcMem,0,0,boxInfo._width,boxInfo.height,SRCCOPY
-	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,boxInfo.hdcMem,0,0,SRCCOPY
-	;invoke	drawImage,graphicsPtr,bitmapPtrs[BOX_IMG*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
+	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,boxInfo.hdcMem,0,0,SRCCOPY	;加速
 	jmp	exitSwitch_drawMap
 drawTool_drawMap	label	dword
 	mov	eax,id
@@ -464,6 +464,7 @@ exitSwitch_drawMap:
 exitMainLoop_drawMap:
 ;150 350 500 650 850
 	;invoke	SetTextColor,hdcBuffer,0ffffffh
+	invoke	SelectObject,hdcBuffer,hFont1
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.life
 	invoke	crt_strlen,addr tempStr
 	invoke	TextOut,hdcBuffer,150,30,addr tempStr,eax
@@ -565,6 +566,7 @@ ret_drawStory:
 drawStory	endp
 
 drawWindow	proc	graphicsPtr:dword,hdcBuffer:HDC
+	;考虑改跳转表
 	cmp mainwinp.winState, winState_logoPage
 	je logoPage_drawWindow
 	cmp mainwinp.winState, winState_startPage
