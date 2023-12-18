@@ -23,14 +23,12 @@ LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset
 TOOL_TYPE_JMP_TBL   dword   offset addLife_pollingPlayer,offset addRange_pollingPlayer,offset addCnt_pollingPlayer,offset addSpeed_pollingPlayer,offset addTime_pollingPlayer
 MOVE_ONE_STEP_JMP_TBL   dword   offset direUp_moveOneStep,offset direDown_moveOneStep,offset direLeft_moveOneStep,offset direRight_moveOneStep
 CALC_NEXT_MOVE_JMP_TBL  dword   offset direUp_calculateNextMove,offset direDown_calculateNextMove,offset direLeft_calculateNextMove,offset direRight_calculateNextMove
-PLAYER_INPUT_JMP_TBL    dword   offset playerPressUp_pollingPlayer,offset playerPressDown_pollingPlayer,offset playerPressLeft_pollingPlayer,offset playerPressRight_pollingPlayer
 MOV_MONSTER_TO_NEXT_CELL_JMP_TBL    dword   offset up1_switch_movMonsterToNextCell,offset down1_switch_movMonsterToNextCell,offset left1_switch_movMonsterToNextCell,offset right1_switch_movMonsterToNextCell
 ;POLL_MONSTER_JMP_TBL    dword   offset direUp_pollingMonster,offset direDown_pollingMonster,offset direLeft_pollingMonster,offset direRight_pollingMonster
 FROM_DIRECTION_TBL  dword   DOWN,UP,RIGHT,LEFT
 
 .code
 placeBomb	proc	
-    push    ebx
     cmp game.player.bomb_cnt,0
     jng ret_placeBomb
     invoke calcMapOffset,game.player.x,game.player.y,0
@@ -39,7 +37,6 @@ placeBomb	proc
     ;;;if (this->player.bomb_cnt > 0 && this->map[this->player.x][this->player.y][0].type==EMPTY) {
     ; Find an empty slot for a new bomb
     xor ecx,ecx
-    xor ebx,ebx
     ALLBOMB_LOOP_placeBomb:
         cmp game.bombs[ecx].timer, 0    ;Assuming a bomb's timer <= 0 means it's inactive
         jg ALLBOMB_LOOPEND_placeBomb 
@@ -51,22 +48,18 @@ placeBomb	proc
             mov edx, game.player.bomb_range
             mov game.bombs[ecx].range, edx
             mov game.map[4*eax]._type, BOMB
-            mov game.map[4*eax].id,bx
             dec game.player.bomb_cnt
             jmp ret_placeBomb
         ALLBOMB_LOOPEND_placeBomb:
         add ecx, sizeof Bomb ;add sizeof(Bomb) per loop
-        inc ebx
         cmp ecx, MAX_BOMB*sizeof Bomb
         jb ALLBOMB_LOOP_placeBomb
 ret_placeBomb:
-    pop ebx
 	ret
 placeBomb	endp
 
-
 pollingPlayer	proc	input:dword
-	local	newPlayerX:dword, newPlayerY:dword,tmp:dword
+	local	newPlayerX:dword, newPlayerY:dword
     mov game.player.isMove,STILL
     cmp game.player.timer,0
     je  JmpOverINVISIBLE_pollingPlayer
@@ -76,158 +69,78 @@ JmpOverINVISIBLE_pollingPlayer:
     jl  ret_pollingPlayer
     cmp input, SETBOMB
     jne JmpOver_placeBomb_pollingPlayer
-    invoke placeBomb
-    jmp ret_pollingPlayer
-JmpOver_placeBomb_pollingPlayer:
-    invoke calcMapOffset, game.player.x, game.player.y, 1
-    mov game.map[eax*4]._type,EMPTY
+        invoke placeBomb
+        jmp ret_pollingPlayer   ; Early return as no movement is required
+    JmpOver_placeBomb_pollingPlayer:
     mov eax,input
     mov game.player.direction,eax
     mov game.player.isMove,MOVE
-    jmp [PLAYER_INPUT_JMP_TBL+eax*4]
+    ; deal with player status
 
-playerPressUp_pollingPlayer   label   dword
-    mov eax,game.player.frac_x
-    sub eax,game.player.speed
-    mov tmp,eax
-    jg  canMoveUp_pollingPlayer
-    mov eax,game.player.x
-    dec eax
-    invoke  isMoveable,eax,game.player.y
+    ;cmp game.player.status,INVISIBLE
+    ;jne JmpOverINVISIBLE_pollingPlayer
+        ;dec game.player.timer
+        ;cmp game.player.timer,0
+        ;jne JmpOverINVISIBLE_pollingPlayer
+            ;mov game.player.status, NORMAL
+    ; Move player
+    mov eax, game.player.x
+    mov newPlayerX, eax
+    mov eax, game.player.y
+    mov newPlayerY, eax
+    invoke moveOneStep, game.player.x, game.player.y, input \
+        , addr newPlayerX, addr newPlayerY \
+        , offset game.player.frac_x, offset game.player.frac_y, game.player.speed, PLAYER
+    cmp eax,2
+    jne JOfracClearZero_pollingPlayer
+        mov game.player.frac_x,0
+        mov game.player.frac_y,0
+    JOfracClearZero_pollingPlayer:
+    ; Check if new position is valid
+    invoke isMoveable, newPlayerX, newPlayerY
     test    eax,eax
-    jnz canMoveUp_pollingPlayer
-    mov game.player.frac_x,0
-    jmp exitInputSwitch_pollingPlayer
-canMoveUp_pollingPlayer:
-    invoke  crt_abs,game.player.frac_y
-    cmp eax,50
-    jg  exitInputSwitch_pollingPlayer
-    mov game.player.frac_y,0
-    mov eax,tmp
-    mov game.player.frac_x,eax
-    cmp eax,-FRAC_RANGE
-    jge exitInputSwitch_pollingPlayer
-    dec game.player.x
-    add eax,2*FRAC_RANGE
-    mov game.player.frac_x,eax
-    jmp exitInputSwitch_pollingPlayer
-
-playerPressDown_pollingPlayer label   dword
-    mov eax,game.player.frac_x
-    add eax,game.player.speed
-    mov tmp,eax
-    jl  canMoveDown_pollingPlayer
-    mov eax,game.player.x
-    inc eax
-    invoke  isMoveable,eax,game.player.y
-    test    eax,eax
-    jnz canMoveDown_pollingPlayer
-    mov game.player.frac_x,0
-    jmp exitInputSwitch_pollingPlayer
-canMoveDown_pollingPlayer:
-    invoke  crt_abs,game.player.frac_y
-    cmp eax,50
-    jg  exitInputSwitch_pollingPlayer
-    mov game.player.frac_y,0
-    mov eax,tmp
-    mov game.player.frac_x,eax
-    cmp eax,FRAC_RANGE
-    jl exitInputSwitch_pollingPlayer
-    inc game.player.x
-    sub eax,2*FRAC_RANGE
-    mov game.player.frac_x,eax
-    jmp exitInputSwitch_pollingPlayer
-
-playerPressLeft_pollingPlayer label   dword
-    mov eax,game.player.frac_y
-    sub eax,game.player.speed
-    mov tmp,eax
-    jg  canMoveLeft_pollingPlayer
-    mov eax,game.player.y
-    dec eax
-    invoke  isMoveable,game.player.x,eax
-    test    eax,eax
-    jnz canMoveLeft_pollingPlayer
-    mov game.player.frac_y,0
-    jmp exitInputSwitch_pollingPlayer
-canMoveLeft_pollingPlayer:
-    invoke  crt_abs,game.player.frac_x
-    cmp eax,50
-    jg  exitInputSwitch_pollingPlayer
-    mov game.player.frac_x,0
-    mov eax,tmp
-    mov game.player.frac_y,eax
-    cmp eax,-FRAC_RANGE
-    jge exitInputSwitch_pollingPlayer
-    dec game.player.y
-    add eax,2*FRAC_RANGE
-    mov game.player.frac_y,eax
-    jmp exitInputSwitch_pollingPlayer
-
-playerPressRight_pollingPlayer    label   dword
-    mov eax,game.player.frac_y
-    add eax,game.player.speed
-    mov tmp,eax
-    jl  canMoveRight_pollingPlayer
-    mov eax,game.player.y
-    inc eax
-    invoke  isMoveable,game.player.x,eax
-    test    eax,eax
-    jnz canMoveRight_pollingPlayer
-    mov game.player.frac_y,0
-    jmp exitInputSwitch_pollingPlayer
-canMoveRight_pollingPlayer:
-    invoke  crt_abs,game.player.frac_x
-    cmp eax,50
-    jg  exitInputSwitch_pollingPlayer
-    mov game.player.frac_x,0
-    mov eax,tmp
-    mov game.player.frac_y,eax
-    cmp eax,FRAC_RANGE
-    jl  exitInputSwitch_pollingPlayer
-    inc game.player.y
-    sub eax,2*FRAC_RANGE
-    mov game.player.frac_y,eax
-exitInputSwitch_pollingPlayer:
-    invoke calcMapOffset, game.player.x, game.player.y, 0
-    cmp game.map[eax*4 + 4]._type, MONSTER
-    jne JmpOverMonster_pollingPlayer
-    invoke die
-    jmp ret_pollingPlayer
-JmpOverMonster_pollingPlayer:
-    cmp game.map[eax*4]._type, TOOL
-    jne JmpOverTool_pollingPlayer
-    movzx   ecx,game.map[eax*4].id
-    sal ecx, 4  ;tool_index *= sizeof(tool)   考虑万一改变sizeof Tool，这个地方要改
-    mov edx,game.tools[ecx]._type
-    jmp [TOOL_TYPE_JMP_TBL+edx*4]
-addLife_pollingPlayer label dword
-    cmp game.player.life,MAX_LIFE
-    jge ToolSwEnd_pollingPlayer
-    inc game.player.life
-    jmp ToolSwEnd_pollingPlayer
-addRange_pollingPlayer label dword
-    cmp game.player.bomb_range,MAX_BOMB_RANGE
-    jge  ToolSwEnd_pollingPlayer
-    inc game.player.bomb_range
-    jmp ToolSwEnd_pollingPlayer
-addCnt_pollingPlayer label dword
-    cmp game.player.bomb_cnt,MAX_BOMB_CNT
-    jge ToolSwEnd_pollingPlayer
-    inc game.player.bomb_cnt
-    jmp ToolSwEnd_pollingPlayer
-addSpeed_pollingPlayer label dword
-    cmp game.player.speed,MAX_SPEED
-    jge ToolSwEnd_pollingPlayer
-    inc game.player.speed
-    jmp ToolSwEnd_pollingPlayer
-addTime_pollingPlayer label dword
-    add game.timer,20*FRAMES_PER_SEC
-ToolSwEnd_pollingPlayer:
-    mov game.map[eax*4]._type, EMPTY
-    mov game.tools[ecx].timer, 0
-JmpOverTool_pollingPlayer:
-    mov game.map[eax*4+4]._type,PLAYER
+    jz JmpOver_isMoveable_pollingPlayer
+        ; Check for collision with monsters
+        invoke calcMapOffset, newPlayerX, newPlayerY, 0
+        cmp game.map[eax*4 + 4]._type, MONSTER
+        jne JmpOverMonster_pollingPlayer
+            invoke die
+            jmp ret_pollingPlayer
+        JmpOverMonster_pollingPlayer:
+        cmp game.map[eax*4]._type, TOOL
+        jne JmpOverTool_pollingPlayer
+            movzx   ecx,game.map[eax*4].id
+            sal ecx, 4  ;tool_index *= sizeof(tool)   考虑万一改变sizeof Tool，这个地方要改
+            mov edx,game.tools[ecx]._type
+            jmp [TOOL_TYPE_JMP_TBL+edx*4]
+            addLife_pollingPlayer label dword
+            inc game.player.life
+            jmp ToolSwEnd_pollingPlayer
+            addRange_pollingPlayer label dword
+            inc game.player.bomb_range
+            jmp ToolSwEnd_pollingPlayer
+            addCnt_pollingPlayer label dword
+            inc game.player.bomb_cnt
+            jmp ToolSwEnd_pollingPlayer
+            addSpeed_pollingPlayer label dword
+            inc game.player.speed
+            jmp ToolSwEnd_pollingPlayer
+            addTime_pollingPlayer label dword
+            add game.timer,30
+            ToolSwEnd_pollingPlayer:
+            mov game.map[eax*4]._type, EMPTY
+            mov game.tools[ecx].timer, 0
+        JmpOverTool_pollingPlayer:
+        ; Update the player's position on the map
+        invoke calcMapOffset, game.player.x, game.player.y, 1
+        mov game.map[eax*4], EMPTY
+        mov edx, newPlayerX
+        mov game.player.x, edx
+        mov edx, newPlayerY
+        mov game.player.y, edx
+        invoke calcMapOffset, game.player.x, game.player.y, 1   ;刚刚更新完，还需要访问
+        mov game.map[eax*4], PLAYER
+    JmpOver_isMoveable_pollingPlayer:
 ret_pollingPlayer:
 	ret
 pollingPlayer	endp
@@ -931,22 +844,20 @@ clearFire proc	x:dword,y:dword,id:dword
 	ret
 clearFire ENDP
 
-preAttack proc x:dword,y:dword,id:dword
+preAttack proc x:dword,y:dword
 	invoke calcMapOffset,x,y,2
 	mov game.map[eax*4]._type,ATTACK
 	ret
 preAttack ENDP
 
-makeAttack proc x:dword,y:dword,id:dword
+makeAttack proc x:dword,y:dword
 	invoke calcMapOffset,x,y,2
 	mov game.map[eax*4]._type,BLUEFIRE
-    mov edx,id
-    mov game.map[eax*4].id,dx
 	invoke clear,x,y
 	ret
 makeAttack ENDP
 
-dealAttack proc x:dword,y:dword,id:dword,jobFunc:dword
+dealAttack proc x:dword,y:dword,jobFunc:dword
 	push edi
 	push esi
 	mov ecx,x
@@ -968,7 +879,6 @@ inLoop_dealAttack:
 	pop ecx
 	cmp game.map[4*eax]._type,WALL
 	jne noJob_dealAttack
-    push    id
 	push ecx
 	push edx
 	call jobFunc
@@ -988,32 +898,28 @@ dealAttack ENDP
 
 pollingAttack proc
 	push ebx
-    push    esi
-	xor ebx,ebx
-    xor esi,esi
+	mov ebx,0
 loop_pollingAttack:
 	cmp ebx,MAX_ATTACK*sizeof(Attack)
 	jle end_pollingAttack
-	cmp game.attacks[ebx].timer,0
+	cmp game.attacks[ebx].time,0
 	jle noJob_pollingAttack
-	dec game.attacks[ebx].timer
-	cmp game.attacks[ebx].timer,ATTACK_TIME
+	dec game.attacks[ebx].time
+	cmp game.attacks[ebx].time,ATTACK_TIME
 	jle lessAttackTime_pollingAttack
-	invoke dealAttack,game.attacks[ebx].x,game.attacks[ebx].y,esi,offset preAttack
+	invoke dealAttack,game.attacks[ebx].x,game.attacks[ebx].y,offset preAttack
 	jmp noJob_pollingAttack
 lessAttackTime_pollingAttack:
-	cmp game.attacks[ecx].timer,0
+	cmp game.attacks[ecx].time,0
 	je equalZeroTime_pollingAttack
-	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,esi,offset makeAttack
+	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,offset makeAttack
 	jmp noJob_pollingAttack
 equalZeroTime_pollingAttack:
-	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,esi,offset clearFire
+	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,offset clearFire
 noJob_pollingAttack:
 	add ebx,sizeof(Attack)
-    inc esi
 	jmp loop_pollingAttack
 end_pollingAttack:
-    pop esi
 	pop ebx
 	ret
 pollingAttack ENDP
@@ -1023,13 +929,13 @@ bossAttack proc
 loop_bossAttack:
 	cmp ecx,MAX_ATTACK*sizeof(Attack)
 	jle end_bossAttack
-	cmp game.attacks[ecx].timer,0
+	cmp game.attacks[ecx].time,0
 	jle continue_bossAttack
 	mov edx,game.player.x
 	mov game.attacks[ecx].x,edx
 	mov edx,game.player.y
 	mov game.attacks[ecx].y,edx
-	mov game.attacks[ecx].timer,PRE_ATTACK_TIME + ATTACK_TIME
+	mov game.attacks[ecx].time,PRE_ATTACK_TIME + ATTACK_TIME
 	jmp end_bossAttack
 continue_bossAttack:
 	add ecx,sizeof(Attack)
@@ -1040,7 +946,7 @@ bossAttack ENDP
 
 bossDrop proc
 	mov game.boss.in_map,1
-	invoke dealAttack,game.boss.x,game.boss.y,0,offset clear
+	invoke dealAttack,game.boss.x,game.boss.y,offset clear
 bossDrop endp
 
 pollingBoss proc
@@ -1084,10 +990,10 @@ bossWillDrop_pollingBoss:
 	je end_pollingBoss
 	sub game.boss.pre_drop_time,1
 	je dropTimeEnd_pollingBoss
-	invoke dealAttack,game.boss.x,game.boss.y,0,offset preAttack
+	invoke dealAttack,game.boss.x,game.boss.y,offset preAttack
 	ret
 dropTimeEnd_pollingBoss:
-	invoke dealAttack,game.boss.x,game.boss.y,0,offset clearFire
+	invoke dealAttack,game.boss.x,game.boss.y,offset clearFire
 	invoke bossDrop
 	mov game.boss.cool_time,COOL_TIME
 end_pollingBoss:
@@ -1257,9 +1163,7 @@ pollingTool endp
 pollingBomb proc
     ;ebx：bombs数组偏移量
     push    ebx
-    push    esi
     xor ebx,ebx
-    xor esi,esi
 loop_pollingBomb:
     cmp ebx,MAX_BOMB*sizeof Bomb
     je  exitLoop_pollingBomb
@@ -1274,22 +1178,20 @@ loop_pollingBomb:
     je  clearFire_pollingBomb
     jmp loopAdd_pollingBomb
 explode_pollingBomb:
-    invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,esi,game.bombs[ebx].range,offset explode
+    invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,game.bombs[ebx].range,offset explode
     inc game.player.bomb_cnt
     jmp loopAdd_pollingBomb
 setFire_pollingBomb:
-    invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,esi,game.bombs[ebx].range,offset setFire
+    invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,game.bombs[ebx].range,offset setFire
     jmp loopAdd_pollingBomb
 clearFire_pollingBomb:
     invoke  calcMapOffset,game.bombs[ebx].x,game.bombs[ebx].y,0
     mov game.map[eax*4]._type,EMPTY
-    invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,esi,game.bombs[ebx].range,offset clearFire
+    invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,game.bombs[ebx].range,offset clearFire
 loopAdd_pollingBomb:
     add ebx,sizeof Bomb
-    inc esi
     jmp loop_pollingBomb
 exitLoop_pollingBomb:
-    pop esi
     pop ebx
     ret
 pollingBomb endp
@@ -1304,11 +1206,15 @@ exit_pollingSuccess:
     ret
 pollingSuccess  endp
 
-dealBomb    proc    x:dword,y:dword,id:dword,range:dword,_job:dword
+dealBomb    proc    x:dword,y:dword,range:dword,_job:dword
     ;ebx：循环变量，esi：循环界
+    local   id:dword
+    invoke  calcMapOffset,x,y,0
+    movzx   eax,game.map[eax*4].id
+    mov id,eax
     push    ebx
     push    esi
-    push    id ;id
+    push    eax ;id
     push    y
     push    x
     call    _job
