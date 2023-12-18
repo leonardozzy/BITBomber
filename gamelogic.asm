@@ -240,8 +240,12 @@ push esi
             mov eax,0
             mov next_is_moveable,eax
     EndMoveable_moveOneStep:
+
+    cmp _type,MONSTER
+    je JOisnext_is_moveable_moveOneStep
     cmp next_is_moveable,1
     je JOnext_isnot_moveable_xyjmpone_moveOneStep
+    JOisnext_is_moveable_moveOneStep:
         mov ecx,0
         mov ebx, 2*FRAC_RANGE   ;ebx = 2*FRAC_RANGE
 
@@ -250,6 +254,11 @@ push esi
         jne elseif1_frac_moveOneStep
         cmp [esi],ecx
         jg elseif1_frac_moveOneStep
+        cmp _type,PLAYER
+        je elseif1_lastfrac_moveOneStep
+            cmp last_fx,ecx
+            jle elseif1_frac_moveOneStep
+        elseif1_lastfrac_moveOneStep:
             mov ismove,2
             ;jmp ret_moveOneStep
             jmp else_frac_moveOneStep
@@ -258,6 +267,11 @@ push esi
         jne elseif2_frac_moveOneStep
         cmp [esi],ecx
         jl elseif2_frac_moveOneStep
+        cmp _type,PLAYER
+        je elseif2_lastfrac_moveOneStep
+            cmp last_fx,ecx
+            jge elseif2_frac_moveOneStep
+        elseif2_lastfrac_moveOneStep:
             mov ismove,2
             ;jmp ret_moveOneStep
             jmp else_frac_moveOneStep
@@ -267,6 +281,11 @@ push esi
         jne elseif3_frac_moveOneStep
         cmp [esi],ecx
         jg elseif3_frac_moveOneStep
+        cmp _type,PLAYER
+        je elseif3_lastfrac_moveOneStep
+            cmp last_fy,ecx
+            jle elseif3_frac_moveOneStep
+        elseif3_lastfrac_moveOneStep:
             mov ismove,2
             ;jmp ret_moveOneStep
             jmp else_frac_moveOneStep
@@ -275,6 +294,11 @@ push esi
         jne else_frac_moveOneStep
         cmp [esi],ecx
         jl else_frac_moveOneStep
+        cmp _type,PLAYER
+        je else_lastfrac_moveOneStep
+            cmp last_fy,ecx
+            jge else_frac_moveOneStep
+        else_lastfrac_moveOneStep:
             mov ismove,2
             ;jmp ret_moveOneStep
         else_frac_moveOneStep:
@@ -509,7 +533,7 @@ calculateNextMove endp
 pollingMonster	proc
 	;local i:DWORD
 	;local monsteroffset:DWORD
-	local tmp1,tmp2:DWORD
+	local newMonsterX,newMonsterY:DWORD,ismove:dword
 	push ebx
     push    esi
     xor esi,esi
@@ -529,14 +553,43 @@ pollingMonster	proc
 		je MonsterNotValid_pollingMonster
 			;mov ebx,monsteroffset
 			invoke moveOneStep,game.monsters[ebx].x,game.monsters[ebx].y \
-							,game.monsters[ebx].direction,addr tmp1,addr tmp2 \
+							,game.monsters[ebx].direction,addr newMonsterX,addr newMonsterY \
 							,addr game.monsters[ebx].frac_x ,addr game.monsters[ebx].frac_y\
 							,game.monsters[ebx].speed, MONSTER
-			cmp eax,0
-			je notMoveCell_pollingMonster
-				invoke movMonsterToNextCell	,esi
-			notMoveCell_pollingMonster:
+            mov ismove,eax
+			cmp ismove,1
+			jne notMoveCell_pollingMonster
+				;invoke movMonsterToNextCell	,esi
+                ;
+                    mov eax,game.player.x
+		            cmp eax,newMonsterX
+		            jne end_inner2_if_pollingMonster
+		            mov eax,game.player.y
+		            cmp eax,newMonsterY
+		            jne end_inner2_if_pollingMonster
+		            invoke die
+		            end_inner2_if_pollingMonster:
 
+		            ;mov ebx,monsteroffset
+		            invoke calcMapOffset,game.monsters[ebx].x,game.monsters[ebx].y,1
+
+		            mov game.map[eax*4]._type,EMPTY
+		            mov eax,newMonsterX
+		            mov game.monsters[ebx].x,eax
+		            mov eax,newMonsterY
+		            mov game.monsters[ebx].y,eax
+		            invoke calcMapOffset,newMonsterX,newMonsterY,1
+					
+		            mov game.map[eax*4]._type,MONSTER
+		            ;mov ecx,index
+		            mov game.map[eax*4].id,si
+                jmp MonsterNotValid_pollingMonster
+
+            notMoveCell_pollingMonster:
+            cmp ismove,2
+            jne MonsterNotValid_pollingMonster
+	            invoke changeDirection,esi
+	            mov game.monsters[ebx].direction,eax
 		MonsterNotValid_pollingMonster:
 	inc esi
 	cmp esi,MAX_MONSTER
