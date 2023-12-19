@@ -2,13 +2,33 @@
 .model	flat,stdcall
 option	casemap:none
 
+public game
 include	common.inc
-public  game
 public  level_cnt
+extrn	mainwinp:MainWinp
+extrn	levelup_question:	byte
+extrn	levelup_choice1:    byte
+extrn	levelup_choice2:	byte	
+extrn	levelup_choice3:    byte	
+extrn	levelup_choice4:	byte
 
 .const
-INFO_FILENAME  byte    "./info.txt",0
+LEVEL_CNT_FILENAME  byte    "./levels/count.txt",0
+FILENAME1	byte	"./levels/4.level",0
+FILENAME2	byte	"./levels/2.level",0
+FILENAME3	byte	"./levels/3.level",0
+FILENAME4	byte	"./levels/4.level",0
 FILENAMESAVE	byte	"./save.bb",0
+
+BOMB_AUDIO   byte    "./audio/Bomb.mp3",0
+PICK_AUDIO   byte   "./audio/PickUpTool.mp3",0  
+DIE_AUDIO    byte   "./audio/Die.mp3",0
+LEVEL_UP_AUDIO byte "./audio/Levelup.mp3",0
+PLAY_SPRINTF byte "play %s",0
+;PLAY_REPEAT_SPRINTF byte "play %s repeat",0
+STOP_SPRINTF byte "stop %s",0
+
+INFO_FILENAME  byte    "./info.txt",0
 OPEN_FILE_READ_ONLY	byte	"r",0
 OPEN_BFILE_READ_ONLY	byte	"rb",0
 OPEN_BFILE_WRITE_ONLY	byte	"wb",0
@@ -17,8 +37,10 @@ TWO_INT_FORMAT  byte    "%d%d",0
 LEVEL_FILENAME_FORMAT   byte    "./levels/%02d.level",0
 QUES_FILENAME_FORMAT byte   "./questions/%03d.question",0
 FILE_NOT_FOUND_FORMAT   byte    "%s not found!",0
-;å››å­—èŠ‚å¯¹é½ï¼Œæå‡è¯»å–æ•ˆç‡
+;ËÄ×Ö½Ú¶ÔÆë£¬ÌáÉı¶ÁÈ¡Ğ§ÂÊ
+
 align  4
+LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
 TOOL_TYPE_JMP_TBL   dword   offset addLife_pollingPlayer,offset addRange_pollingPlayer,offset addCnt_pollingPlayer,offset addSpeed_pollingPlayer,offset addTime_pollingPlayer
 MOVE_ONE_STEP_JMP_TBL   dword   offset direUp_moveOneStep,offset direDown_moveOneStep,offset direLeft_moveOneStep,offset direRight_moveOneStep
 CALC_NEXT_MOVE_JMP_TBL  dword   offset direUp_calculateNextMove,offset direDown_calculateNextMove,offset direLeft_calculateNextMove,offset direRight_calculateNextMove
@@ -35,7 +57,7 @@ game    Game    <>
 readInfo    proc    errorInfo:ptr byte
     local   fileNameStr[50]:byte
     push    ebx
-    ;ebx:æ–‡ä»¶æŒ‡é’ˆ
+    ;ebx:ÎÄ¼şÖ¸Õë
     invoke  crt_fopen,offset INFO_FILENAME,offset OPEN_FILE_READ_ONLY
     test    eax,eax
     jnz  infoFound_readInfo
@@ -58,7 +80,7 @@ levelOk_readInfo:
     mov question_cnt,MAX_QUESTION
 questionOk_readInfo:
     invoke  crt_fclose,ebx
-    ;ebxå¾ªç¯å˜é‡
+    ;ebxÑ­»·±äÁ¿
     xor ebx,ebx
 loop1_readInfo:
     cmp ebx,level_cnt
@@ -106,7 +128,7 @@ readQuestion proc	question:ptr byte,choice1:ptr byte,choice2:ptr byte,choice3:pt
 	mov	ecx,question_cnt
 	div	ecx
 	invoke crt_sprintf,addr questionFileName,offset QUES_FILENAME_FORMAT,edx
-	invoke crt_fopen,questionFileName,offset OPEN_FILE_READ_ONLY
+	invoke crt_fopen,addr questionFileName,offset OPEN_FILE_READ_ONLY
     test    eax,eax
     jnz fileFound_readQuestion
     invoke  crt_exit,1
@@ -164,6 +186,7 @@ placeBomb	endp
 
 
 pollingPlayer	proc	input:dword
+    local audioCmd[100]:byte
     mov game.player.isMove,STILL
     cmp game.player.timer,0
     je  JmpOverINVISIBLE_pollingPlayer
@@ -285,8 +308,12 @@ JmpOverMonster_pollingPlayer:
 skipBoss_pollingPlayer:
     cmp game.map[eax*4]._type, TOOL
     jne JmpOverTool_pollingPlayer
+    push eax
+    invoke crt_sprintf,addr audioCmd,offset PLAY_SPRINTF,offset PICK_AUDIO
+    invoke mciSendString,addr audioCmd,0,0,0
+    pop eax
     movzx   ecx,game.map[eax*4].id
-    sal ecx, 4  ;tool_index *= sizeof(tool)   è€ƒè™‘ä¸‡ä¸€æ”¹å˜sizeof Toolï¼Œè¿™ä¸ªåœ°æ–¹è¦æ”¹
+    sal ecx, 4  ;tool_index *= sizeof(tool)   ¿¼ÂÇÍòÒ»¸Ä±äsizeof Tool£¬Õâ¸öµØ·½Òª¸Ä
     mov edx,game.tools[ecx]._type
     jmp [TOOL_TYPE_JMP_TBL+edx*4]
 addLife_pollingPlayer label dword
@@ -598,6 +625,9 @@ moveOneStep endp
 ;}
 
 die proc
+    local audioCmd[100]:byte
+    invoke crt_sprintf,addr audioCmd,offset PLAY_SPRINTF,offset DIE_AUDIO
+    invoke mciSendString,addr audioCmd,0,0,0
     cmp game.player.timer,0
     jg  end_die
 	;cmp	game.player.status,INVISIBLE
@@ -608,7 +638,9 @@ die proc
 	jmp l2_die
 l1_die:
 	;invoke crt_puts, offset GAMEOVER_STR
-	invoke crt_exit,0
+	;invoke crt_exit,0
+	mov mainwinp.frames,0
+    mov mainwinp.winState, winState_gameover
 l2_die:
 	invoke calcMapOffset,game.player.x,game.player.y,1
 	mov game.map[eax*4] ,EMPTY
@@ -1233,7 +1265,7 @@ initLevel   proc
     invoke  crt_exit,1
     ret
 fileFound_initLevel:
-    ;ebxï¼šmapæ•°ç»„ä¸‹æ ‡ï¼Œesiï¼šiï¼Œediï¼šj
+    ;ebx£ºmapÊı×éÏÂ±ê£¬esi£ºi£¬edi£ºj
     push    ebx
     push    esi
     push    edi
@@ -1321,7 +1353,7 @@ initGame    proc
 initGame    endp
 
 pollingTool proc
-    ;ebxï¼štoolsæ•°ç»„åç§»é‡
+    ;ebx£ºtoolsÊı×éÆ«ÒÆÁ¿
     push    ebx
     xor ebx,ebx
 loop_pollingTool:
@@ -1343,7 +1375,8 @@ exitLoop_pollingTool:
 pollingTool endp
 
 pollingBomb proc
-    ;ebxï¼šbombsæ•°ç»„åç§»é‡
+    local audioCmd[100]:byte
+    ;ebx£ºbombsÊı×éÆ«ÒÆÁ¿
     push    ebx
     push    esi
     xor ebx,ebx
@@ -1362,6 +1395,8 @@ loop_pollingBomb:
     je  clearFire_pollingBomb
     jmp loopAdd_pollingBomb
 explode_pollingBomb:
+    invoke crt_sprintf,addr audioCmd,offset PLAY_SPRINTF,offset BOMB_AUDIO
+    invoke mciSendString,addr audioCmd,0,0,0
     invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,esi,game.bombs[ebx].range,offset explode
     inc game.player.bomb_cnt
     jmp loopAdd_pollingBomb
@@ -1383,17 +1418,24 @@ exitLoop_pollingBomb:
 pollingBomb endp
 
 pollingSuccess  proc
+    local audioCmd[100]:byte
     cmp game.monster_num,0
     jne exit_pollingSuccess
+        
+    invoke crt_sprintf,addr audioCmd,addr PLAY_SPRINTF,addr LEVEL_UP_AUDIO
+    invoke mciSendString,addr audioCmd, NULL,0,NULL
     ;invoke  crt_puts,offset WIN_STR
-    inc game.level
-    invoke  initLevel
+    invoke readQuestion,offset levelup_question\
+    ,offset levelup_choice1,offset levelup_choice2\
+    ,offset levelup_choice3,offset levelup_choice4
+    mov mainwinp.levelup_answer,eax
+    mov mainwinp.winState, winState_levelup
 exit_pollingSuccess:
     ret
 pollingSuccess  endp
 
 dealBomb    proc    x:dword,y:dword,id:dword,range:dword,_job:dword
-    ;ebxï¼šå¾ªç¯å˜é‡ï¼Œesiï¼šå¾ªç¯ç•Œ
+    ;ebx£ºÑ­»·±äÁ¿£¬esi£ºÑ­»·½ç
     push    ebx
     push    esi
     push    id ;id
@@ -1552,12 +1594,14 @@ boss_clear:
     cmp game.boss.life,0
     jne exit_clear
     ;invoke  crt_puts,offset WIN_STR
-    invoke  crt_exit,0
+    ;invoke  crt_exit,0
+	mov mainwinp.frames,0
+    mov mainwinp.winState, winState_gamewin
     jmp exit_clear
 clear   endp
 
 placeTool   proc    x:dword,y:dword
-    ;ebxï¼štoolsæ•°ç»„åç§»é‡
+    ;ebx£ºtoolsÊı×éÆ«ÒÆÁ¿
     push    ebx
     xor ebx,ebx
 loop_placeTool:
@@ -1579,7 +1623,7 @@ loop_placeTool:
     xor edx,edx
     mov ecx,sizeof Tool
     div ecx
-    ;ebxï¼štool id
+    ;ebx£ºtool id
     mov ebx,eax
     invoke  calcMapOffset,x,y,0
     mov game.map[eax*4]._type,TOOL

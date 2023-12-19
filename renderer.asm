@@ -2,6 +2,11 @@
 .model	flat,stdcall
 option	casemap:none
 
+public levelup_question
+public levelup_choice1
+public levelup_choice2
+public levelup_choice3
+public levelup_choice4
 include	common.inc
 extrn	game:Game
 extrn	level_cnt:dword
@@ -40,7 +45,10 @@ HOMEPAGE_IMG	equ	84
 PAUSEPAGE_IMG	equ	85
 STORY1_IMG	equ	86
 STORY2_IMG	equ	87
-IMG_CNT	equ	88
+KEYBOARD_IMG	equ	88
+GAMEOVER_IMG	equ	89
+QUESTION_IMG	equ	90
+IMG_CNT	equ	91
 
 WALL_IMG	equ	0
 BOX_IMG	equ	1
@@ -69,7 +77,6 @@ DENGXIAN_FONT	StrFont	<FONT_NAME_LEN dup(?),14.0,0ff000000h,FontStyleRegular>
 bitmapPtrs	dword	100 dup(?)
 logoBitmapPtr	dword	?
 startPageBitmapPtr	dword	?
-storyUtf16Str	word	1024 dup(?)
 bg1Info	BitmapInfo	<>
 bg2Info	BitmapInfo	<>
 wallInfo	BitmapInfo	<>
@@ -79,6 +86,11 @@ speedIconInfo	BitmapInfo	<>
 cntIconInfo	BitmapInfo	<>
 rangeIconInfo	BitmapInfo	<>
 hFont1	HFONT	?
+levelup_question	byte	256 dup(?)
+levelup_choice1	byte	64 dup(?)
+levelup_choice2	byte	64 dup(?)
+levelup_choice3	byte	64 dup(?)
+levelup_choice4	byte	64 dup(?)
 
 .const
 PLAYER1_UP1_PATH	byte	"./images/player1_up1.png",0
@@ -173,6 +185,9 @@ HOMEPAGE_PATH	byte	"./images/homepage.png",0
 PAUSEPAGE_PATH	byte	"./images/pausepage.png",0
 STORY1_PATH	byte	"./images/story1.jpg",0
 STORY2_PATH	byte	"./images/story2.png",0
+KEYBOARD_PATH	byte	"./images/keyboard.jpg",0
+GAMEOVER_PATH	byte	"./images/game_over.png",0
+QUESTION_PATH	byte	"./images/question.png",0
 LIFE_ICON_PATH	byte	"./images/life_icon.bmp",0
 SPEED_ICON_PATH	byte	"./images/speed_icon.bmp",0
 CNT_ICON_PATH	byte	"./images/cnt_icon.bmp",0
@@ -204,12 +219,19 @@ IMG_PATHS9	dword	offset DRAGON1_PATH,offset DRAGON2_PATH,offset DRAGON3_PATH,off
 IMG_PATHS10	dword	offset BLUE_FIRE1_PATH,offset BLUE_FIRE2_PATH,offset BLUE_FIRE3_PATH,offset BLUE_FIRE4_PATH,
 					offset BOMB1_PATH,offset BOMB2_PATH
 IMG_PATHS11	dword	offset LIFE_TOOL_PATH,offset BOMB_RANGE_TOOL_PATH,offset BOMB_CNT_TOOL_PATH,offset SPEED_TOOL_PATH,offset TIME_TOOL_PATH,
-					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH,offset STORY1_PATH,offset STORY2_PATH
+					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH,offset STORY1_PATH,offset STORY2_PATH,offset KEYBOARD_PATH,offset GAMEOVER_PATH,offset QUESTION_PATH
+
 BMP_IMG_PATHS	dword	offset WALL_PATH,offset BOX_PATH,offset BG1_PATH,offset BG2_PATH,offset LIFE_ICON_PATH,offset SPEED_ICON_PATH,offset CNT_ICON_PATH,offset RANGE_ICON_PATH
 DRAW_MAP_JMP_TBL	dword	offset drawEmpty_drawMap,offset drawWall_drawMap,offset drawPlayer_drawMap,offset drawBomb_drawMap,offset drawMonster_drawMap,
 							offset drawBox_drawMap,offset drawTool_drawMap,offset drawFire_drawMap,offset drawBoss_drawMap,offset drawBlueFire_drawMap,offset drawAttack_drawMap,
 							offset drawBossFly_drawMap
 STATUS_RECT	RECT	<0,0,WINDOW_WIDTH,60>
+
+QUESTION_DISP	StrDisp	<104.0,121.0,750.0,280.0,0,0>
+CHOICE1_DISP	StrDisp	<125.0,484.0,300.0,300.0,0,0>
+CHOICE2_DISP	StrDisp	<607.0,484.0,300.0,300.0,0,0>
+CHOICE3_DISP	StrDisp	<125.0,567.0,300.0,300.0,0,0>
+CHOICE4_DISP	StrDisp	<607.0,567.0,300.0,300.0,0,0>
 
 .code
 checkAllImages	proc	errorInfo:ptr byte
@@ -667,12 +689,22 @@ drawLogoImageDraw	proc	graphicsPtr:dword,drawWhich:dword
 	je d0_drawLogoImageDraw
 	cmp drawWhich,1
 	je d1_drawLogoImageDraw
+	cmp drawWhich,2
+	je d2_drawLogoImageDraw
+	cmp drawWhich,3
+	je d3_drawLogoImageDraw
 	ret
 	d0_drawLogoImageDraw:
 		invoke	drawImage,graphicsPtr,bitmapPtrs[LOGO_IMG*4],LOGO_X_POS,LOGO_Y_POS,LOGO_WIDTH,LOGO_HEIGHT
 	ret
 	d1_drawLogoImageDraw:
 		invoke	drawImage,graphicsPtr,bitmapPtrs[STORY1_IMG*4],0,0,984,711
+	ret
+	d2_drawLogoImageDraw:
+		invoke	drawImage,graphicsPtr,bitmapPtrs[STORY2_IMG*4],246,0,492,711
+	ret
+	d3_drawLogoImageDraw:
+		invoke	drawImage,graphicsPtr,bitmapPtrs[GAMEOVER_IMG*4],0,0,984,711
 	ret
 drawLogoImageDraw	endp
 
@@ -681,12 +713,24 @@ drawLogoEndSingal	proc	drawWhich:dword
 	je d0_drawLogoEndSingal
 	cmp drawWhich,1
 	je d1_drawLogoEndSingal
+	cmp drawWhich,2
+	je d2_drawLogoEndSingal
+	cmp drawWhich,3
+	je d3_drawLogoEndSingal
 	ret
 	d0_drawLogoEndSingal:
 		mov mainwinp.winState, winState_startPage
 	ret
 	d1_drawLogoEndSingal:
+		mov mainwinp.frames,0
 		inc mainwinp.nowStoryNum
+	ret
+	d2_drawLogoEndSingal:
+		mov mainwinp.frames,0
+		inc mainwinp.nowStoryNum
+	ret
+	d3_drawLogoEndSingal:
+		mov mainwinp.winState, winState_startPage
 	ret
 drawLogoEndSingal	endp
 
@@ -730,43 +774,32 @@ exit_drawLogo:
 drawLogo	endp
 
 
-drawRollText	proc	graphicsPtr:dword
-	local strDispPtr:StrDisp, strFontPtr:StrFont
-	cmp mainwinp.frames,0
-	jl	movePrint_drawRollText
-	
-	jmp ret_drawRollText
-movePrint_drawRollText:
-	mov eax, WINDOW_HEIGHT
-	sub eax, mainwinp.frames	;eax = WINDOW_HEIGHT - frames
-	mov ecx, WINDOW_WIDTH
- 	sar ecx, 1	;ecx = WINDOW_WIDTH/2
-	mov strDispPtr.x, ecx
-	mov strDispPtr.y, eax
-	mov strDispPtr._width, 600
-	mov strDispPtr.height, 600
-	mov strDispPtr.hAlign, StringAlignmentCenter
-	mov strDispPtr.vAlign, StringAlignmentNear
-	invoke crt_strcpy, addr strFontPtr.fontName, offset DENGXIAN, FONT_NAME_LEN
-	mov strFontPtr.fontSize, 14
-	mov strFontPtr.color, 0FFFFFFFFH
-	mov strFontPtr.style, FontStyleRegular
-	invoke drawGbString, graphicsPtr, offset storyUtf16Str, addr strFontPtr, addr strDispPtr
-ret_drawRollText:
+drawQuestion	proc	graphicsPtr:dword
+	invoke	drawImage,graphicsPtr,bitmapPtrs[QUESTION_IMG*4],0,0,984,711
+	invoke drawGbString, graphicsPtr, offset levelup_question, offset DENGXIAN_FONT, offset QUESTION_DISP
+	invoke drawGbString, graphicsPtr, offset levelup_choice1, offset DENGXIAN_FONT, offset CHOICE1_DISP
+	invoke drawGbString, graphicsPtr, offset levelup_choice2, offset DENGXIAN_FONT, offset CHOICE2_DISP
+	invoke drawGbString, graphicsPtr, offset levelup_choice3, offset DENGXIAN_FONT, offset CHOICE3_DISP
+	invoke drawGbString, graphicsPtr, offset levelup_choice4, offset DENGXIAN_FONT, offset CHOICE4_DISP
 	ret
-drawRollText	endp
+drawQuestion	endp
 
 drawStory	proc	graphicsPtr:dword
 	cmp mainwinp.nowStoryNum,1
 	je s1_drawStory
 	cmp mainwinp.nowStoryNum,2
 	je s2_drawStory
+	cmp mainwinp.nowStoryNum,3
+	je s3_drawStory
 	ret
 	s1_drawStory:
-		invoke drawLogo,graphicsPtr,1,120
+		invoke drawLogo,graphicsPtr,1,60
 	ret
 	s2_drawStory:
-		invoke	drawImage,graphicsPtr,bitmapPtrs[STORY2_IMG*4],246,0,492,711
+		invoke drawLogo,graphicsPtr,2,60
+	ret
+	s3_drawStory:
+		invoke	drawImage,graphicsPtr,bitmapPtrs[KEYBOARD_IMG*4],0,0,984,711
 	ret
 drawStory	endp
 
@@ -782,6 +815,10 @@ drawWindow	proc	graphicsPtr:dword,hdcBuffer:HDC
 	je onGame_drawWindow
 	cmp mainwinp.winState, winState_pauseGame
 	je pauseGame_drawWindow
+	cmp mainwinp.winState, winState_gameover
+	je gameover_drawWindow
+	cmp mainwinp.winState, winState_levelup
+	je levelup_drawWindow
 	jmp ret_drawWindow
 logoPage_drawWindow:
 	invoke	drawLogo, graphicsPtr,0,25
@@ -798,6 +835,12 @@ onGame_drawWindow:
 pauseGame_drawWindow:
 	invoke	drawMap, graphicsPtr,hdcBuffer
 	invoke	drawImage,graphicsPtr,bitmapPtrs[PAUSEPAGE_IMG*4],150,112,689,498
+	jmp ret_drawWindow
+gameover_drawWindow:
+	invoke	drawLogo, graphicsPtr,3,30
+	jmp ret_drawWindow
+levelup_drawWindow:
+	invoke	drawQuestion, graphicsPtr
 	jmp ret_drawWindow
 ret_drawWindow:
 	ret

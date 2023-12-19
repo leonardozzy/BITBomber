@@ -117,7 +117,8 @@ SETBOMB	equ	4
 GAMEPAUSE	equ 5
 GAMESTART	equ 6
 SPACEJO		equ 7
-
+KEY_B		equ 8
+KEY_C		equ 9
 
 ;define time
 INVISIBLE_TIMER	equ	100
@@ -170,6 +171,9 @@ winState_onStory	equ 2
 winState_onGame		equ 3
 winState_pauseGame	equ 4
 winState_levelup	equ 5
+winState_gameover	equ 6
+winState_gamewin	equ 7
+
 
 ;struct definition
 ;这样一个Object的大小就是4，便于比例变址寻址
@@ -275,6 +279,8 @@ MainWinp	struct	;游戏外层主窗口逻辑部分全局变量
 	winState	dword	?
 	frames	dword	?	;启动时画logo等状态的帧数，用于淡入淡出等
 	nowStoryNum	dword	?
+	levelup_answer	dword	?
+
 MainWinp	ends
 
 ;function definition
@@ -328,16 +334,15 @@ archive	proto
 load	proto
 readKey	proto
 draw	proto
-mainLoop proto
+mainLoop proto	hwnd:HWND
 gameLoop proto  input:dword
 isMouseInButton proto mousex:word, mousey:word, x:word,y:word,w:word,h:word
 PlayMp3File proto hWin:dword,NameOfFile:dword
-InitBackSound proto hWin:dword
 StartBackSound proto NameOfFile:dword
-StopBackSound proto
 StartDanceMode proto
-checkAllImages	proto	errorInfo:ptr byte
+readQuestion proto	question:ptr byte,choice1:ptr byte,choice2:ptr byte,choice3:ptr byte,choice4:ptr byte
 
+checkAllImages	proto	errorInfo:ptr byte
 endif
 
 

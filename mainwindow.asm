@@ -4,18 +4,27 @@ option	casemap:none
 
 public  mainwinp
 include	common.inc
+extrn game:Game
 
 .data
 mainwinp	MainWinp	<>
 mciPlayParms	MCI_PLAY_PARMS <>
 mciOpenParms	MCI_OPEN_PARMS <>
-Mp3DeviceID dd 0
+Mp3DeviceID dword 0
 dancemode_si STARTUPINFO <>
 dancemode_pi PROCESS_INFORMATION <>
+audioCmdBuf byte 256 dup(0)
+
 .const 
 BGM_HOME_PATH	byte	"./audio/HomePage.mp3",0
-BGM_STORY_PATH	byte	"./audio/Story.m4a",0
-BGM_ONGAME_PATH	byte	"./audio/onGame.m4a",0
+BGM_STORY_PATH	byte	"./audio/Story.mp3",0
+BGM_ONGAME_PATH	byte	"./audio/onGame.mp3",0
+PLAY_SPRINTF byte "play %s",0
+PLAY_REPEAT_SPRINTF byte "play %s repeat",0
+STOP_SPRINTF byte "stop %s",0
+AUDIO_SPRINTF byte "setaudio %s volume to %d",0
+
+
 Mp3Device   db "MPEGVideo",0
 CLASS_NAME	byte	"MainWindow",0	;窗口类名
 WINDOW_NAME	byte	"BIT BOMBERMAN",0	;窗口显示名
@@ -26,6 +35,9 @@ MSGBOX_WINDOW_ABOUTME_TEXT	byte	"关于信息",0
 MSGBOX_ABOUTME_TITLE	byte	"关于",0
 MSGBOX_WINDOW_SAVESUCC_TEXT	byte	"游戏进度保存成功",0
 MSGBOX_SAVESUCC_TITLE	byte	"消息",0
+MSGBOX_WINDOW_ZHANGHP_TITLE	byte	"来自张老师的消息",0
+MSGBOX_ANSCORR_TEXT	byte	"恭喜你答对了，继续吧！",0
+MSGBOX_ANSERR_TEXT	byte	"答错了！你的属性将变为初值",0
 DANCEMODE_PATH	db	".\\DanceMode_ext\\python.exe",0
 DANCEMODE_PY_PATH	db	".\\DanceMode_ext\\python.exe .\\DanceMode_ext\\d_kep.py",0
 
@@ -48,9 +60,9 @@ StartDanceMode proc
 StartDanceMode endp
 
 readKey Proc
-	invoke	GetKeyState,VK_B
+	invoke	GetKeyState,VK_SPACE
 	test	eax,8000h
-	jnz	keyB_readKey
+	jnz	keyBomb_readKey
 	invoke	GetKeyState,VK_W
 	test	eax,8000h
 	jnz	keyW_readKey
@@ -69,12 +81,18 @@ readKey Proc
 	invoke	GetKeyState,VK_R
 	test	eax,8000h
 	jnz	keyR_readKey
-	invoke	GetKeyState,VK_SPACE
+	invoke	GetKeyState,VK_RETURN
 	test	eax,8000h
 	jnz	keySpace_readKey
+	invoke	GetKeyState,VK_B
+	test	eax,8000h
+	jnz	keyb_readKey
+	invoke	GetKeyState,VK_C
+	test	eax,8000h
+	jnz	keyc_readKey
 	mov	eax,-1
 	ret
-keyB_readKey:
+keyBomb_readKey:
     mov eax,SETBOMB
 	ret
 keyW_readKey:
@@ -97,6 +115,12 @@ keyR_readKey:
 	ret
 keySpace_readKey:
     mov eax,SPACEJO
+	ret
+keyb_readKey:
+    mov eax,KEY_B
+	ret
+keyc_readKey:
+    mov eax,KEY_C
 	ret
 readKey endp
 
@@ -179,12 +203,21 @@ startPage_OnLButtonUp:
 	
 	jmp ret_OnLButtonUp	;不在任何按钮范围
 	clickStartNew_OnLButtonUp:
-		invoke StartBackSound,ADDR BGM_STORY_PATH
+		invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_HOME_PATH
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL	;stop bgm
+		invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_STORY_PATH
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL	;播放故事bgm
 		mov mainwinp.frames, 0
 		mov mainwinp.nowStoryNum,1
 		mov mainwinp.winState, winState_onStory	;点全新游戏了，到下一状态
 		jmp ret_OnLButtonUp
 	clickContinuesave_OnLButtonUp:
+		invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_HOME_PATH
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL	;stop bgm
+		invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_ONGAME_PATH
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL	;播放故事bgm
+		invoke crt_sprintf ,offset audioCmdBuf, offset AUDIO_SPRINTF,offset BGM_ONGAME_PATH,400
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
 		invoke load
 		invoke  crt_time,NULL
 		invoke  crt_srand,eax	;进游戏前播种
@@ -194,7 +227,16 @@ startPage_OnLButtonUp:
 		invoke	MessageBox,NULL,offset MSGBOX_WINDOW_ABOUTME_TEXT,offset MSGBOX_ABOUTME_TITLE,MB_OK
 		jmp ret_OnLButtonUp
 onStory_OnLButtonUp:
-	
+	invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_STORY_PATH
+	invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
+	invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_ONGAME_PATH
+	invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
+	invoke crt_sprintf ,offset audioCmdBuf, offset AUDIO_SPRINTF,offset BGM_ONGAME_PATH,400
+	invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
+	invoke  crt_time,NULL
+	invoke  crt_srand,eax	;进游戏前播种
+	invoke  initGame
+	mov mainwinp.winState, winState_onGame
 	jmp ret_OnLButtonUp
 onGame_OnLButtonUp:
 	invoke isMouseInButton, mousex, mousey, BUTT_PAUSE_X,BUTT_PAUSE_Y,BUTT_PAUSE_W,BUTT_PAUSE_H
@@ -233,7 +275,11 @@ pauseGame_OnLButtonUp:
 		;mov mainwinp.winState, winState_onGame	;点继续游戏了，到下一状态
 		jmp ret_OnLButtonUp
 	clickRethome_OnLButtonUp:
-		invoke StartBackSound,ADDR BGM_HOME_PATH	;开始播放home_bgm
+		invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_ONGAME_PATH
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
+		invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_HOME_PATH
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL	;播放故事bgm
+		
 		mov mainwinp.winState, winState_startPage
 		jmp ret_OnLButtonUp
 	
@@ -242,7 +288,7 @@ ret_OnLButtonUp:
 	ret
 OnLButtonUp ENDP
 
-mainLoop proc
+mainLoop proc	hwnd:HWND
 	local input:dword
     invoke  readKey
 	mov input, eax
@@ -258,6 +304,10 @@ mainLoop proc
 	je pauseGame_mainLoop
 	cmp mainwinp.winState, winState_levelup
 	je levelup_mainLoop
+	cmp mainwinp.winState, winState_gamewin
+	je gamewin_mainLoop
+	cmp mainwinp.winState, winState_gameover
+	je gameover_mainLoop
 	jmp ret_mainLoop
 logoPage_mainLoop:
 	inc mainwinp.frames
@@ -269,10 +319,19 @@ onStory_mainLoop:
 	inc mainwinp.frames
 	cmp input, SPACEJO
 	je StoryIsOver_mainLoop
+	cmp mainwinp.frames,400
+	ja StoryIsOver_mainLoop
+	
 	jmp ret_mainLoop
 
 	StoryIsOver_mainLoop:
-		invoke StartBackSound,ADDR BGM_ONGAME_PATH
+		invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_STORY_PATH
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
+		invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_ONGAME_PATH
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
+		invoke crt_sprintf ,offset audioCmdBuf, offset AUDIO_SPRINTF,offset BGM_ONGAME_PATH,400
+		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
+		
 		invoke  crt_time,NULL
 		invoke  crt_srand,eax	;进游戏前播种
 		invoke  initGame
@@ -296,7 +355,39 @@ pauseGame_mainLoop:
 		jmp ret_mainLoop
 	jmp ret_mainLoop
 levelup_mainLoop:
-		
+	mov eax,input
+	cmp eax,-1
+	je ret_mainLoop
+	cmp eax,LEFT
+	jne	JOsubA_mainLoop
+		sub eax,LEFT
+		jmp JOsubOffset_mainLoop
+	JOsubA_mainLoop:
+	cmp eax,RIGHT
+	je	JOsubOffset_mainLoop
+		sub eax,KEY_B
+		add eax,1
+	JOsubOffset_mainLoop:
+	cmp mainwinp.levelup_answer,eax
+	je right_mainLoop
+		mov game.level,1
+		mov game.player.bomb_range,2
+		mov game.player.bomb_cnt,1
+		mov game.player.life,1
+		mov game.player.speed,PLAYER_1_SPEED
+		invoke	MessageBox,hwnd,offset MSGBOX_ANSCORR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
+		jmp ret_mainLoop
+	right_mainLoop:
+		inc game.level
+		invoke  initLevel
+		mov mainwinp.winState, winState_onGame
+		invoke	MessageBox,hwnd,offset MSGBOX_ANSERR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
+		jmp ret_mainLoop
+gamewin_mainLoop:
+	inc mainwinp.frames
+	jmp ret_mainLoop
+gameover_mainLoop:
+	inc mainwinp.frames
 	jmp ret_mainLoop
 ret_mainLoop:
 	ret
@@ -309,21 +400,21 @@ InitBackSound proc hWin:dword
 		mov mciOpenParms.lpstrDeviceType,eax
 	ret
 InitBackSound endp
+StopBackSound proc
+		invoke mciSendCommand,mciOpenParms.wDeviceID,MCI_STOP,00000000h,ADDR mciPlayParms
+		invoke mciSendCommand,0,MCI_CLOSE,0,ADDR mciOpenParms
+		ret  
+StopBackSound endp
 StartBackSound proc NameOfFile:dword
 		invoke StopBackSound
 		mov eax,NameOfFile
 		mov mciOpenParms.lpstrElementName,eax
 		invoke mciSendCommand,0,MCI_OPEN,MCI_OPEN_TYPE or MCI_OPEN_ELEMENT,ADDR mciOpenParms
-		mov eax,mciOpenParms.wDeviceID
-		mov Mp3DeviceID,eax
-		invoke mciSendCommand,Mp3DeviceID,MCI_PLAY,00010000h,ADDR mciPlayParms
+		invoke mciSendCommand,mciOpenParms.wDeviceID,MCI_PLAY,00010000h,ADDR mciPlayParms
 		ret  
 StartBackSound endp
-StopBackSound proc
-		invoke mciSendCommand,Mp3DeviceID,MCI_PAUSE,00010000h,ADDR mciPlayParms
-		ret  
-StopBackSound endp
-PlayMp3File proc hWin:dword,NameOfFile:dword
+
+PlayMp3File proc hWin:DWORD,NameOfFile:DWORD
 	LOCAL mciOpenParmslocal:MCI_OPEN_PARMS,mciPlayParmslocal:MCI_PLAY_PARMS
 		mov eax,hWin        
 		mov mciPlayParmslocal.dwCallback,eax
@@ -332,9 +423,10 @@ PlayMp3File proc hWin:dword,NameOfFile:dword
 		mov eax,NameOfFile
 		mov mciOpenParmslocal.lpstrElementName,eax
 		invoke mciSendCommand,0,MCI_OPEN,MCI_OPEN_TYPE or MCI_OPEN_ELEMENT,ADDR mciOpenParmslocal
+		mov mciPlayParmslocal.dwFrom, 0
 		mov eax,mciOpenParmslocal.wDeviceID
 		mov Mp3DeviceID,eax
-		invoke mciSendCommand,Mp3DeviceID,MCI_PLAY,00000000h,ADDR mciPlayParmslocal
+		invoke mciSendCommand,mciOpenParmslocal.wDeviceID,MCI_PLAY,MCI_NOTIFY,ADDR mciPlayParmslocal
 		ret  
 PlayMp3File endp
 
@@ -356,7 +448,7 @@ WindowProcDefault:
 	ret
 WindowProcTimer:
 	;在这里进行每一刻的游戏逻辑更新
-	invoke mainLoop
+	invoke mainLoop,hwnd
 
 	invoke	InvalidateRect,hwnd,NULL,TRUE	;通知重绘
 	jmp	ExitWindowProc
@@ -381,11 +473,11 @@ WindowProcPaint:
 	invoke	EndPaint,hwnd,addr ps
 	jmp	ExitWindowProc
 WindowProcCreate:
-	invoke	InitBackSound,hwnd
 	invoke	ImmAssociateContext, hwnd, NULL	;qjh测试功能，禁用输入法
 	invoke	SetTimer,hwnd,1,20,NULL	;暂定每20ms更新一次状态，但实测频率低于理论值
 	invoke	InitDanceMode
-	invoke StartBackSound,ADDR BGM_HOME_PATH	;开始播放home_bgm
+	invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_HOME_PATH
+	invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL	;播放故事bgm
 	jmp	ExitWindowProc
 WindowProcDestroy:
 	invoke	KillTimer,hwnd,1
