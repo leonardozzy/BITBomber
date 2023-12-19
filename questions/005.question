@@ -1,0 +1,6 @@
+下列指令中，正确的是（  ）
+ADD AX，[BX+SI]
+MOV AH，BX
+MOV CS，AX
+NOT CX，AX
+A

@@ -1,0 +1,6 @@
+将累加器AX的内容清零的正确操作是（  ）。
+ADD AX，0
+OR AX，AX
+XOR AX，AX
+CMP AX，AX
+C

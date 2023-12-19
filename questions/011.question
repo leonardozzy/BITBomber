@@ -1,0 +1,6 @@
+完成将BX清零，并使标志位CF清零，下面错误的指令是（  ）
+SUB BX ，BX
+MOV BX，00H
+XOR BX，BX
+AND BX， 00H
+B

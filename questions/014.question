@@ -1,0 +1,6 @@
+MOV AX，ES：[BX][SI]的源操作数的物理地址是（ ）。
+16d×(DS)+(BX)+(SI)
+16d×(ES)+(BX)+(SI)
+16d×(SS)+(BX)+(SI)
+16d×(CS)+(BX)+(SI)
+B
