@@ -6,7 +6,7 @@ include	common.inc
 extern  game:Game
 
 .const
-FILENAME1	byte	"./levels/1.level",0
+FILENAME1	byte	"./levels/4.level",0
 FILENAME2	byte	"./levels/2.level",0
 FILENAME3	byte	"./levels/3.level",0
 FILENAME4	byte	"./levels/4.level",0
@@ -18,6 +18,7 @@ ONE_INT_FORMAT	byte	"%d",0
 ;WIN_STR	byte	"You Win!",0
 ;GAMEOVER_STR	byte "Game Over!",0
 ;四字节对齐，提升读取效率
+
 align  4
 LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
 TOOL_TYPE_JMP_TBL   dword   offset addLife_pollingPlayer,offset addRange_pollingPlayer,offset addCnt_pollingPlayer,offset addSpeed_pollingPlayer,offset addTime_pollingPlayer
@@ -25,7 +26,6 @@ MOVE_ONE_STEP_JMP_TBL   dword   offset direUp_moveOneStep,offset direDown_moveOn
 CALC_NEXT_MOVE_JMP_TBL  dword   offset direUp_calculateNextMove,offset direDown_calculateNextMove,offset direLeft_calculateNextMove,offset direRight_calculateNextMove
 PLAYER_INPUT_JMP_TBL    dword   offset playerPressUp_pollingPlayer,offset playerPressDown_pollingPlayer,offset playerPressLeft_pollingPlayer,offset playerPressRight_pollingPlayer
 MOV_MONSTER_TO_NEXT_CELL_JMP_TBL    dword   offset up1_switch_movMonsterToNextCell,offset down1_switch_movMonsterToNextCell,offset left1_switch_movMonsterToNextCell,offset right1_switch_movMonsterToNextCell
-;POLL_MONSTER_JMP_TBL    dword   offset direUp_pollingMonster,offset direDown_pollingMonster,offset direLeft_pollingMonster,offset direRight_pollingMonster
 FROM_DIRECTION_TBL  dword   DOWN,UP,RIGHT,LEFT
 
 .code
@@ -66,7 +66,6 @@ placeBomb	endp
 
 
 pollingPlayer	proc	input:dword
-	local	newPlayerX:dword, newPlayerY:dword,tmp:dword
     mov game.player.isMove,STILL
     cmp game.player.timer,0
     je  JmpOverINVISIBLE_pollingPlayer
@@ -89,77 +88,57 @@ JmpOver_placeBomb_pollingPlayer:
 playerPressUp_pollingPlayer   label   dword
     mov eax,game.player.frac_x
     sub eax,game.player.speed
-    mov tmp,eax
-    jg  canMoveUp_pollingPlayer
+    mov game.player.frac_x,eax
+    cmp eax,-FRAC_RANGE
+    jge exitInputSwitch_pollingPlayer
     mov eax,game.player.x
     dec eax
     invoke  isMoveable,eax,game.player.y
     test    eax,eax
-    jnz canMoveUp_pollingPlayer
-    mov game.player.frac_x,0
+    jnz  canMoveUp_pollingPlayer
+    mov game.player.frac_x,-FRAC_RANGE
     jmp exitInputSwitch_pollingPlayer
 canMoveUp_pollingPlayer:
-    invoke  crt_abs,game.player.frac_y
-    cmp eax,50
-    jg  exitInputSwitch_pollingPlayer
-    mov game.player.frac_y,0
-    mov eax,tmp
-    mov game.player.frac_x,eax
-    cmp eax,-FRAC_RANGE
-    jge exitInputSwitch_pollingPlayer
     dec game.player.x
+    mov eax,game.player.frac_x
     add eax,2*FRAC_RANGE
     mov game.player.frac_x,eax
     jmp exitInputSwitch_pollingPlayer
-
 playerPressDown_pollingPlayer label   dword
     mov eax,game.player.frac_x
     add eax,game.player.speed
-    mov tmp,eax
-    jl  canMoveDown_pollingPlayer
+    mov game.player.frac_x,eax
+    cmp eax,FRAC_RANGE
+    jl exitInputSwitch_pollingPlayer
     mov eax,game.player.x
     inc eax
     invoke  isMoveable,eax,game.player.y
     test    eax,eax
-    jnz canMoveDown_pollingPlayer
-    mov game.player.frac_x,0
+    jnz  canMoveDown_pollingPlayer
+    mov game.player.frac_x,FRAC_RANGE-1
     jmp exitInputSwitch_pollingPlayer
 canMoveDown_pollingPlayer:
-    invoke  crt_abs,game.player.frac_y
-    cmp eax,50
-    jg  exitInputSwitch_pollingPlayer
-    mov game.player.frac_y,0
-    mov eax,tmp
-    mov game.player.frac_x,eax
-    cmp eax,FRAC_RANGE
-    jl exitInputSwitch_pollingPlayer
     inc game.player.x
+    mov eax,game.player.frac_x
     sub eax,2*FRAC_RANGE
     mov game.player.frac_x,eax
     jmp exitInputSwitch_pollingPlayer
-
 playerPressLeft_pollingPlayer label   dword
     mov eax,game.player.frac_y
     sub eax,game.player.speed
-    mov tmp,eax
-    jg  canMoveLeft_pollingPlayer
+    mov game.player.frac_y,eax
+    cmp eax,-FRAC_RANGE
+    jge exitInputSwitch_pollingPlayer
     mov eax,game.player.y
     dec eax
     invoke  isMoveable,game.player.x,eax
     test    eax,eax
-    jnz canMoveLeft_pollingPlayer
-    mov game.player.frac_y,0
+    jnz  canMoveLeft_pollingPlayer
+    mov game.player.frac_y,-FRAC_RANGE
     jmp exitInputSwitch_pollingPlayer
 canMoveLeft_pollingPlayer:
-    invoke  crt_abs,game.player.frac_x
-    cmp eax,50
-    jg  exitInputSwitch_pollingPlayer
-    mov game.player.frac_x,0
-    mov eax,tmp
-    mov game.player.frac_y,eax
-    cmp eax,-FRAC_RANGE
-    jge exitInputSwitch_pollingPlayer
     dec game.player.y
+    mov eax,game.player.frac_y
     add eax,2*FRAC_RANGE
     mov game.player.frac_y,eax
     jmp exitInputSwitch_pollingPlayer
@@ -167,25 +146,19 @@ canMoveLeft_pollingPlayer:
 playerPressRight_pollingPlayer    label   dword
     mov eax,game.player.frac_y
     add eax,game.player.speed
-    mov tmp,eax
-    jl  canMoveRight_pollingPlayer
+    mov game.player.frac_y,eax
+    cmp eax,FRAC_RANGE
+    jl exitInputSwitch_pollingPlayer
     mov eax,game.player.y
     inc eax
     invoke  isMoveable,game.player.x,eax
     test    eax,eax
-    jnz canMoveRight_pollingPlayer
-    mov game.player.frac_y,0
+    jnz  canMoveRight_pollingPlayer
+    mov game.player.frac_y,FRAC_RANGE-1
     jmp exitInputSwitch_pollingPlayer
 canMoveRight_pollingPlayer:
-    invoke  crt_abs,game.player.frac_x
-    cmp eax,50
-    jg  exitInputSwitch_pollingPlayer
-    mov game.player.frac_x,0
-    mov eax,tmp
-    mov game.player.frac_y,eax
-    cmp eax,FRAC_RANGE
-    jl  exitInputSwitch_pollingPlayer
     inc game.player.y
+    mov eax,game.player.frac_y
     sub eax,2*FRAC_RANGE
     mov game.player.frac_y,eax
 exitInputSwitch_pollingPlayer:
@@ -195,6 +168,23 @@ exitInputSwitch_pollingPlayer:
     invoke die
     jmp ret_pollingPlayer
 JmpOverMonster_pollingPlayer:
+    cmp game.boss.in_map,0
+    je  skipBoss_pollingPlayer
+    mov edx,game.player.x
+    sub edx,game.boss.x
+    cmp edx,-1
+    jl  skipBoss_pollingPlayer
+    cmp edx,1
+    jg  skipBoss_pollingPlayer
+    mov edx,game.player.y
+    sub edx,game.boss.y
+    cmp edx,-1
+    jl  skipBoss_pollingPlayer
+    cmp edx,1
+    jg  skipBoss_pollingPlayer
+    invoke  die
+    jmp ret_pollingPlayer
+skipBoss_pollingPlayer:
     cmp game.map[eax*4]._type, TOOL
     jne JmpOverTool_pollingPlayer
     movzx   ecx,game.map[eax*4].id
@@ -526,6 +516,8 @@ l2_die:
 	mov game.map[eax*4] ,EMPTY
 	mov game.player.x,1
 	mov game.player.y,1
+    mov game.player.frac_x,0
+    mov game.player.frac_y,0
 	invoke calcMapOffset,game.player.x,game.player.y,1
 	mov game.map[eax*4]._type ,PLAYER
     mov game.player.timer,INVISIBLE_TIMER
@@ -938,53 +930,73 @@ preAttack proc x:dword,y:dword,id:dword
 preAttack ENDP
 
 makeAttack proc x:dword,y:dword,id:dword
-	invoke calcMapOffset,x,y,2
+	invoke calcMapOffset,x,y,1
+    cmp game.map[eax*4]._type,PLAYER
+    jne noKillPlayer_makeAttack
+    push eax
+    invoke die
+    pop eax
+noKillPlayer_makeAttack:
+    mov game.map[eax*4+4]._type,EMPTY
 	mov game.map[eax*4]._type,BLUEFIRE
     mov edx,id
     mov game.map[eax*4].id,dx
-	invoke clear,x,y
+    cmp game.map[eax*4-4]._type,BOMB
+    jne noKillBomb_makeAttack
+    mov game.map[eax*4-4]._type,EMPTY
+    movzx eax,game.map[eax*4-4].id
+    mov edx,sizeof(Bomb)
+    mul edx
+    mov game.bombs[eax].timer,FIRE_TIMER
+    inc game.player.bomb_cnt
+noKillBomb_makeAttack:
 	ret
 makeAttack ENDP
 
-dealAttack proc x:dword,y:dword,id:dword,jobFunc:dword
-	push edi
-	push esi
-	mov ecx,x
-	dec ecx
-	mov edi,3
-outLoop_dealAttack:
-	cmp edi,0
-	je end_dealAttack
-	mov edx,y
-	dec edx
-	mov esi,3
-inLoop_dealAttack:
-	cmp esi,0
-	je endInLoop_dealAttack
-	push edx
-	push ecx
-	invoke calcMapOffset,edi,esi,1
-	pop edx
-	pop ecx
-	cmp game.map[4*eax]._type,WALL
-	jne noJob_dealAttack
+clearBlueFire proc x:dword,y:dword,id:dword
+    invoke calcMapOffset,x,y,1
+    cmp game.map[eax*4]._type,BLUEFIRE
+    jne noBlueFire_clearBlueFire
+    mov game.map[eax*4]._type,EMPTY
+noBlueFire_clearBlueFire:
+    ret
+clearBlueFire endp
+
+dealAttack  proc    x:dword,y:dword,id:dword,jobFunc:dword
+    push    esi
+    push    edi
+    mov esi,x
+    dec esi
+outerLoop_dealAttack:
+    mov eax,x
+    inc eax
+    cmp esi,eax
+    jg  exitOuterLoop_dealAttack
+    mov edi,y
+    dec edi
+innerLoop_dealAttack:
+    mov eax,y
+    inc eax
+    cmp edi,eax
+    jg  exitInnerLoop_dealAttack
+    invoke  calcMapOffset,esi,edi,1
+    cmp game.map[eax*4]._type,WALL
+    je  noJob_dealAttack
     push    id
-	push ecx
-	push edx
-	call jobFunc
+    push    edi
+    push    esi
+    call    jobFunc
 noJob_dealAttack:
-	dec esi
-	inc edx
-	jmp inLoop_dealAttack
-endInLoop_dealAttack:
-	dec edi
-	inc ecx
-	jmp outLoop_dealAttack
-end_dealAttack:
-	pop esi
-	pop edi
-	ret
-dealAttack ENDP
+    inc edi
+    jmp innerLoop_dealAttack
+exitInnerLoop_dealAttack:
+    inc esi
+    jmp outerLoop_dealAttack
+exitOuterLoop_dealAttack:
+    pop edi
+    pop esi
+    ret
+dealAttack  endp
 
 pollingAttack proc
 	push ebx
@@ -993,7 +1005,7 @@ pollingAttack proc
     xor esi,esi
 loop_pollingAttack:
 	cmp ebx,MAX_ATTACK*sizeof(Attack)
-	jle end_pollingAttack
+	jge end_pollingAttack
 	cmp game.attacks[ebx].timer,0
 	jle noJob_pollingAttack
 	dec game.attacks[ebx].timer
@@ -1002,12 +1014,12 @@ loop_pollingAttack:
 	invoke dealAttack,game.attacks[ebx].x,game.attacks[ebx].y,esi,offset preAttack
 	jmp noJob_pollingAttack
 lessAttackTime_pollingAttack:
-	cmp game.attacks[ecx].timer,0
+	cmp game.attacks[ebx].timer,0
 	je equalZeroTime_pollingAttack
-	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,esi,offset makeAttack
+	invoke dealAttack,game.attacks[ebx].x,game.attacks[ebx].y,esi,offset makeAttack
 	jmp noJob_pollingAttack
 equalZeroTime_pollingAttack:
-	invoke dealAttack,game.attacks[ecx].x,game.attacks[ecx].y,esi,offset clearFire
+	invoke dealAttack,game.attacks[ebx].x,game.attacks[ebx].y,esi,offset clearBlueFire
 noJob_pollingAttack:
 	add ebx,sizeof(Attack)
     inc esi
@@ -1022,9 +1034,9 @@ bossAttack proc
 	xor ecx,ecx
 loop_bossAttack:
 	cmp ecx,MAX_ATTACK*sizeof(Attack)
-	jle end_bossAttack
+	jge end_bossAttack
 	cmp game.attacks[ecx].timer,0
-	jle continue_bossAttack
+	jg continue_bossAttack
 	mov edx,game.player.x
 	mov game.attacks[ecx].x,edx
 	mov edx,game.player.y
@@ -1038,10 +1050,6 @@ end_bossAttack:
 	ret
 bossAttack ENDP
 
-bossDrop proc
-	mov game.boss.in_map,1
-	invoke dealAttack,game.boss.x,game.boss.y,0,offset clear
-bossDrop endp
 
 pollingBoss proc
 	cmp game.boss.in_map,0
@@ -1057,26 +1065,55 @@ coolTimeEnd_pollingBoss:
 	mov edx,game.boss.y
 	invoke calcMapOffset,eax,edx,1
 	mov game.map[4*eax]._type,EMPTY
+    mov game.map[4*eax+4]._type,BOSS_FLY
 	ret
 bossNotInMap_pollingBoss:
 	cmp game.boss.sky_time,0
 	je bossWillDrop_pollingBoss
 	sub game.boss.sky_time,1
-	jne skyTimeEnd_pollingBoss
-	mov edx,0
+	je skyTimeEnd_pollingBoss
+    cmp game.boss.sky_time,TAKE_OFF_TIME
+    jg takeoff_pollingBoss
+    je takeOffEnd_pollingBoss
+	xor edx,edx
 	mov eax,game.boss.sky_time
 	mov ecx,ATTACK_FREQ
 	div ecx
 	cmp edx,0
 	je beginAttack_pollingBoss
 	ret
+takeoff_pollingBoss:
+    invoke calcMapOffset,game.boss.x,game.boss.y,2
+    mov game.map[4*eax],BOSS_FLY
+    ret
+takeOffEnd_pollingBoss:
+    invoke calcMapOffset,game.boss.x,game.boss.y,2
+    mov game.map[4*eax],EMPTY
+    ret
 beginAttack_pollingBoss:
 	invoke bossAttack
+    ret
 skyTimeEnd_pollingBoss:
 	mov game.boss.pre_drop_time,PRE_DROP_TIME
 	mov eax,game.player.x
+    cmp eax,1
+    jne noAddX
+    inc eax
+noAddX:
+    cmp eax,ROW-1
+    jne noSubX
+    dec eax
+noSubX:
 	mov game.boss.x,eax
 	mov eax,game.player.y
+    cmp eax,1
+    jne noAddY
+    inc eax
+noAddY:
+    cmp eax,COL-1
+    jne noSubY
+    dec eax
+noSubY:
 	mov game.boss.y,eax
 	ret
 bossWillDrop_pollingBoss:
@@ -1084,11 +1121,14 @@ bossWillDrop_pollingBoss:
 	je end_pollingBoss
 	sub game.boss.pre_drop_time,1
 	je dropTimeEnd_pollingBoss
-	invoke dealAttack,game.boss.x,game.boss.y,0,offset preAttack
+    invoke calcMapOffset,game.boss.x,game.boss.y,2
+    mov game.map[4*eax]._type,BOSS_FLY
 	ret
 dropTimeEnd_pollingBoss:
-	invoke dealAttack,game.boss.x,game.boss.y,0,offset clearFire
-	invoke bossDrop
+    invoke dealAttack,game.boss.x,game.boss.y,0,offset clear
+	invoke calcMapOffset,game.boss.x,game.boss.y,1
+    mov game.map[eax*4]._type,BOSS 
+	mov game.boss.in_map,1
 	mov game.boss.cool_time,COOL_TIME
 end_pollingBoss:
 	ret
@@ -1527,20 +1567,19 @@ load    endp
 
 gameLoop proc   input:dword
     invoke  pollingPlayer,input
-    ;cmp input,-1
-    ;je  noPlayer_gameLoop
-    ;invoke  pollingPlayer,input
-    ;jmp other_gameLoop
-;noPlayer_gameLoop:
-   ; mov game.player.isMove,STILL
 other_gameLoop:
+    invoke  pollingAttack
     invoke  pollingMonster
+    invoke  pollingBoss
     invoke  pollingBomb
     invoke  pollingTool
     invoke  pollingSuccess
-    invoke  pollingBoss
-    invoke  pollingAttack
 	dec	game.timer
+    jne timeNotEqu0_gameLoop
+    mov eax,game.level_timer
+    mov game.timer,eax
+    invoke  die
+timeNotEqu0_gameLoop:
 	ret
 gameLoop endp
 

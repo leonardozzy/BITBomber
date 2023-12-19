@@ -17,7 +17,7 @@ includelib	gdi32.lib
 includelib	gdiplus.lib
 includelib	msvcrt.lib
 includelib	imm32.lib
-includelib winmm.lib
+includelib	winmm.lib
 
 FONT_NAME_LEN	equ	16
 
@@ -59,9 +59,9 @@ FRAMES_PER_SEC	equ	30
 
 ;define speed
 PLAYER_1_SPEED	equ	12
-MONSTER_1_SPEED	equ	8
-MONSTER_2_SPEED	equ	12
-MONSTER_3_SPEED	equ	16
+MONSTER_1_SPEED	equ	7
+MONSTER_2_SPEED	equ	11
+MONSTER_3_SPEED	equ	15
 ;新帧数下的速度
 
 ;define map_size
@@ -73,7 +73,7 @@ DEPTH	equ	3
 MAX_MONSTER	equ	10
 MAX_BOMB	equ	5
 MAX_TOOL	equ	5
-MAX_ATTACK	equ	10
+MAX_ATTACK	equ	18
 BOSS_LIFE	equ	5
 
 ;define frac
@@ -94,11 +94,12 @@ FIRE_TIMER	equ	12
 TOOL_TIMER	equ 180
 ;boss时间再调
 COOL_TIME	equ	200
+TAKE_OFF_TIME equ 440
 SKY_TIME	equ	500
 PRE_DROP_TIME	equ	60
-PRE_ATTACK_TIME	equ	60
-ATTACK_TIME	equ	12
-ATTACK_FREQ	equ	100
+PRE_ATTACK_TIME	equ	45
+ATTACK_TIME	equ	200
+ATTACK_FREQ	equ	50
 
 FRAC_RANGE	equ	100
 

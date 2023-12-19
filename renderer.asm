@@ -61,6 +61,10 @@ bg1Info	BitmapInfo	<>
 bg2Info	BitmapInfo	<>
 wallInfo	BitmapInfo	<>
 boxInfo	BitmapInfo	<>
+lifeIconInfo	BitmapInfo	<>
+speedIconInfo	BitmapInfo	<>
+cntIconInfo	BitmapInfo	<>
+rangeIconInfo	BitmapInfo	<>
 hFont1	HFONT	?
 
 .const
@@ -154,6 +158,10 @@ BG2_PATH	byte	"./images/bg2.bmp",0
 LOGO_PATH	byte	"./images/logo.png",0
 HOMEPAGE_PATH	byte	"./images/start.png",0
 PAUSEPAGE_PATH	byte	"./images/start.png",0
+LIFE_ICON_PATH	byte	"./images/life_icon.bmp",0
+SPEED_ICON_PATH	byte	"./images/speed_icon.bmp",0
+CNT_ICON_PATH	byte	"./images/cnt_icon.bmp",0
+RANGE_ICON_PATH	byte	"./images/range_icon.bmp",0
 DENGXIAN	byte	"等线",0
 ARIAL_NAME	byte	"Arial",0
 ONE_INT_FMT	byte	"%d",0
@@ -182,16 +190,9 @@ IMG_PATHS10	dword	offset BLUE_FIRE1_PATH,offset BLUE_FIRE2_PATH,offset BLUE_FIRE
 IMG_PATHS11	dword	offset LIFE_TOOL_PATH,offset BOMB_RANGE_TOOL_PATH,offset BOMB_CNT_TOOL_PATH,offset SPEED_TOOL_PATH,offset TIME_TOOL_PATH,
 					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH
 DRAW_MAP_JMP_TBL	dword	offset drawEmpty_drawMap,offset drawWall_drawMap,offset drawPlayer_drawMap,offset drawBomb_drawMap,offset drawMonster_drawMap,
-							offset drawBox_drawMap,offset drawTool_drawMap,offset drawFire_drawMap,offset drawBoss_drawMap,offset drawBlueFire_drawMap,offset drawAttack_drawMap
-;BOSS_X_OFFSET	dword	-37,
-;BOSS_Y_OFFSET	dword	-60,
-;BOSS_WIDTH	dword	135,
-;BOSS_HEIGHT	dword	180,
-;LIFE_STR_DISP	StrDisp	<150.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
-;SPEED_STR_DISP	StrDisp	<350.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
-;TIME_STR_DISP	StrDisp	<468.0,16.0,64.0,32.0,StringAlignmentCenter,StringAlignmentCenter>
-;CNT_STR_DISP	StrDisp	<650.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
-;RANGE_STR_DISP	StrDisp	<850.0,16.0,64.0,32.0,StringAlignmentNear,StringAlignmentCenter>
+							offset drawBox_drawMap,offset drawTool_drawMap,offset drawFire_drawMap,offset drawBoss_drawMap,offset drawBlueFire_drawMap,offset drawAttack_drawMap,
+							offset drawBossFly_drawMap
+STATUS_RECT	RECT	<0,0,WINDOW_WIDTH,60>
 
 
 .code
@@ -285,8 +286,14 @@ exitLoop_initResources:
 	invoke	initBmp,offset BOX_PATH,offset boxInfo
 	invoke	initBmp,offset BG1_PATH,offset bg1Info
 	invoke	initBmp,offset BG2_PATH,offset bg2Info
-	invoke	CreateFont,30,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS,CLIP_DEFAULT_PRECIS,ANTIALIASED_QUALITY,FF_DONTCARE,offset ARIAL_NAME
+	invoke	initBmp,offset LIFE_ICON_PATH,offset lifeIconInfo
+	invoke	initBmp,offset SPEED_ICON_PATH,offset speedIconInfo
+	invoke	initBmp,offset CNT_ICON_PATH,offset cntIconInfo
+	invoke	initBmp,offset RANGE_ICON_PATH,offset rangeIconInfo
+	invoke	CreateFont,30,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FF_DONTCARE,offset ARIAL_NAME
 	mov	hFont1,eax
+	;invoke	CreateSolidBrush,0ffff00h
+	;mov	redBrush,eax
 	pop	ebx
 	ret
 initResources	endp
@@ -306,7 +313,12 @@ exitLoop_releaseResources:
 	invoke	deleteBmp,offset boxInfo
 	invoke	deleteBmp,offset bg1Info
 	invoke	deleteBmp,offset bg2Info
+	invoke	deleteBmp,offset lifeIconInfo
+	invoke	deleteBmp,offset speedIconInfo
+	invoke	deleteBmp,offset cntIconInfo
+	invoke	deleteBmp,offset rangeIconInfo
 	invoke	DeleteObject,hFont1
+	;invoke	DeleteObject,redBrush
 	pop	ebx
 	ret
 releaseResources	endp
@@ -339,10 +351,12 @@ calcDrawPos	endp
 drawMap	proc	graphicsPtr:dword,hdcBuffer:HDC
 	;ebx：地图偏移量，esi:xPos，edi:yPos
 	local	layer:dword,id:dword,drawXPos:dword,drawYPos:dword,monsterSpeed:dword
+	local	bossFlyXPos:dword,bossFlyYPos:dword,bossFlyWidth:dword,bossFlyHeight:dword
 	local	tempStr[13]:byte
 	push	ebx
 	push	esi
 	push	edi
+	mov	bossFlyXPos,-1
 	cmp	game.level,4
 	je	drawBossBG_drawMap
 	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,SRCCOPY	;加速
@@ -446,8 +460,15 @@ drawFire_drawMap	label	dword
 	invoke	drawImage,graphicsPtr,bitmapPtrs[FIRE_IMG*4+eax*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
 	jmp	exitSwitch_drawMap
 drawBoss_drawMap	label	dword
-	;cool_time不为零，画在地面上的boss
-	;cool_time为零，根据sky_time考虑是否画boss，sky_time接近0
+	mov	eax,game.timer
+	shr	eax,3
+	and	eax,3
+	mov	drawXPos,esi
+	sub	drawXPos,37
+	mov	drawYPos,edi
+	sub	drawYPos,60
+	invoke	drawImage,graphicsPtr,bitmapPtrs[DRA_IMG*4+eax*4],drawXPos,drawYPos,135,180
+	jmp	exitSwitch_drawMap
 drawBlueFire_drawMap	label	dword
 	;第0张图是火焰消失，第3张图是火焰刚出来
 	mov	eax,id
@@ -459,6 +480,67 @@ drawBlueFire_drawMap	label	dword
 	invoke	drawImage,graphicsPtr,bitmapPtrs[BFIRE_IMG*4+eax*4],esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT
 	jmp	exitSwitch_drawMap
 drawAttack_drawMap	label	dword
+	invoke	drawSolidRect,graphicsPtr,80ff0000h,esi,edi,ELEMENT_WIDTH,DRAW_Y_STEP
+	jmp	exitSwitch_drawMap
+drawBossFly_drawMap	label	dword
+	cmp	game.boss.sky_time,TAKE_OFF_TIME
+	jle	testShowLanding_drawMap
+	mov	eax,SKY_TIME
+	sub	eax,game.boss.sky_time
+	cmp	eax,15
+	jg	showBossLeave_drawMap
+	lea	edx,[eax+eax*2+135]
+	mov	bossFlyWidth,edx
+	lea	edx,[eax*4+180]
+	mov	bossFlyHeight,edx
+	lea	edx,[eax*8]
+	neg	edx
+	lea	edx,[edi+edx-60]
+	mov	bossFlyYPos,edx
+	lea	edx,[eax+eax*2+75]
+	sar	edx,1
+	neg	edx
+	lea	edx,[esi+edx]
+	mov	bossFlyXPos,edx
+	jmp	exitSwitch_drawMap
+showBossLeave_drawMap:
+	shl	eax,4
+	lea	edx,[edi+eax-420]
+	mov	bossFlyYPos,edx
+	mov	bossFlyXPos,esi
+	sub	bossFlyXPos,60
+	mov	bossFlyWidth,180
+	mov	bossFlyHeight,240
+	jmp	exitSwitch_drawMap
+testShowLanding_drawMap:
+	cmp	game.boss.pre_drop_time,0
+	jle	exitSwitch_drawMap
+	mov	eax,game.boss.pre_drop_time
+	cmp	eax,15
+	jl	showBossLand_drawMap
+	shl	eax,4
+	neg	eax
+	lea	edx,[edi+eax+60]
+	mov	bossFlyYPos,edx
+	mov	bossFlyXPos,esi
+	sub	bossFlyXPos,60
+	mov	bossFlyWidth,180
+	mov	bossFlyHeight,240
+	jmp	exitSwitch_drawMap
+showBossLand_drawMap:
+	lea	edx,[eax+eax*2+135]
+	mov	bossFlyWidth,edx
+	lea	edx,[eax*4+180]
+	mov	bossFlyHeight,edx
+	lea	edx,[eax*8]
+	neg	edx
+	lea	edx,[edi+edx-60]
+	mov	bossFlyYPos,edx
+	lea	edx,[eax+eax*2+75]
+	sar	edx,1
+	neg	edx
+	lea	edx,[esi+edx]
+	mov	bossFlyXPos,edx
 drawEmpty_drawMap	label	dword
 exitSwitch_drawMap:
 	inc	ebx
@@ -474,37 +556,49 @@ exitSwitch_drawMap:
 	cmp	edi,DRAW_GAME_Y_START+DRAW_Y_STEP*ROW
 	jne	mainLoop_drawMap
 exitMainLoop_drawMap:
-;150 350 500 650 850
-	;invoke	SetTextColor,hdcBuffer,0ffffffh
+	cmp	bossFlyXPos,0
+	jl	skipDrawBossFly_drawMap
+	mov	eax,game.timer
+	shr	eax,3
+	and	eax,3
+	invoke	drawImage,graphicsPtr,bitmapPtrs[DRA_IMG*4+eax*4],bossFlyXPos,bossFlyYPos,bossFlyWidth,bossFlyHeight
+skipDrawBossFly_drawMap:
+	invoke	FillRect,hdcBuffer,offset STATUS_RECT,COLOR_WINDOW+1
+	invoke	BitBlt,hdcBuffer,100,10,40,40,lifeIconInfo.hdcMem,0,0,SRCCOPY
+	invoke	BitBlt,hdcBuffer,300,10,40,40,speedIconInfo.hdcMem,0,0,SRCCOPY
+	invoke	BitBlt,hdcBuffer,600,10,40,40,cntIconInfo.hdcMem,0,0,SRCCOPY
+	invoke	BitBlt,hdcBuffer,800,10,40,40,rangeIconInfo.hdcMem,0,0,SRCCOPY
 	invoke	SelectObject,hdcBuffer,hFont1
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.life
 	invoke	crt_strlen,addr tempStr
-	invoke	TextOut,hdcBuffer,150,30,addr tempStr,eax
-	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset LIFE_STR_DISP
-	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.speed
+	invoke	TextOut,hdcBuffer,150,20,addr tempStr,eax
+	mov	eax,game.player.speed
+	sub	eax,11
+	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,eax
 	invoke	crt_strlen,addr tempStr
-	invoke	TextOut,hdcBuffer,350,30,addr tempStr,eax
-	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset SPEED_STR_DISP
+	invoke	TextOut,hdcBuffer,350,20,addr tempStr,eax
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.bomb_cnt
 	invoke	crt_strlen,addr tempStr
-	invoke	TextOut,hdcBuffer,650,30,addr tempStr,eax
-	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset CNT_STR_DISP
+	invoke	TextOut,hdcBuffer,650,20,addr tempStr,eax
 	invoke	crt_sprintf,addr tempStr,offset ONE_INT_FMT,game.player.bomb_range
 	invoke	crt_strlen,addr tempStr
-	invoke	TextOut,hdcBuffer,850,30,addr tempStr,eax
-	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset RANGE_STR_DISP
+	invoke	TextOut,hdcBuffer,850,20,addr tempStr,eax
 	mov	eax,game.timer
 	xor	edx,edx
 	mov	ecx,FRAMES_PER_SEC
 	div	ecx	;eax是秒数
+	cmp	eax,30
+	jg	notSetRed_drawMap
+	push	eax
+	invoke	SetTextColor,hdcBuffer,00000ffh
+	pop	eax
+notSetRed_drawMap:
 	xor	edx,edx
 	mov	ecx,60	;1min=60s
 	div	ecx	;eax是分，edx是秒
 	invoke	crt_sprintf,addr tempStr,offset TIME_FMT,eax,edx
 	invoke	crt_strlen,addr tempStr
-	invoke	TextOut,hdcBuffer,500,30,addr tempStr,eax
-
-	;invoke	drawGbString,graphicsPtr,addr tempStr,offset DENGXIAN_FONT,offset TIME_STR_DISP
+	invoke	TextOut,hdcBuffer,465,20,addr tempStr,eax
 	pop	edi
 	pop	esi
 	pop	ebx
