@@ -118,9 +118,11 @@ fileFound_readQuestion:
 	invoke	crt_fgets,choice2,50,edi
 	invoke	crt_fgets,choice3,50,edi
 	invoke	crt_fgets,choice4,50,edi
-	invoke crt_fscanf,offset ONE_INT_FORMAT,addr i
+    invoke  crt_fgetc,edi
+    push    eax
 	invoke	crt_fclose,edi
-    mov	eax,i
+    pop eax
+    sub eax,'A'
 	pop	edi
 	ret
 readQuestion endp
