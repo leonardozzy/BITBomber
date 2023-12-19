@@ -85,12 +85,6 @@ readKey Proc
 	invoke	GetKeyState,VK_RETURN
 	test	eax,8000h
 	jnz	keySpace_readKey
-	invoke	GetKeyState,VK_B
-	test	eax,8000h
-	jnz	keyb_readKey
-	invoke	GetKeyState,VK_C
-	test	eax,8000h
-	jnz	keyc_readKey
 	mov	eax,-1
 	ret
 keyBomb_readKey:
@@ -116,12 +110,6 @@ keyR_readKey:
 	ret
 keySpace_readKey:
     mov eax,SPACEJO
-	ret
-keyb_readKey:
-    mov eax,KEY_B
-	ret
-keyc_readKey:
-    mov eax,KEY_C
 	ret
 readKey endp
 
@@ -171,8 +159,8 @@ readMutiKey Proc
 	ret
 readMutiKey endp
 
-OnLButtonUp proc wParam:WPARAM, lParam:LPARAM
-	local mousex:sword, mousey:sword
+OnLButtonUp proc wParam:WPARAM, lParam:LPARAM, hwnd:HWND
+	local mousex:sword, mousey:sword, questionChoice:dword
 	mov eax, lParam
 	mov mousex, ax
 	shr eax, 16
@@ -187,6 +175,8 @@ OnLButtonUp proc wParam:WPARAM, lParam:LPARAM
 	je onGame_OnLButtonUp
 	cmp mainwinp.winState, winState_pauseGame
 	je pauseGame_OnLButtonUp
+	cmp mainwinp.winState, winState_levelup
+	je levelup_OnLButtonUp
 	jmp ret_OnLButtonUp
 logoPage_OnLButtonUp:
 	
@@ -283,7 +273,52 @@ pauseGame_OnLButtonUp:
 		
 		mov mainwinp.winState, winState_startPage
 		jmp ret_OnLButtonUp
+levelup_OnLButtonUp:
+	invoke isMouseInButton, mousex, mousey, BUTT_CHOICEA_X,BUTT_CHOICEA_Y,BUTT_CHOICEA_W,BUTT_CHOICEA_H
+	cmp eax, 1	;在此按钮区域
+	je clickA_OnLButtonUp
+	invoke isMouseInButton, mousex, mousey, BUTT_CHOICEB_X,BUTT_CHOICEB_Y,BUTT_CHOICEB_W,BUTT_CHOICEB_H
+	cmp eax, 1	;在此按钮区域
+	je clickB_OnLButtonUp
+	invoke isMouseInButton, mousex, mousey, BUTT_CHOICEC_X,BUTT_CHOICEC_Y,BUTT_CHOICEC_W,BUTT_CHOICEC_H
+	cmp eax, 1	;在此按钮区域
+	je clickC_OnLButtonUp
+	invoke isMouseInButton, mousex, mousey, BUTT_CHOICED_X,BUTT_CHOICED_Y,BUTT_CHOICED_W,BUTT_CHOICED_H
+	cmp eax, 1	;在此按钮区域
+	je clickD_OnLButtonUp
 	
+	jmp ret_OnLButtonUp	;不在任何按钮范围
+	clickA_OnLButtonUp:
+		mov questionChoice,0
+		jmp checkChoice_OnLButtonUp
+	clickB_OnLButtonUp:
+		mov questionChoice,1
+		jmp checkChoice_OnLButtonUp
+	clickC_OnLButtonUp:
+		mov questionChoice,2
+		jmp checkChoice_OnLButtonUp
+	clickD_OnLButtonUp:
+		mov questionChoice,3
+		jmp checkChoice_OnLButtonUp
+	checkChoice_OnLButtonUp:
+	mov ecx,questionChoice
+	cmp mainwinp.levelup_answer,ecx
+	je checkChoiceRight_OnLButtonUp
+		inc game.level
+		invoke  initLevel
+		mov mainwinp.winState, winState_onGame
+		mov game.player.bomb_range,2
+		mov game.player.bomb_cnt,1
+		mov game.player.life,1
+		mov game.player.speed,PLAYER_1_SPEED
+		invoke	MessageBox,hwnd,offset MSGBOX_ANSERR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
+		jmp ret_OnLButtonUp
+	checkChoiceRight_OnLButtonUp:
+		inc game.level
+		invoke  initLevel
+		mov mainwinp.winState, winState_onGame
+		invoke	MessageBox,hwnd,offset MSGBOX_ANSCORR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
+		jmp ret_OnLButtonUp
 	jmp ret_OnLButtonUp
 ret_OnLButtonUp:
 	ret
@@ -358,36 +393,8 @@ pauseGame_mainLoop:
 		jmp ret_mainLoop
 	jmp ret_mainLoop
 levelup_mainLoop:
-	mov eax,input
-	cmp eax,-1
+
 	je ret_mainLoop
-	cmp eax,LEFT
-	jne	JOsubA_mainLoop
-		sub eax,LEFT
-		jmp JOsubOffset_mainLoop
-	JOsubA_mainLoop:
-	cmp eax,RIGHT
-	je	JOsubOffset_mainLoop
-		sub eax,KEY_B
-		add eax,1
-	JOsubOffset_mainLoop:
-	cmp mainwinp.levelup_answer,eax
-	je right_mainLoop
-		inc game.level
-		invoke  initLevel
-		mov mainwinp.winState, winState_onGame
-		mov game.player.bomb_range,2
-		mov game.player.bomb_cnt,1
-		mov game.player.life,1
-		mov game.player.speed,PLAYER_1_SPEED
-		invoke	MessageBox,hwnd,offset MSGBOX_ANSERR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
-		jmp ret_mainLoop
-	right_mainLoop:
-		inc game.level
-		invoke  initLevel
-		mov mainwinp.winState, winState_onGame
-		invoke	MessageBox,hwnd,offset MSGBOX_ANSCORR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
-		jmp ret_mainLoop
 gamewin_mainLoop:
 	inc mainwinp.frames
 	jmp ret_mainLoop
@@ -497,7 +504,7 @@ WindowProcDestroy:
 	invoke	PostQuitMessage,0
 	jmp ExitWindowProc
 WindowProcOnLButtonUp:
-	invoke OnLButtonUp, wParam, lParam
+	invoke OnLButtonUp, wParam, lParam,hwnd
 	jmp ExitWindowProc
 ExitWindowProc:
 	xor	eax,eax
