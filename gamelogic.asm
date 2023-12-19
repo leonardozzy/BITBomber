@@ -3,29 +3,22 @@
 option	casemap:none
 
 include	common.inc
-extern  game:Game
+public  game
+public  level_cnt
 
 .const
-LEVEL_CNT_FILENAME  byte    "./levels/count.txt",0
-FILENAME1	byte	"./levels/4.level",0
-FILENAME2	byte	"./levels/2.level",0
-FILENAME3	byte	"./levels/3.level",0
-FILENAME4	byte	"./levels/4.level",0
+INFO_FILENAME  byte    "./info.txt",0
 FILENAMESAVE	byte	"./save/save.bb",0
 OPEN_FILE_READ_ONLY	byte	"r",0
 OPEN_BFILE_READ_ONLY	byte	"rb",0
 OPEN_BFILE_WRITE_ONLY	byte	"wb",0
 ONE_INT_FORMAT	byte	"%d",0
-LEVEL_FILENAME_FORMAT   byte    "%02d.level",0
-LEVEL_NOT_FOUND_FORMAT  byte    "未在levels目录中找到%s！",0
-;LEVEL_CNT_NOT_FOUND byte    "未在levels目录中找到关卡数量文件（count.txt）！",0
-MSGBOX_ERROR_TITLE  byte    "错误",0
-;WIN_STR	byte	"You Win!",0
-;GAMEOVER_STR	byte "Game Over!",0
+TWO_INT_FORMAT  byte    "%d%d",0
+LEVEL_FILENAME_FORMAT   byte    "./levels/%02d.level",0
+QUES_FILENAME_FORMAT byte   "./questions/%03d.question",0
+FILE_NOT_FOUND_FORMAT   byte    "%s not found!",0
 ;四字节对齐，提升读取效率
-
 align  4
-LEVEL_FILE_NAMES	dword	offset FILENAME1,offset FILENAME2,offset FILENAME3,offset FILENAME4
 TOOL_TYPE_JMP_TBL   dword   offset addLife_pollingPlayer,offset addRange_pollingPlayer,offset addCnt_pollingPlayer,offset addSpeed_pollingPlayer,offset addTime_pollingPlayer
 MOVE_ONE_STEP_JMP_TBL   dword   offset direUp_moveOneStep,offset direDown_moveOneStep,offset direLeft_moveOneStep,offset direRight_moveOneStep
 CALC_NEXT_MOVE_JMP_TBL  dword   offset direUp_calculateNextMove,offset direDown_calculateNextMove,offset direLeft_calculateNextMove,offset direRight_calculateNextMove
@@ -33,7 +26,105 @@ PLAYER_INPUT_JMP_TBL    dword   offset playerPressUp_pollingPlayer,offset player
 MOV_MONSTER_TO_NEXT_CELL_JMP_TBL    dword   offset up1_switch_movMonsterToNextCell,offset down1_switch_movMonsterToNextCell,offset left1_switch_movMonsterToNextCell,offset right1_switch_movMonsterToNextCell
 FROM_DIRECTION_TBL  dword   DOWN,UP,RIGHT,LEFT
 
+.data?
+level_cnt	dword	?
+question_cnt	dword	?
+game    Game    <>
+
 .code
+readInfo    proc    errorInfo:ptr byte
+    local   fileNameStr[50]:byte
+    push    ebx
+    ;ebx:文件指针
+    invoke  crt_fopen,offset INFO_FILENAME,offset OPEN_FILE_READ_ONLY
+    test    eax,eax
+    jnz  infoFound_readInfo
+    invoke  crt_sprintf,errorInfo,offset FILE_NOT_FOUND_FORMAT,offset INFO_FILENAME
+    jmp errorExit_readInfo
+infoFound_readInfo:
+    mov ebx,eax
+    invoke  crt_fscanf,eax,offset TWO_INT_FORMAT,offset level_cnt,offset question_cnt
+    cmp eax,2
+    jz  numberOk_readInfo
+    invoke  crt_sprintf,errorInfo,offset FILE_NOT_FOUND_FORMAT,offset INFO_FILENAME
+    jmp errorExit_readInfo
+numberOk_readInfo:
+    cmp level_cnt,MAX_LEVEL
+    jle levelOk_readInfo
+    mov level_cnt,MAX_LEVEL
+levelOk_readInfo:
+    cmp question_cnt,MAX_QUESTION
+    jle questionOk_readInfo
+    mov question_cnt,MAX_QUESTION
+questionOk_readInfo:
+    invoke  crt_fclose,ebx
+    ;ebx循环变量
+    xor ebx,ebx
+loop1_readInfo:
+    cmp ebx,level_cnt
+    je  exitLoop1_readInfo
+    invoke  crt_sprintf,addr fileNameStr,offset LEVEL_FILENAME_FORMAT,ebx
+    invoke  crt_fopen,addr fileNameStr,offset OPEN_FILE_READ_ONLY
+    test    eax,eax
+    jnz fileFound_readInfo
+    invoke  crt_sprintf,errorInfo,offset FILE_NOT_FOUND_FORMAT,addr fileNameStr
+    jmp errorExit_readInfo
+fileFound_readInfo:
+    invoke  crt_fclose,eax
+    inc ebx
+    jmp loop1_readInfo
+exitLoop1_readInfo:
+    xor ebx,ebx
+loop2_readInfo:
+    cmp ebx,question_cnt
+    je  exitLoop2_readInfo
+    invoke  crt_sprintf,addr fileNameStr,offset QUES_FILENAME_FORMAT,ebx
+    invoke  crt_fopen,addr fileNameStr,offset OPEN_FILE_READ_ONLY
+    test    eax,eax
+    jnz fileFound2_readInfo
+    invoke  crt_sprintf,errorInfo,offset FILE_NOT_FOUND_FORMAT,addr fileNameStr
+    jmp errorExit_readInfo
+fileFound2_readInfo:
+    invoke  crt_fclose,eax
+    inc ebx
+    jmp loop2_readInfo
+exitLoop2_readInfo:
+    xor eax,eax
+    jmp exit_readInfo
+errorExit_readInfo:
+    mov eax,1
+exit_readInfo:
+    pop ebx
+    ret
+readInfo    endp
+
+readQuestion proc	question:ptr byte,choice1:ptr byte,choice2:ptr byte,choice3:ptr byte,choice4:ptr byte
+	local i:dword,questionFileName[50]:byte
+	push	edi
+	invoke crt_rand
+	xor	edx,edx
+	mov	ecx,question_cnt
+	div	ecx
+	invoke crt_sprintf,addr questionFileName,offset QUES_FILENAME_FORMAT,edx
+	invoke crt_fopen,questionFileName,offset OPEN_FILE_READ_ONLY
+    test    eax,eax
+    jnz fileFound_readQuestion
+    invoke  crt_exit,1
+    ret
+fileFound_readQuestion:
+	mov edi,eax
+	invoke crt_fgets,question,100,edi
+	invoke	crt_fgets,choice1,50,edi
+	invoke	crt_fgets,choice2,50,edi
+	invoke	crt_fgets,choice3,50,edi
+	invoke	crt_fgets,choice4,50,edi
+	invoke crt_fscanf,offset ONE_INT_FORMAT,addr i
+	invoke	crt_fclose,edi
+    mov	eax,i
+	pop	edi
+	ret
+readQuestion endp
+
 placeBomb	proc	
     push    ebx
     cmp game.player.bomb_cnt,0
@@ -526,7 +617,6 @@ l2_die:
 	invoke calcMapOffset,game.player.x,game.player.y,1
 	mov game.map[eax*4]._type ,PLAYER
     mov game.player.timer,INVISIBLE_TIMER
-	;invoke setInvisible
 	mov eax,game.level_timer
 	mov game.timer,eax
 end_die:
@@ -615,27 +705,20 @@ calculateNextMove endp
 
 
 pollingMonster	proc
-	;local i:DWORD
-	;local monsteroffset:DWORD
 	local newMonsterX,newMonsterY:DWORD,ismove:dword
 	push ebx
     push    esi
     xor esi,esi
-	;mov i,0
 	outer_for_pollingMonster:
         mov eax,esi
-		;mov eax,i
 		mov ebx,sizeof(Monster)
 		mul ebx
         mov ebx,eax
-		;mov monsteroffset,eax
 
 		;if (this->monsters[i].valid)
-		;mov ebx,monsteroffset
 		mov eax,game.monsters[ebx].valid
 		cmp eax,0
 		je MonsterNotValid_pollingMonster
-			;mov ebx,monsteroffset
 			invoke moveOneStep,game.monsters[ebx].x,game.monsters[ebx].y \
 							,game.monsters[ebx].direction,addr newMonsterX,addr newMonsterY \
 							,addr game.monsters[ebx].frac_x ,addr game.monsters[ebx].frac_y\
@@ -643,8 +726,6 @@ pollingMonster	proc
             mov ismove,eax
 			cmp ismove,1
 			jne notMoveCell_pollingMonster
-				;invoke movMonsterToNextCell	,esi
-                ;
                     mov eax,game.player.x
 		            cmp eax,newMonsterX
 		            jne end_inner2_if_pollingMonster
@@ -654,7 +735,6 @@ pollingMonster	proc
 		            invoke die
 		            end_inner2_if_pollingMonster:
 
-		            ;mov ebx,monsteroffset
 		            invoke calcMapOffset,game.monsters[ebx].x,game.monsters[ebx].y,1
 
 		            mov game.map[eax*4]._type,EMPTY
@@ -665,7 +745,6 @@ pollingMonster	proc
 		            invoke calcMapOffset,newMonsterX,newMonsterY,1
 					
 		            mov game.map[eax*4]._type,MONSTER
-		            ;mov ecx,index
 		            mov game.map[eax*4].id,si
                 jmp MonsterNotValid_pollingMonster
 
@@ -687,36 +766,25 @@ pollingMonster endp
 
 movMonsterToNextCell proc index:dword
     ;ebx: monsteroffset
-	;local i,j:DWORD
 	local direct_able,monster_from:DWORD
 	local newX,newY:DWORD
 	local before_x,before_y:DWORD
 	local move,newMonsterX,newMonsterY:DWORD
-	;local monsteroffset:DWORD
 	push ebx
 	push esi
 	mov eax,index
-	;mov i,eax
-	;mov eax,i
 	mov ebx,sizeof(Monster)
 	mul ebx
     mov ebx,eax
-	;mov monsteroffset,eax
 
-	;local direct_able,monster_from:DWORD
 	mov direct_able,0
 	mov monster_from,0
 
-	;mov ebx,monsteroffset
 	mov eax,game.monsters[ebx].direction
-	;invoke getFromDriection,esi		
     mov eax,[FROM_DIRECTION_TBL+eax*4]
 	mov monster_from,eax
-	;mov j,0
     xor esi,esi
 	inner_for_movMonsterToNextCell:
-		;local newX,newY:DWORD
-		;mov ebx,monsteroffset
 		mov eax,game.monsters[ebx].x
 		mov newX,eax
 		mov eax,game.monsters[ebx].y
@@ -736,8 +804,6 @@ right1_switch_movMonsterToNextCell   label   dword
 		end_switch1_movMonsterToNextCell:
 
 		;if (isMoveableMonster(this, newX, newY) && monster_from != j)
-		;mov eax,monster_from
-		;cmp eax,esi
         cmp monster_from,esi
 		je	endif_isMoveableMonster_monster_from_movMonsterToNextCell
 		invoke isMoveableMonster,newX,newY
@@ -754,8 +820,6 @@ right1_switch_movMonsterToNextCell   label   dword
 				
 	;get last step from monster from
 	get_last_step:
-	;local before_x,before_y:DWORD
-	;mov ebx,monsteroffset
 	invoke calculateNextMove,game.monsters[ebx].x,game.monsters[ebx].y,monster_from,addr before_x,addr before_y
 	cmp direct_able,2
 	jl endif_is_corner_movMonsterToNextCell
@@ -765,12 +829,9 @@ right1_switch_movMonsterToNextCell   label   dword
 	invoke changeDirection,index
 
 				
-	;mov ebx,monsteroffset
 	mov game.monsters[ebx].direction,eax
 	endif_is_corner_movMonsterToNextCell:
 
-	;local move,newMonsterX,newMonsterY:DWORD
-	;mov ebx,monsteroffset
 	mov eax,game.monsters[ebx].direction
 	mov move,eax
 	mov eax,game.monsters[ebx].x
@@ -791,7 +852,6 @@ right1_switch_movMonsterToNextCell   label   dword
 		invoke die
 		end_inner2_if_movMonsterToNextCell:
 
-		;mov ebx,monsteroffset
 		invoke calcMapOffset,game.monsters[ebx].x,
 			game.monsters[ebx].y,1
 
@@ -808,7 +868,6 @@ right1_switch_movMonsterToNextCell   label   dword
 
 		jmp end_new_pos_not_valid_movMonsterToNextCell
 	middle_new_pos_not_valid_movMonsterToNextCell:
-	;mov ebx,monsteroffset
 	invoke changeDirection,index
 				
 	mov game.monsters[ebx].direction,eax
@@ -822,8 +881,6 @@ movMonsterToNextCell endp
 changeDirection	proc	index:dword
 	local	direction[4]:dword,monster_from:dword,newX:dword,newY:dword
 	local	new_direction:dword,available_direction:dword
-    ;random_direction:dword
-	;local	j:DWORD
 	push	ebx;monsteroffset
 	push	esi
 	mov	eax,index
@@ -836,12 +893,9 @@ changeDirection	proc	index:dword
 	mov	direction[12],1
     mov eax,game.monsters[ebx].direction
     mov eax,[FROM_DIRECTION_TBL+eax*4]
-	;invoke getFromDriection,game.monsters[ebx].direction
 	mov	monster_from,eax
-	;mov	eax,monster_from
 	mov	direction[eax*4],0
     xor esi,esi
-	;mov j,0
 	loop1:
 		mov eax,game.monsters[ebx].x
 		mov	newX,eax
@@ -851,31 +905,21 @@ changeDirection	proc	index:dword
 		invoke isMoveableMonster,newX,newY
 		test eax,eax
 		jnz not_movable_direction
-			;mov eax,j
 			mov	direction[esi*4],0
 		not_movable_direction:
-	;inc j
-	;cmp j,4
     inc esi
 	cmp esi,4
 	jl loop1
 	;chose the available direction randomly
-	;local	new_direction:dword,available_direction:dword
 	mov available_direction,0
 	mov new_direction,0
-	;mov j,0
     xor esi,esi
 	loop2:
-		;mov eax,j
 		cmp direction[esi*4],1
 		jne count_avail_direction
-			;mov eax,j
 			mov new_direction,esi
 			inc available_direction
 		count_avail_direction:
-
-	;inc j
-	;cmp j,4
     inc esi
     cmp esi,4
 	jl loop2
@@ -890,9 +934,7 @@ changeDirection	proc	index:dword
 	xor edx,edx
 	mov ecx,16
 	div ecx ;ramdom_direction in edx
-	;mov random_direction,edx
 	; for (int j = 0; j < random_direction; j++)
-	;mov j,0
     xor esi,esi
 	cmp edx,0
 	je end_loop3
@@ -908,7 +950,6 @@ changeDirection	proc	index:dword
 		jmp while_loop
 		find_next_direction:
 	inc esi
-	;mov eax,j
 	cmp esi,edx
 	jl loop3
 	end_loop3:
@@ -1183,14 +1224,10 @@ initLevel   proc
     mov game.player.isMove,STILL
     mov game.player.direction,RIGHT
     invoke  crt_memset,offset game.map,0,ROW*COL*DEPTH*sizeof Object
-    ;mov edx,game.level
     invoke  crt_sprintf,addr str1,offset LEVEL_FILENAME_FORMAT,game.level
     invoke  crt_fopen,addr str1,offset OPEN_FILE_READ_ONLY
-    ;invoke  crt_fopen,LEVEL_FILE_NAMES[4*edx-4],offset OPEN_FILE_READ_ONLY
     test    eax,eax
     jnz  fileFound_initLevel
-
-
     invoke  crt_exit,1
     ret
 fileFound_initLevel:
@@ -1271,17 +1308,8 @@ exitOuterLoop_initLevel:
 initLevel   endp
 
 initGame    proc
-    local   file:ptr FILE
     invoke  crt_memset,offset game,0,sizeof Game
-    invoke  crt_fopen,offset LEVEL_CNT_FILENAME,offset OPEN_FILE_READ_ONLY
-    test    eax,eax
-    jnz fileFound_initGame
-    invoke  crt_exit,1
-fileFound_initGame:
-    mov file,eax
-    invoke  crt_fscanf,eax,offset ONE_INT_FORMAT,offset game.level_cnt
-    invoke  crt_fclose,file
-    mov game.level,1
+    mov game.level,0
     mov game.player.bomb_range,2
     mov game.player.bomb_cnt,1
     mov game.player.life,2
@@ -1503,8 +1531,10 @@ player_clear:
 box_clear:
     mov game.map[eax*4]._type,EMPTY
     invoke  crt_rand
-    and eax,3
-    cmp eax,1
+    xor edx,edx
+    mov ecx,TOOL_CHANCE_RATE
+    div ecx
+    cmp edx,1
     jne exit_clear
     invoke  placeTool,x,y
     jmp exit_clear

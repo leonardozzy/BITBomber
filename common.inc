@@ -89,9 +89,9 @@ FRAMES_PER_SEC	equ	30
 
 ;define speed
 PLAYER_1_SPEED	equ	12
-MONSTER_1_SPEED	equ	7
-MONSTER_2_SPEED	equ	11
-MONSTER_3_SPEED	equ	15
+MONSTER_1_SPEED	equ	8
+MONSTER_2_SPEED	equ	12
+MONSTER_3_SPEED	equ	16
 ;新帧数下的速度
 
 ;define map_size
@@ -140,6 +140,7 @@ INVISIBLE	equ	1
 STILL	equ	0
 MOVE	equ	1
 
+TOOL_CHANCE_RATE	equ	8	;1/TOOL_CHANCE_RATE
 LIFE_TOOL	equ	0
 RANGE_TOOL	equ	1
 CNT_TOOL	equ	2
@@ -150,7 +151,7 @@ TIME_TOOL	equ	4
 MAX_LIFE	equ	5
 MAX_BOMB_RANGE	equ	5
 MAX_BOMB_CNT	equ	5
-MAX_SPEED	equ	16
+MAX_SPEED	equ	17
 TIME_INCREMENT	equ	20
 
 ;define game stage
@@ -159,6 +160,9 @@ MAIN_MENU	equ	1
 STORY	equ	2
 IN_GAME	equ	3
 
+MAX_QUESTION	equ	1000
+MAX_LEVEL	equ	100
+
 ;enum mainWinp.state
 winState_logoPage	equ 0
 winState_startPage	equ 1
@@ -166,14 +170,6 @@ winState_onStory	equ 2
 winState_onGame		equ 3
 winState_pauseGame	equ 4
 winState_levelup	equ 5
-
-OK	equ	0
-LEVEL_CNT_NOT_FOUND	equ	1
-LEVEL_CNT_EXCEED	equ	2
-LEVEL_NOT_FOUND	equ	3
-QUESTION_CNT_NOT_FOUND	equ	4
-QUESTION_CNT_EXCEED	equ	5
-QUESTION_NOT_FOUND	equ	6
 
 ;struct definition
 ;这样一个Object的大小就是4，便于比例变址寻址
@@ -245,7 +241,6 @@ Game	struct
 	player	Player	<>
 	boss	Boss	<>
 	level	dword	?
-	level_cnt	dword	?
 	timer	dword	?
 	level_timer	dword	?
 	monster_num	dword	?
@@ -293,6 +288,8 @@ drawWindow	proto	graphicsPtr:dword,hdcBuffer:HDC
 drawMap	proto	graphicsPtr:dword,hdcBuffer:HDC
 
 calcMapOffset	proto	x:dword,y:dword,z:dword
+readInfo    proto    errorInfo:ptr byte
+readQuestion proto	question:ptr byte,choice1:ptr byte,choice2:ptr byte,choice3:ptr byte,choice4:ptr byte
 initMonster	proto    index:dword,x:dword,y:dword,speed:dword
 initBoss    proto    x:dword,y:dword
 initLevel	proto
@@ -339,6 +336,7 @@ InitBackSound proto hWin:dword
 StartBackSound proto NameOfFile:dword
 StopBackSound proto
 StartDanceMode proto
+checkAllImages	proto	errorInfo:ptr byte
 
 endif
 

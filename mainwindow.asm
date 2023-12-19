@@ -401,7 +401,13 @@ WindowProc	endp
 
 
 WinMain	proc	hInst:HINSTANCE,hPrevInst:HINSTANCE,cmdLine:LPSTR,cmdShow:DWORD
-	local	wc:WNDCLASS,msg:MSG,gdiToken:dword
+	local	wc:WNDCLASS,msg:MSG,gdiToken:dword,errorMsg[100]:byte
+	invoke	checkAllImages,addr errorMsg
+	test	eax,eax
+	jnz	ErrorLoad
+	invoke	readInfo,addr errorMsg
+	test	eax,eax
+	jnz	ErrorLoad
 	invoke	GdiplusStartup,addr gdiToken,offset GP_INPUT,NULL	;GDI+，启动！
 	invoke	initResources	;加载图像、文本等资源
 	mov	wc.lpfnWndProc,offset WindowProc
@@ -427,6 +433,9 @@ EventLoop:
 	invoke	TranslateMessage,addr msg
 	invoke	DispatchMessage,addr msg
 	jmp	EventLoop
+ErrorLoad:
+	invoke	MessageBox,NULL,addr errorMsg,offset MSGBOX_ERROR_TITLE,MB_ICONERROR
+	jmp	ExitMain
 ErrorCreate:
 	invoke	MessageBox,NULL,offset MSGBOX_WINDOW_FAIL_TEXT,offset MSGBOX_ERROR_TITLE,MB_ICONERROR
 	mov	eax,1

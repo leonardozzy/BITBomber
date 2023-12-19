@@ -4,6 +4,7 @@ option	casemap:none
 
 include	common.inc
 extrn	game:Game
+extrn	level_cnt:dword
 extrn	mainwinp:MainWinp
 
 drawImage	equ	GdipDrawImageRectI
@@ -40,6 +41,16 @@ PAUSEPAGE_IMG	equ	85
 STORY1_IMG	equ	86
 STORY2_IMG	equ	87
 IMG_CNT	equ	88
+
+WALL_IMG	equ	0
+BOX_IMG	equ	1
+BG1_IMG	equ	2
+BG2_IMG	equ	3
+LIFE_ICON	equ	4
+SPEED_ICON	equ	5
+CNT_ICON	equ	6
+RANGE_ICON	equ	7
+BMP_IMG_CNT	equ	8
 
 DRAW_GAME_X_START	equ	40
 DRAW_GAME_Y_START	equ	90
@@ -166,10 +177,11 @@ LIFE_ICON_PATH	byte	"./images/life_icon.bmp",0
 SPEED_ICON_PATH	byte	"./images/speed_icon.bmp",0
 CNT_ICON_PATH	byte	"./images/cnt_icon.bmp",0
 RANGE_ICON_PATH	byte	"./images/range_icon.bmp",0
-DENGXIAN	byte	"等线",0
-ARIAL_NAME	byte	"Arial",0
+DENGXIAN	byte	"Arial",0
 ONE_INT_FMT	byte	"%d",0
 TIME_FMT	byte	"%d:%02d",0
+OPEN_BFILE_READ_ONLY	byte	"rb",0
+IMAGE_ERROR	byte	"找不到图片文件%s！",0
 align	4
 IMG_PATHS	dword	offset PLAYER1_UP1_PATH,offset PLAYER1_UP2_PATH,offset PLAYER1_UP3_PATH,offset PLAYER1_UP4_PATH,
 					offset PLAYER1_DOWN1_PATH,offset PLAYER1_DOWN2_PATH,offset PLAYER1_DOWN3_PATH,offset PLAYER1_DOWN4_PATH
@@ -193,6 +205,7 @@ IMG_PATHS10	dword	offset BLUE_FIRE1_PATH,offset BLUE_FIRE2_PATH,offset BLUE_FIRE
 					offset BOMB1_PATH,offset BOMB2_PATH
 IMG_PATHS11	dword	offset LIFE_TOOL_PATH,offset BOMB_RANGE_TOOL_PATH,offset BOMB_CNT_TOOL_PATH,offset SPEED_TOOL_PATH,offset TIME_TOOL_PATH,
 					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH,offset STORY1_PATH,offset STORY2_PATH
+BMP_IMG_PATHS	dword	offset WALL_PATH,offset BOX_PATH,offset BG1_PATH,offset BG2_PATH,offset LIFE_ICON_PATH,offset SPEED_ICON_PATH,offset CNT_ICON_PATH,offset RANGE_ICON_PATH
 DRAW_MAP_JMP_TBL	dword	offset drawEmpty_drawMap,offset drawWall_drawMap,offset drawPlayer_drawMap,offset drawBomb_drawMap,offset drawMonster_drawMap,
 							offset drawBox_drawMap,offset drawTool_drawMap,offset drawFire_drawMap,offset drawBoss_drawMap,offset drawBlueFire_drawMap,offset drawAttack_drawMap,
 							offset drawBossFly_drawMap
@@ -200,6 +213,47 @@ STATUS_RECT	RECT	<0,0,WINDOW_WIDTH,60>
 
 
 .code
+checkAllImages	proc	errorInfo:ptr byte
+	push	ebx
+	xor	ebx,ebx
+loop_checkAllImages:
+	cmp	ebx,IMG_CNT
+	je	exitLoop_checkAllImages
+	invoke	crt_fopen,[IMG_PATHS+ebx*4],offset OPEN_BFILE_READ_ONLY
+	test	eax,eax
+	jnz	checkSuccess_checkAllImages
+checkFail_checkAllImages:
+	invoke	crt_sprintf,errorInfo,offset IMAGE_ERROR,[IMG_PATHS+ebx*4]
+	jmp	exitCheckFail_checkAllImages
+checkSuccess_checkAllImages:
+	invoke	crt_fclose,eax
+	inc	ebx
+	jmp	loop_checkAllImages
+exitLoop_checkAllImages:
+	xor	ebx,ebx
+loop2_checkAllImages:
+	cmp	ebx,BMP_IMG_CNT
+	je	exitLoop2_checkAllImages
+	invoke	crt_fopen,[BMP_IMG_PATHS+ebx*4],offset OPEN_BFILE_READ_ONLY
+	test	eax,eax
+	jnz	checkSuccess2_checkAllImages
+	invoke	crt_sprintf,errorInfo,offset IMAGE_ERROR,[BMP_IMG_PATHS+ebx*4]
+	jmp	exitCheckFail_checkAllImages
+checkSuccess2_checkAllImages:
+	invoke	crt_fclose,eax
+	inc	ebx
+	jmp	loop2_checkAllImages
+exitLoop2_checkAllImages:
+	xor	eax,eax
+	jmp	exit_checkAllImages
+exitCheckFail_checkAllImages:
+	mov	eax,1
+exit_checkAllImages:
+	pop	ebx
+	ret
+checkAllImages	endp
+
+
 ;根据指定的StrFont和StrDisp在屏幕上绘制UTF-16字符串，有性能问题，仅在必须绘制无背景字符串时调用
 drawUtf16String	proc	graphicsPtr:dword,strToShow:ptr word,strFontPtr:ptr StrFont,strDispPtr:ptr StrDisp
 	local	fontFamilyPtr:dword,fontPtr:dword,stringFormatPtr:dword,brushPtr:dword
@@ -238,8 +292,8 @@ drawSolidRect	proc	graphicsPtr:dword,color:dword,x:dword,y:dword,_width:dword,he
 	ret
 drawSolidRect	endp
 
-;GdipDrawImageRectI（drawImage）有*严重*的性能问题，仅在必须绘制有透明通道的png时调用
-;绘制普通图像请使用GDI的BilBlt等
+;GdipDrawImageRectI（drawImage）有*严重*的性能问题，建议仅在必须绘制有透明通道的png时调用
+;实时绘制普通图像请使用GDI的BitBlt等
 
 ;初始化bmp
 initBmp	proc	path:ptr byte,info:ptr BitmapInfo
@@ -286,6 +340,7 @@ loop_initResources:
 exitLoop_initResources:
 	lea	eax,DENGXIAN_FONT.fontName
 	invoke	MultiByteToWideChar,CP_ACP,NULL,offset DENGXIAN,-1,eax,2*FONT_NAME_LEN
+	xor	ebx,ebx
 	invoke	initBmp,offset WALL_PATH,offset wallInfo
 	invoke	initBmp,offset BOX_PATH,offset boxInfo
 	invoke	initBmp,offset BG1_PATH,offset bg1Info
@@ -294,10 +349,8 @@ exitLoop_initResources:
 	invoke	initBmp,offset SPEED_ICON_PATH,offset speedIconInfo
 	invoke	initBmp,offset CNT_ICON_PATH,offset cntIconInfo
 	invoke	initBmp,offset RANGE_ICON_PATH,offset rangeIconInfo
-	invoke	CreateFont,30,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FF_DONTCARE,offset ARIAL_NAME
+	invoke	CreateFont,30,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FF_DONTCARE,offset DENGXIAN
 	mov	hFont1,eax
-	;invoke	CreateSolidBrush,0ffff00h
-	;mov	redBrush,eax
 	pop	ebx
 	ret
 initResources	endp
@@ -322,7 +375,6 @@ exitLoop_releaseResources:
 	invoke	deleteBmp,offset cntIconInfo
 	invoke	deleteBmp,offset rangeIconInfo
 	invoke	DeleteObject,hFont1
-	;invoke	DeleteObject,redBrush
 	pop	ebx
 	ret
 releaseResources	endp
@@ -362,12 +414,13 @@ drawMap	proc	graphicsPtr:dword,hdcBuffer:HDC
 	push	edi
 	mov	bossFlyXPos,-1
 	mov	eax,game.level
-	cmp	eax,game.level_cnt
+	inc	eax
+	cmp	eax,level_cnt
 	je	drawBossBG_drawMap
-	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,SRCCOPY	;加速
+	invoke	BitBlt,hdcBuffer,0,60,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,SRCCOPY	;加速
 	jmp	endDrawBG_drawMap
 drawBossBG_drawMap:
-	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg2Info.hdcMem,0,0,SRCCOPY	;加速
+	invoke	BitBlt,hdcBuffer,0,60,WINDOW_WIDTH,WINDOW_HEIGHT,bg2Info.hdcMem,0,0,SRCCOPY	;加速
 endDrawBG_drawMap:
 	xor	ebx,ebx
 	mov	esi,DRAW_GAME_X_START
