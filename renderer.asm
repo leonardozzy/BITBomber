@@ -37,7 +37,9 @@ TIME_TOOL_IMG	equ	82
 LOGO_IMG	equ	83
 HOMEPAGE_IMG	equ	84
 PAUSEPAGE_IMG	equ	85
-IMG_CNT	equ	86
+STORY1_IMG	equ	86
+STORY2_IMG	equ	87
+IMG_CNT	equ	88
 
 DRAW_GAME_X_START	equ	40
 DRAW_GAME_Y_START	equ	90
@@ -156,8 +158,10 @@ SPEED_TOOL_PATH	byte	"./images/speed_tool.png",0
 BG1_PATH	byte	"./images/bg1.bmp",0
 BG2_PATH	byte	"./images/bg2.bmp",0
 LOGO_PATH	byte	"./images/logo.png",0
-HOMEPAGE_PATH	byte	"./images/start.png",0
-PAUSEPAGE_PATH	byte	"./images/start.png",0
+HOMEPAGE_PATH	byte	"./images/homepage.png",0
+PAUSEPAGE_PATH	byte	"./images/pausepage.png",0
+STORY1_PATH	byte	"./images/story1.jpg",0
+STORY2_PATH	byte	"./images/story2.png",0
 LIFE_ICON_PATH	byte	"./images/life_icon.bmp",0
 SPEED_ICON_PATH	byte	"./images/speed_icon.bmp",0
 CNT_ICON_PATH	byte	"./images/cnt_icon.bmp",0
@@ -188,7 +192,7 @@ IMG_PATHS9	dword	offset DRAGON1_PATH,offset DRAGON2_PATH,offset DRAGON3_PATH,off
 IMG_PATHS10	dword	offset BLUE_FIRE1_PATH,offset BLUE_FIRE2_PATH,offset BLUE_FIRE3_PATH,offset BLUE_FIRE4_PATH,
 					offset BOMB1_PATH,offset BOMB2_PATH
 IMG_PATHS11	dword	offset LIFE_TOOL_PATH,offset BOMB_RANGE_TOOL_PATH,offset BOMB_CNT_TOOL_PATH,offset SPEED_TOOL_PATH,offset TIME_TOOL_PATH,
-					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH
+					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH,offset STORY1_PATH,offset STORY2_PATH
 DRAW_MAP_JMP_TBL	dword	offset drawEmpty_drawMap,offset drawWall_drawMap,offset drawPlayer_drawMap,offset drawBomb_drawMap,offset drawMonster_drawMap,
 							offset drawBox_drawMap,offset drawTool_drawMap,offset drawFire_drawMap,offset drawBoss_drawMap,offset drawBlueFire_drawMap,offset drawAttack_drawMap,
 							offset drawBossFly_drawMap
@@ -606,53 +610,81 @@ notSetRed_drawMap:
 	ret
 drawMap	endp
 
-drawLogo	proc	graphicsPtr:dword
-	cmp	mainwinp.frames,15
+drawLogoImageDraw	proc	graphicsPtr:dword,drawWhich:dword
+	cmp drawWhich,0
+	je d0_drawLogoImageDraw
+	cmp drawWhich,1
+	je d1_drawLogoImageDraw
+	ret
+	d0_drawLogoImageDraw:
+		invoke	drawImage,graphicsPtr,bitmapPtrs[LOGO_IMG*4],LOGO_X_POS,LOGO_Y_POS,LOGO_WIDTH,LOGO_HEIGHT
+	ret
+	d1_drawLogoImageDraw:
+		invoke	drawImage,graphicsPtr,bitmapPtrs[STORY1_IMG*4],0,0,984,711
+	ret
+drawLogoImageDraw	endp
+
+drawLogoEndSingal	proc	drawWhich:dword
+	cmp drawWhich,0
+	je d0_drawLogoEndSingal
+	cmp drawWhich,1
+	je d1_drawLogoEndSingal
+	ret
+	d0_drawLogoEndSingal:
+		mov mainwinp.winState, winState_startPage
+	ret
+	d1_drawLogoEndSingal:
+		inc mainwinp.nowStoryNum
+	ret
+drawLogoEndSingal	endp
+
+drawLogo	proc	graphicsPtr:dword,drawWhich:dword,keepTime:dword
+	mov eax,15
+	cmp	mainwinp.frames,eax
 	jle	appear_drawLogo
-	cmp	mainwinp.frames,15+25
+	add eax,keepTime
+	cmp	mainwinp.frames,eax
 	jle	hold_drawLogo
-	cmp	mainwinp.frames,15+25+15
+	add eax,15
+	cmp	mainwinp.frames,eax
 	jle	disappear_drawLogo
-	mov mainwinp.winState, winState_startPage	
+	invoke drawLogoEndSingal,drawWhich
 	mov	eax,1
 	ret
 appear_drawLogo:
-	invoke	drawSolidRect,graphicsPtr,0ff000000h,0,0,WINDOW_WIDTH,WINDOW_HEIGHT
-	invoke	drawImage,graphicsPtr,bitmapPtrs[LOGO_IMG*4],LOGO_X_POS,LOGO_Y_POS,LOGO_WIDTH,LOGO_HEIGHT
+	invoke	drawSolidRect,graphicsPtr,0ff000000h,0,0,984,711
+	invoke	drawLogoImageDraw,graphicsPtr,drawWhich
 	mov	edx,mainwinp.frames
 	shl	edx,4
 	mov	eax,255
 	sub	eax,edx
 	shl	eax,24
-	invoke	drawSolidRect,graphicsPtr,eax,LOGO_X_POS,LOGO_Y_POS,LOGO_WIDTH,LOGO_HEIGHT
+	invoke	drawSolidRect,graphicsPtr,eax,0,0,984,711
 	jmp	exit_drawLogo
 hold_drawLogo:
-	invoke	drawSolidRect,graphicsPtr,0ff000000h,0,0,WINDOW_WIDTH,WINDOW_HEIGHT
-	invoke	drawImage,graphicsPtr,bitmapPtrs[LOGO_IMG*4],LOGO_X_POS,LOGO_Y_POS,LOGO_WIDTH,LOGO_HEIGHT
+	invoke	drawSolidRect,graphicsPtr,0ff000000h,0,0,984,711
+	invoke	drawLogoImageDraw,graphicsPtr,drawWhich
 	jmp	exit_drawLogo
 disappear_drawLogo:
-	invoke	drawSolidRect,graphicsPtr,0ff000000h,0,0,WINDOW_WIDTH,WINDOW_HEIGHT
-	invoke	drawImage,graphicsPtr,bitmapPtrs[LOGO_IMG*4],LOGO_X_POS,LOGO_Y_POS,LOGO_WIDTH,LOGO_HEIGHT
+	invoke	drawSolidRect,graphicsPtr,0ff000000h,0,0,984,711
+	invoke	drawLogoImageDraw,graphicsPtr,drawWhich
 	mov	edx,mainwinp.frames
 	sub	edx,15+25
 	shl	edx,4+24
-	invoke	drawSolidRect,graphicsPtr,edx,LOGO_X_POS,LOGO_Y_POS,LOGO_WIDTH,LOGO_HEIGHT
+	invoke	drawSolidRect,graphicsPtr,edx,0,0,984,711
 exit_drawLogo:
 	xor	eax,eax
 	ret
 drawLogo	endp
 
-drawStory	proc	graphicsPtr:dword
+
+drawRollText	proc	graphicsPtr:dword
 	local strDispPtr:StrDisp, strFontPtr:StrFont
 	cmp mainwinp.frames,0
-	jl	movePrint_drawStory
-	;准备进游戏
-	invoke  crt_time,NULL
-	invoke  crt_srand,eax	;进游戏前播种
-	invoke  initGame
-	mov mainwinp.winState, winState_onGame	
-	jmp ret_drawStory
-movePrint_drawStory:
+	jl	movePrint_drawRollText
+	
+	jmp ret_drawRollText
+movePrint_drawRollText:
 	mov eax, WINDOW_HEIGHT
 	sub eax, mainwinp.frames	;eax = WINDOW_HEIGHT - frames
 	mov ecx, WINDOW_WIDTH
@@ -668,7 +700,21 @@ movePrint_drawStory:
 	mov strFontPtr.color, 0FFFFFFFFH
 	mov strFontPtr.style, FontStyleRegular
 	invoke drawGbString, graphicsPtr, offset storyUtf16Str, addr strFontPtr, addr strDispPtr
-ret_drawStory:
+ret_drawRollText:
+	ret
+drawRollText	endp
+
+drawStory	proc	graphicsPtr:dword
+	cmp mainwinp.nowStoryNum,1
+	je s1_drawStory
+	cmp mainwinp.nowStoryNum,2
+	je s2_drawStory
+	ret
+	s1_drawStory:
+		invoke drawLogo,graphicsPtr,1,120
+	ret
+	s2_drawStory:
+		invoke	drawImage,graphicsPtr,bitmapPtrs[STORY2_IMG*4],246,0,492,711
 	ret
 drawStory	endp
 
@@ -686,10 +732,10 @@ drawWindow	proc	graphicsPtr:dword,hdcBuffer:HDC
 	je pauseGame_drawWindow
 	jmp ret_drawWindow
 logoPage_drawWindow:
-	invoke	drawLogo, graphicsPtr
+	invoke	drawLogo, graphicsPtr,0,25
 	jmp ret_drawWindow
 startPage_drawWindow:
-	invoke	drawImage,graphicsPtr,bitmapPtrs[HOMEPAGE_IMG*4],0,0,WINDOW_WIDTH,WINDOW_WIDTH
+	invoke	drawImage,graphicsPtr,bitmapPtrs[HOMEPAGE_IMG*4],0,0,984,711
 	jmp ret_drawWindow
 onStory_drawWindow:
 	invoke	drawStory, graphicsPtr
@@ -698,7 +744,8 @@ onGame_drawWindow:
 	invoke	drawMap, graphicsPtr,hdcBuffer
 	jmp ret_drawWindow
 pauseGame_drawWindow:
-	invoke	drawImage,graphicsPtr,bitmapPtrs[PAUSEPAGE_IMG*4],0,0,WINDOW_WIDTH,WINDOW_WIDTH
+	invoke	drawMap, graphicsPtr,hdcBuffer
+	invoke	drawImage,graphicsPtr,bitmapPtrs[PAUSEPAGE_IMG*4],150,112,689,498
 	jmp ret_drawWindow
 ret_drawWindow:
 	ret

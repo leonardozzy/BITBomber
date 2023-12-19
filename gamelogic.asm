@@ -1584,6 +1584,8 @@ load    endp
 
 
 gameLoop proc   input:dword
+    cmp input,4
+    ja other_gameLoop
     invoke  pollingPlayer,input
 other_gameLoop:
     invoke  pollingAttack

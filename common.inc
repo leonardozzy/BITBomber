@@ -26,16 +26,46 @@ FONT_NAME_LEN	equ	16
 WINDOW_WIDTH	equ	1000
 WINDOW_HEIGHT	equ	750
 ;各按键的坐标（左上xy、宽高）用于画图和鼠标判断
-	;开始新游戏
-BUTT_STARTNEW_X equ 670
-BUTT_STARTNEW_Y equ 510
+	;home-开始新游戏
+BUTT_STARTNEW_X equ 300
+BUTT_STARTNEW_Y equ 653
 BUTT_STARTNEW_W equ 200
 BUTT_STARTNEW_H equ 60
-	;继续游戏
-BUTT_CONTINUE_X equ 670
-BUTT_CONTINUE_Y equ 600
-BUTT_CONTINUE_W equ 200
-BUTT_CONTINUE_H equ 60
+	;home-继续游戏
+BUTT_CONTINUESAVE_X equ 540
+BUTT_CONTINUESAVE_Y equ 653
+BUTT_CONTINUESAVE_W equ 200
+BUTT_CONTINUESAVE_H equ 60
+	;home-关于
+BUTT_ABOUTME_X equ 780
+BUTT_ABOUTME_Y equ 653
+BUTT_ABOUTME_W equ 200
+BUTT_ABOUTME_H equ 60
+	;ongame-暂停游戏
+BUTT_PAUSE_X equ 0
+BUTT_PAUSE_Y equ 0
+BUTT_PAUSE_W equ 100
+BUTT_PAUSE_H equ 100
+	;pause-存档
+BUTT_SAVE_X equ 365
+BUTT_SAVE_Y equ 187
+BUTT_SAVE_W equ 240
+BUTT_SAVE_H equ 53
+	;pause-继续
+BUTT_CONTINUE_X equ 365
+BUTT_CONTINUE_Y equ 275
+BUTT_CONTINUE_W equ 240
+BUTT_CONTINUE_H equ 53
+	;pause-体感模式
+BUTT_DANCEMODE_X equ 365
+BUTT_DANCEMODE_Y equ 371
+BUTT_DANCEMODE_W equ 200
+BUTT_DANCEMODE_H equ 53
+	;pause-返回home
+BUTT_RETHOME_X equ 365
+BUTT_RETHOME_Y equ 467
+BUTT_RETHOME_W equ 240
+BUTT_RETHOME_H equ 53
 
 EMPTY	equ	0
 WALL	equ	1
@@ -86,6 +116,8 @@ RIGHT	equ	3
 SETBOMB	equ	4
 GAMEPAUSE	equ 5
 GAMESTART	equ 6
+SPACEJO		equ 7
+
 
 ;define time
 INVISIBLE_TIMER	equ	100
@@ -133,6 +165,7 @@ winState_startPage	equ 1
 winState_onStory	equ 2
 winState_onGame		equ 3
 winState_pauseGame	equ 4
+winState_levelup	equ 5
 
 OK	equ	0
 LEVEL_CNT_NOT_FOUND	equ	1
@@ -246,7 +279,7 @@ BitmapInfo	ends
 MainWinp	struct	;游戏外层主窗口逻辑部分全局变量
 	winState	dword	?
 	frames	dword	?	;启动时画logo等状态的帧数，用于淡入淡出等
-	
+	nowStoryNum	dword	?
 MainWinp	ends
 
 ;function definition
@@ -301,7 +334,11 @@ draw	proto
 mainLoop proto
 gameLoop proto  input:dword
 isMouseInButton proto mousex:word, mousey:word, x:word,y:word,w:word,h:word
-PlayMp3File proto hWin:dword, NameOfFile:dword
+PlayMp3File proto hWin:dword,NameOfFile:dword
+InitBackSound proto hWin:dword
+StartBackSound proto NameOfFile:dword
+StopBackSound proto
+StartDanceMode proto
 
 endif
 
