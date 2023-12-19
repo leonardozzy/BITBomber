@@ -8,7 +8,7 @@ public  level_cnt
 
 .const
 INFO_FILENAME  byte    "./info.txt",0
-FILENAMESAVE	byte	"./save/save.bb",0
+FILENAMESAVE	byte	"./save.bb",0
 OPEN_FILE_READ_ONLY	byte	"r",0
 OPEN_BFILE_READ_ONLY	byte	"rb",0
 OPEN_BFILE_WRITE_ONLY	byte	"wb",0
@@ -1617,7 +1617,7 @@ load    endp
 
 gameLoop proc   input:dword
     cmp input,4
-    ja other_gameLoop
+    jg other_gameLoop
     invoke  pollingPlayer,input
 other_gameLoop:
     invoke  pollingAttack

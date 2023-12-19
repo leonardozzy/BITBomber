@@ -63,7 +63,7 @@ LOGO_HEIGHT	equ	400
 LOGO_X_POS	equ	300
 LOGO_Y_POS	equ	150
 .data
-DENGXIAN_FONT	StrFont	<FONT_NAME_LEN dup(?),12.0,0ffffffffh,FontStyleRegular>
+DENGXIAN_FONT	StrFont	<FONT_NAME_LEN dup(?),14.0,0ff000000h,FontStyleRegular>
 
 .data?
 bitmapPtrs	dword	100 dup(?)
@@ -210,7 +210,6 @@ DRAW_MAP_JMP_TBL	dword	offset drawEmpty_drawMap,offset drawWall_drawMap,offset d
 							offset drawBox_drawMap,offset drawTool_drawMap,offset drawFire_drawMap,offset drawBoss_drawMap,offset drawBlueFire_drawMap,offset drawAttack_drawMap,
 							offset drawBossFly_drawMap
 STATUS_RECT	RECT	<0,0,WINDOW_WIDTH,60>
-
 
 .code
 checkAllImages	proc	errorInfo:ptr byte
