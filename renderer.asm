@@ -48,7 +48,9 @@ STORY2_IMG	equ	87
 KEYBOARD_IMG	equ	88
 GAMEOVER_IMG	equ	89
 QUESTION_IMG	equ	90
-IMG_CNT	equ	91
+WINGAME_IMG	equ	91
+SEGERR_IMG	equ	92
+IMG_CNT	equ	93
 
 WALL_IMG	equ	0
 BOX_IMG	equ	1
@@ -187,11 +189,20 @@ STORY1_PATH	byte	"./images/story1.jpg",0
 STORY2_PATH	byte	"./images/story2.png",0
 KEYBOARD_PATH	byte	"./images/keyboard.jpg",0
 GAMEOVER_PATH	byte	"./images/game_over.png",0
+WINGAME_PATH	byte	"./images/wingame.png",0
 QUESTION_PATH	byte	"./images/question.png",0
+SEGERR_PATH	byte	"./images/segerr.jpg",0
 LIFE_ICON_PATH	byte	"./images/life_icon.bmp",0
 SPEED_ICON_PATH	byte	"./images/speed_icon.bmp",0
 CNT_ICON_PATH	byte	"./images/cnt_icon.bmp",0
 RANGE_ICON_PATH	byte	"./images/range_icon.bmp",0
+
+BGM_HOME_PATH	byte	"./audio/HomePage.mp3",0
+BGM_STORY_PATH	byte	"./audio/Story.mp3",0
+BGM_ONGAME_PATH	byte	"./audio/onGame.mp3",0
+PLAY_SPRINTF byte "play %s",0
+PLAY_REPEAT_SPRINTF byte "play %s repeat",0
+STOP_SPRINTF byte "stop %s",0
 DENGXIAN	byte	"Arial",0
 ONE_INT_FMT	byte	"%d",0
 TIME_FMT	byte	"%d:%02d",0
@@ -219,7 +230,7 @@ IMG_PATHS9	dword	offset DRAGON1_PATH,offset DRAGON2_PATH,offset DRAGON3_PATH,off
 IMG_PATHS10	dword	offset BLUE_FIRE1_PATH,offset BLUE_FIRE2_PATH,offset BLUE_FIRE3_PATH,offset BLUE_FIRE4_PATH,
 					offset BOMB1_PATH,offset BOMB2_PATH
 IMG_PATHS11	dword	offset LIFE_TOOL_PATH,offset BOMB_RANGE_TOOL_PATH,offset BOMB_CNT_TOOL_PATH,offset SPEED_TOOL_PATH,offset TIME_TOOL_PATH,
-					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH,offset STORY1_PATH,offset STORY2_PATH,offset KEYBOARD_PATH,offset GAMEOVER_PATH,offset QUESTION_PATH
+					offset offset LOGO_PATH,offset HOMEPAGE_PATH,offset PAUSEPAGE_PATH,offset STORY1_PATH,offset STORY2_PATH,offset KEYBOARD_PATH,offset GAMEOVER_PATH,offset QUESTION_PATH,offset WINGAME_PATH,offset SEGERR_PATH
 
 BMP_IMG_PATHS	dword	offset WALL_PATH,offset BOX_PATH,offset BG1_PATH,offset BG2_PATH,offset LIFE_ICON_PATH,offset SPEED_ICON_PATH,offset CNT_ICON_PATH,offset RANGE_ICON_PATH
 DRAW_MAP_JMP_TBL	dword	offset drawEmpty_drawMap,offset drawWall_drawMap,offset drawPlayer_drawMap,offset drawBomb_drawMap,offset drawMonster_drawMap,
@@ -693,6 +704,8 @@ drawLogoImageDraw	proc	graphicsPtr:dword,drawWhich:dword
 	je d2_drawLogoImageDraw
 	cmp drawWhich,3
 	je d3_drawLogoImageDraw
+	cmp drawWhich,4
+	je d4_drawLogoImageDraw
 	ret
 	d0_drawLogoImageDraw:
 		invoke	drawImage,graphicsPtr,bitmapPtrs[LOGO_IMG*4],LOGO_X_POS,LOGO_Y_POS,LOGO_WIDTH,LOGO_HEIGHT
@@ -706,9 +719,13 @@ drawLogoImageDraw	proc	graphicsPtr:dword,drawWhich:dword
 	d3_drawLogoImageDraw:
 		invoke	drawImage,graphicsPtr,bitmapPtrs[GAMEOVER_IMG*4],0,0,984,711
 	ret
+	d4_drawLogoImageDraw:
+		invoke	drawImage,graphicsPtr,bitmapPtrs[WINGAME_IMG*4],0,0,984,711
+	ret
 drawLogoImageDraw	endp
 
 drawLogoEndSingal	proc	drawWhich:dword
+    local audioCmd[100]:byte
 	cmp drawWhich,0
 	je d0_drawLogoEndSingal
 	cmp drawWhich,1
@@ -717,6 +734,8 @@ drawLogoEndSingal	proc	drawWhich:dword
 	je d2_drawLogoEndSingal
 	cmp drawWhich,3
 	je d3_drawLogoEndSingal
+	cmp drawWhich,4
+	je d4_drawLogoEndSingal
 	ret
 	d0_drawLogoEndSingal:
 		mov mainwinp.winState, winState_startPage
@@ -730,6 +749,14 @@ drawLogoEndSingal	proc	drawWhich:dword
 		inc mainwinp.nowStoryNum
 	ret
 	d3_drawLogoEndSingal:
+		
+		mov mainwinp.winState, winState_startPage
+	ret
+	d4_drawLogoEndSingal:
+		invoke crt_sprintf ,addr audioCmd, offset STOP_SPRINTF,offset BGM_ONGAME_PATH
+		invoke mciSendString ,addr audioCmd,NULL,0,NULL
+		invoke crt_sprintf,addr audioCmd,addr PLAY_REPEAT_SPRINTF,addr BGM_HOME_PATH
+		invoke mciSendString,addr audioCmd, NULL,0,NULL
 		mov mainwinp.winState, winState_startPage
 	ret
 drawLogoEndSingal	endp
@@ -796,7 +823,7 @@ drawStory	proc	graphicsPtr:dword
 		invoke drawLogo,graphicsPtr,1,60
 	ret
 	s2_drawStory:
-		invoke drawLogo,graphicsPtr,2,60
+		invoke drawLogo,graphicsPtr,2,150
 	ret
 	s3_drawStory:
 		invoke	drawImage,graphicsPtr,bitmapPtrs[KEYBOARD_IMG*4],0,0,984,711
@@ -819,6 +846,10 @@ drawWindow	proc	graphicsPtr:dword,hdcBuffer:HDC
 	je gameover_drawWindow
 	cmp mainwinp.winState, winState_levelup
 	je levelup_drawWindow
+	cmp mainwinp.winState, winState_gamewin
+	je gamewin_drawWindow
+	cmp mainwinp.winState, winState_segerr
+	je segerr_drawWindow
 	jmp ret_drawWindow
 logoPage_drawWindow:
 	invoke	drawLogo, graphicsPtr,0,25
@@ -841,6 +872,22 @@ gameover_drawWindow:
 	jmp ret_drawWindow
 levelup_drawWindow:
 	invoke	drawQuestion, graphicsPtr
+	jmp ret_drawWindow
+gamewin_drawWindow:
+	invoke	drawLogo, graphicsPtr,4,40
+	jmp ret_drawWindow
+segerr_drawWindow:
+	invoke	drawMap, graphicsPtr,hdcBuffer
+	mov	eax,game.boss.x
+	mov	edx,DRAW_Y_STEP
+	mul edx
+	sub	eax,45
+	mov	ecx,eax
+	mov	eax,game.boss.y
+	mov	edx,ELEMENT_WIDTH
+	mul	edx
+	sub	eax,120
+	invoke	drawImage,graphicsPtr,bitmapPtrs[SEGERR_IMG*4],eax,ecx,300,150
 	jmp ret_drawWindow
 ret_drawWindow:
 	ret

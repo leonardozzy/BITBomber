@@ -17,8 +17,9 @@ audioCmdBuf byte 256 dup(0)
 
 .const 
 BGM_HOME_PATH	byte	"./audio/HomePage.mp3",0
-BGM_STORY_PATH	byte	"./audio/Story.mp3",0
+BGM_STORY_PATH	byte	"./audio/zhp16s.wav",0
 BGM_ONGAME_PATH	byte	"./audio/onGame.mp3",0
+BGM_ZHP16_PATH	byte	"./audio/zhp16s.mp3",0
 PLAY_SPRINTF byte "play %s",0
 PLAY_REPEAT_SPRINTF byte "play %s repeat",0
 STOP_SPRINTF byte "stop %s",0
@@ -205,7 +206,7 @@ startPage_OnLButtonUp:
 	clickStartNew_OnLButtonUp:
 		invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_HOME_PATH
 		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL	;stop bgm
-		invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_STORY_PATH
+		invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_SPRINTF,offset BGM_ZHP16_PATH
 		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL	;²¥·Å¹ÊÊÂbgm
 		mov mainwinp.frames, 0
 		mov mainwinp.nowStoryNum,1
@@ -227,7 +228,7 @@ startPage_OnLButtonUp:
 		invoke	MessageBox,NULL,offset MSGBOX_WINDOW_ABOUTME_TEXT,offset MSGBOX_ABOUTME_TITLE,MB_OK
 		jmp ret_OnLButtonUp
 onStory_OnLButtonUp:
-	invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_STORY_PATH
+	invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_ZHP16_PATH
 	invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
 	invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_ONGAME_PATH
 	invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
@@ -308,6 +309,8 @@ mainLoop proc	hwnd:HWND
 	je gamewin_mainLoop
 	cmp mainwinp.winState, winState_gameover
 	je gameover_mainLoop
+	cmp mainwinp.winState, winState_segerr
+	je segerr_mainLoop
 	jmp ret_mainLoop
 logoPage_mainLoop:
 	inc mainwinp.frames
@@ -325,7 +328,7 @@ onStory_mainLoop:
 	jmp ret_mainLoop
 
 	StoryIsOver_mainLoop:
-		invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_STORY_PATH
+		invoke crt_sprintf ,offset audioCmdBuf, offset STOP_SPRINTF,offset BGM_ZHP16_PATH
 		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
 		invoke crt_sprintf ,offset audioCmdBuf, offset PLAY_REPEAT_SPRINTF,offset BGM_ONGAME_PATH
 		invoke mciSendString ,offset audioCmdBuf,NULL,0,NULL
@@ -370,24 +373,34 @@ levelup_mainLoop:
 	JOsubOffset_mainLoop:
 	cmp mainwinp.levelup_answer,eax
 	je right_mainLoop
-		mov game.level,1
+		inc game.level
+		invoke  initLevel
+		mov mainwinp.winState, winState_onGame
 		mov game.player.bomb_range,2
 		mov game.player.bomb_cnt,1
 		mov game.player.life,1
 		mov game.player.speed,PLAYER_1_SPEED
-		invoke	MessageBox,hwnd,offset MSGBOX_ANSCORR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
+		invoke	MessageBox,hwnd,offset MSGBOX_ANSERR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
 		jmp ret_mainLoop
 	right_mainLoop:
 		inc game.level
 		invoke  initLevel
 		mov mainwinp.winState, winState_onGame
-		invoke	MessageBox,hwnd,offset MSGBOX_ANSERR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
+		invoke	MessageBox,hwnd,offset MSGBOX_ANSCORR_TEXT,offset MSGBOX_WINDOW_ZHANGHP_TITLE,MB_OK
 		jmp ret_mainLoop
 gamewin_mainLoop:
 	inc mainwinp.frames
 	jmp ret_mainLoop
 gameover_mainLoop:
 	inc mainwinp.frames
+	jmp ret_mainLoop
+segerr_mainLoop:
+	inc mainwinp.frames
+	cmp mainwinp.frames,120
+	jb JOerrseg_mainLoop
+		mov mainwinp.frames,0
+		mov mainwinp.winState, winState_gamewin
+	JOerrseg_mainLoop:
 	jmp ret_mainLoop
 ret_mainLoop:
 	ret

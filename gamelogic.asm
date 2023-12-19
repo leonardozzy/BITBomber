@@ -24,8 +24,13 @@ BOMB_AUDIO   byte    "./audio/Bomb.mp3",0
 PICK_AUDIO   byte   "./audio/PickUpTool.mp3",0  
 DIE_AUDIO    byte   "./audio/Die.mp3",0
 LEVEL_UP_AUDIO byte "./audio/Levelup.mp3",0
+DRAGON_ROAR_AUDIO byte "./audio/DragonRoar.mp3",0
+DRAGON_HURT_AUDIO byte "./audio/DragonHurt.wav",0
+BGM_HOME_PATH	byte	"./audio/HomePage.mp3",0
+BGM_STORY_PATH	byte	"./audio/Story.mp3",0
+BGM_ONGAME_PATH	byte	"./audio/onGame.mp3",0
 PLAY_SPRINTF byte "play %s",0
-;PLAY_REPEAT_SPRINTF byte "play %s repeat",0
+PLAY_REPEAT_SPRINTF byte "play %s repeat",0
 STOP_SPRINTF byte "stop %s",0
 
 INFO_FILENAME  byte    "./info.txt",0
@@ -121,7 +126,7 @@ exit_readInfo:
 readInfo    endp
 
 readQuestion proc	question:ptr byte,choice1:ptr byte,choice2:ptr byte,choice3:ptr byte,choice4:ptr byte
-	local i:dword,questionFileName[50]:byte
+	local questionFileName[50]:byte
 	push	edi
 	invoke crt_rand
 	xor	edx,edx
@@ -641,6 +646,11 @@ l1_die:
 	;invoke crt_exit,0
 	mov mainwinp.frames,0
     mov mainwinp.winState, winState_gameover
+    
+	invoke crt_sprintf ,addr audioCmd, offset STOP_SPRINTF,offset BGM_ONGAME_PATH
+	invoke mciSendString ,addr audioCmd,NULL,0,NULL
+	invoke crt_sprintf ,addr audioCmd, offset PLAY_REPEAT_SPRINTF,offset BGM_HOME_PATH
+	invoke mciSendString ,addr audioCmd,NULL,0,NULL
 l2_die:
 	invoke calcMapOffset,game.player.x,game.player.y,1
 	mov game.map[eax*4] ,EMPTY
@@ -1132,6 +1142,7 @@ bossAttack ENDP
 
 
 pollingBoss proc
+    local audioCmd[100]:byte   
 	cmp game.boss.in_map,0
 	je bossNotInMap_pollingBoss
 	dec game.boss.cool_time
@@ -1169,6 +1180,8 @@ takeoff_pollingBoss:
 takeOffEnd_pollingBoss:
     invoke calcMapOffset,game.boss.x,game.boss.y,2
     mov game.map[4*eax],EMPTY
+    invoke crt_sprintf,addr audioCmd,offset PLAY_SPRINTF,offset DRAGON_ROAR_AUDIO
+    invoke mciSendString,addr audioCmd,0,0,0
     ret
 beginAttack_pollingBoss:
 	invoke bossAttack
@@ -1397,6 +1410,8 @@ loop_pollingBomb:
 explode_pollingBomb:
     invoke crt_sprintf,addr audioCmd,offset PLAY_SPRINTF,offset BOMB_AUDIO
     invoke mciSendString,addr audioCmd,0,0,0
+    invoke  calcMapOffset,game.bombs[ebx].x,game.bombs[ebx].y,0
+    mov game.map[eax*4]._type,EMPTY
     invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,esi,game.bombs[ebx].range,offset explode
     inc game.player.bomb_cnt
     jmp loopAdd_pollingBomb
@@ -1404,8 +1419,6 @@ setFire_pollingBomb:
     invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,esi,game.bombs[ebx].range,offset setFire
     jmp loopAdd_pollingBomb
 clearFire_pollingBomb:
-    invoke  calcMapOffset,game.bombs[ebx].x,game.bombs[ebx].y,0
-    mov game.map[eax*4]._type,EMPTY
     invoke  dealBomb,game.bombs[ebx].x,game.bombs[ebx].y,esi,game.bombs[ebx].range,offset clearFire
 loopAdd_pollingBomb:
     add ebx,sizeof Bomb
@@ -1547,6 +1560,7 @@ setFire proc    x:dword,y:dword,id:dword
 setFire endp
 
 clear   proc    x:dword,y:dword
+    local audioCmd[100]:byte   
     invoke  calcMapOffset,x,y,1
     cmp game.map[eax*4]._type,MONSTER
     je  monster_clear
@@ -1590,13 +1604,15 @@ tool_clear:
     mov game.tools[eax].timer,0
     jmp exit_clear
 boss_clear:
+    invoke crt_sprintf,addr audioCmd,offset PLAY_SPRINTF,offset DRAGON_HURT_AUDIO
+    invoke mciSendString,addr audioCmd,0,0,0
     dec game.boss.life
     cmp game.boss.life,0
     jne exit_clear
     ;invoke  crt_puts,offset WIN_STR
     ;invoke  crt_exit,0
 	mov mainwinp.frames,0
-    mov mainwinp.winState, winState_gamewin
+    mov mainwinp.winState, winState_segerr
     jmp exit_clear
 clear   endp
 

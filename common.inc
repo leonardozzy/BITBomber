@@ -130,7 +130,7 @@ COOL_TIME	equ	200
 TAKE_OFF_TIME equ 440
 SKY_TIME	equ	500
 PRE_DROP_TIME	equ	60
-PRE_ATTACK_TIME	equ	45
+PRE_ATTACK_TIME	equ	40
 ATTACK_TIME	equ	200
 ATTACK_FREQ	equ	50
 
@@ -141,7 +141,7 @@ INVISIBLE	equ	1
 STILL	equ	0
 MOVE	equ	1
 
-TOOL_CHANCE_RATE	equ	8	;1/TOOL_CHANCE_RATE
+TOOL_CHANCE_RATE	equ	7	;1/TOOL_CHANCE_RATE
 LIFE_TOOL	equ	0
 RANGE_TOOL	equ	1
 CNT_TOOL	equ	2
@@ -173,6 +173,7 @@ winState_pauseGame	equ 4
 winState_levelup	equ 5
 winState_gameover	equ 6
 winState_gamewin	equ 7
+winState_segerr	equ 8
 
 
 ;struct definition
