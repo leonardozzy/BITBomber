@@ -357,7 +357,8 @@ drawMap	proc	graphicsPtr:dword,hdcBuffer:HDC
 	push	esi
 	push	edi
 	mov	bossFlyXPos,-1
-	cmp	game.level,4
+	mov	eax,game.level
+	cmp	eax,game.level_cnt
 	je	drawBossBG_drawMap
 	invoke	BitBlt,hdcBuffer,0,0,WINDOW_WIDTH,WINDOW_HEIGHT,bg1Info.hdcMem,0,0,SRCCOPY	;º”ÀŸ
 	jmp	endDrawBG_drawMap

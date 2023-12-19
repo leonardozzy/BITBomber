@@ -134,6 +134,14 @@ winState_onStory	equ 2
 winState_onGame		equ 3
 winState_pauseGame	equ 4
 
+OK	equ	0
+LEVEL_CNT_NOT_FOUND	equ	1
+LEVEL_CNT_EXCEED	equ	2
+LEVEL_NOT_FOUND	equ	3
+QUESTION_CNT_NOT_FOUND	equ	4
+QUESTION_CNT_EXCEED	equ	5
+QUESTION_NOT_FOUND	equ	6
+
 ;struct definition
 ;这样一个Object的大小就是4，便于比例变址寻址
 Object	struct
@@ -150,7 +158,6 @@ Player	struct
 	bomb_cnt	dword	?
 	life	dword	?
 	speed	dword	?
-	;status	dword	?
 	timer	dword	?	;无敌时间
 	direction	dword	?
 	isMove	dword	?
@@ -205,6 +212,7 @@ Game	struct
 	player	Player	<>
 	boss	Boss	<>
 	level	dword	?
+	level_cnt	dword	?
 	timer	dword	?
 	level_timer	dword	?
 	monster_num	dword	?

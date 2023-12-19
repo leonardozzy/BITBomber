@@ -6,6 +6,7 @@ include	common.inc
 extern  game:Game
 
 .const
+LEVEL_CNT_FILENAME  byte    "./levels/count.txt",0
 FILENAME1	byte	"./levels/4.level",0
 FILENAME2	byte	"./levels/2.level",0
 FILENAME3	byte	"./levels/3.level",0
@@ -15,6 +16,10 @@ OPEN_FILE_READ_ONLY	byte	"r",0
 OPEN_BFILE_READ_ONLY	byte	"rb",0
 OPEN_BFILE_WRITE_ONLY	byte	"wb",0
 ONE_INT_FORMAT	byte	"%d",0
+LEVEL_FILENAME_FORMAT   byte    "%02d.level",0
+LEVEL_NOT_FOUND_FORMAT  byte    "未在levels目录中找到%s！",0
+;LEVEL_CNT_NOT_FOUND byte    "未在levels目录中找到关卡数量文件（count.txt）！",0
+MSGBOX_ERROR_TITLE  byte    "错误",0
 ;WIN_STR	byte	"You Win!",0
 ;GAMEOVER_STR	byte "Game Over!",0
 ;四字节对齐，提升读取效率
@@ -1168,7 +1173,7 @@ initBoss    proc    x:dword,y:dword
 initBoss    endp
 
 initLevel   proc
-    local   file:dword,num:dword
+    local   file:dword,num:dword,str1[20]:byte
     ;reset player's pos
     mov game.player.x,1
     mov game.player.y,1
@@ -1178,10 +1183,14 @@ initLevel   proc
     mov game.player.isMove,STILL
     mov game.player.direction,RIGHT
     invoke  crt_memset,offset game.map,0,ROW*COL*DEPTH*sizeof Object
-    mov edx,game.level
-    invoke  crt_fopen,LEVEL_FILE_NAMES[4*edx-4],offset OPEN_FILE_READ_ONLY
+    ;mov edx,game.level
+    invoke  crt_sprintf,addr str1,offset LEVEL_FILENAME_FORMAT,game.level
+    invoke  crt_fopen,addr str1,offset OPEN_FILE_READ_ONLY
+    ;invoke  crt_fopen,LEVEL_FILE_NAMES[4*edx-4],offset OPEN_FILE_READ_ONLY
     test    eax,eax
     jnz  fileFound_initLevel
+
+
     invoke  crt_exit,1
     ret
 fileFound_initLevel:
@@ -1262,7 +1271,16 @@ exitOuterLoop_initLevel:
 initLevel   endp
 
 initGame    proc
+    local   file:ptr FILE
     invoke  crt_memset,offset game,0,sizeof Game
+    invoke  crt_fopen,offset LEVEL_CNT_FILENAME,offset OPEN_FILE_READ_ONLY
+    test    eax,eax
+    jnz fileFound_initGame
+    invoke  crt_exit,1
+fileFound_initGame:
+    mov file,eax
+    invoke  crt_fscanf,eax,offset ONE_INT_FORMAT,offset game.level_cnt
+    invoke  crt_fclose,file
     mov game.level,1
     mov game.player.bomb_range,2
     mov game.player.bomb_cnt,1
