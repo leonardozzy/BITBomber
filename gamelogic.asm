@@ -20,7 +20,7 @@ FILENAME3	byte	"./levels/3.level",0
 FILENAME4	byte	"./levels/4.level",0
 FILENAMESAVE	byte	"./save.bb",0
 
-BOMB_AUDIO   byte    "./audio/Bomb.mp3",0
+BOMB_AUDIO   byte    "./audio/Bomb.wav",0
 PICK_AUDIO   byte   "./audio/PickUpTool.mp3",0  
 DIE_AUDIO    byte   "./audio/Die.mp3",0
 LEVEL_UP_AUDIO byte "./audio/Levelup.mp3",0
@@ -1028,6 +1028,8 @@ makeAttack proc x:dword,y:dword,id:dword
     pop eax
 noKillPlayer_makeAttack:
     mov game.map[eax*4+4]._type,EMPTY
+    cmp game.map[eax*4]._type,BOSS
+    je  noKillBomb_makeAttack
 	mov game.map[eax*4]._type,BLUEFIRE
     mov edx,id
     mov game.map[eax*4].id,dx

@@ -881,13 +881,13 @@ segerr_drawWindow:
 	mov	eax,game.boss.x
 	mov	edx,DRAW_Y_STEP
 	mul edx
-	sub	eax,45
+	;add	eax,100
 	mov	ecx,eax
 	mov	eax,game.boss.y
 	mov	edx,ELEMENT_WIDTH
 	mul	edx
 	sub	eax,120
-	invoke	drawImage,graphicsPtr,bitmapPtrs[SEGERR_IMG*4],eax,ecx,300,150
+	invoke	drawImage,graphicsPtr,bitmapPtrs[SEGERR_IMG*4],eax,ecx,400,200
 	jmp ret_drawWindow
 ret_drawWindow:
 	ret
