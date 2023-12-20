@@ -2,7 +2,6 @@
 ;该文件中有我们定义的所有常量和结构体
 ifndef	COMMON_INC
 COMMON_INC	equ	<1>
-
 include	windows.inc
 include	user32.inc
 include	kernel32.inc
