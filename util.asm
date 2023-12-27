@@ -18,7 +18,7 @@ extrn	question_cnt:dword
 
 .const
 BGM_HOME_PATH	byte	"./audio/HomePage.mp3",0
-BGM_ONGAME_PATH	byte	"./audio/OnGame.mp3",0
+BGM_ONGAME_PATH	byte	"./audio/InGame.mp3",0
 BGM_ZHP16_PATH	byte	"./audio/Zhp16s.mp3",0
 BGM_BOSS_PATH	byte	"./audio/Boss.mp3",0
 PLAY_SPRINTF byte "play %s",0
