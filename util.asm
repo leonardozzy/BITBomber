@@ -50,25 +50,25 @@ calcMapOffset	proc x:dword,y:dword,z:dword
 calcMapOffset	endp
 
 ;ÅÐ¶ÏmousexyÊÇ·ñÔÚxy£¬x+w y+h·¶Î§ÄÚ£¬Êó±êµã»÷°´¼ü¼ì²â
-isMouseInButton proc mousex:word, mousey:word, x:word,y:word,w:word,h:word
-	mov dx,mousex
-	cmp dx,x
-	jb notIn_isMouseInButton
-	sub dx,x
-	cmp dx,w
-	ja notIn_isMouseInButton
-	mov dx,mousey
-	cmp dx,y
-	jb notIn_isMouseInButton
-	sub dx,y
-	cmp dx,h
-	ja notIn_isMouseInButton
-	mov eax,1
+isMouseInButton	proc	mousex:dword,mousey:dword,x:dword,y:dword,w:dword,h:dword
+	mov	edx,mousex
+	cmp	edx,x
+	jl	notIn_isMouseInButton
+	sub	edx,x
+	cmp	edx,w
+	jg	notIn_isMouseInButton
+	mov	edx,mousey
+	cmp	edx,y
+	jl	notIn_isMouseInButton
+	sub	edx,y
+	cmp	edx,h
+	jg	notIn_isMouseInButton
+	mov	eax,1
 	ret
 notIn_isMouseInButton:
 	xor	eax,eax
 	ret
-isMouseInButton endp
+isMouseInButton	endp
 
 InitDanceMode proc
 	invoke crt_memset,offset dancemode_si,0,SIZEOF STARTUPINFO
@@ -109,22 +109,22 @@ readKeyInGame	Proc
 	mov	eax,-1
 	ret
 keyBomb_readKey:
-    mov eax,SETBOMB
+	mov eax,SETBOMB
 	ret
 keyW_readKey:
-    mov eax,UP
+	mov eax,UP
 	ret
 keyS_readKey:
-    mov eax,DOWN
+	mov eax,DOWN
 	ret
 keyA_readKey:
-    mov eax,LEFT
+	mov eax,LEFT
 	ret
 keyD_readKey:
-    mov eax,RIGHT
+	mov eax,RIGHT
 	ret
 keyEsc_readKey:
-    mov eax,GAMEPAUSE
+	mov eax,GAMEPAUSE
 	ret
 readKeyInGame	endp
 

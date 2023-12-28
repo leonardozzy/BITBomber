@@ -300,7 +300,7 @@ initGame	proto
 gameLoop	proto  input:dword
 ;util.asm
 calcMapOffset	proto	x:dword,y:dword,z:dword
-isMouseInButton proto mousex:word, mousey:word, x:word,y:word,w:word,h:word
+isMouseInButton	proto	mousex:dword,mousey:dword,x:dword,y:dword,w:dword,h:dword
 readKeyInGame	proto
 InitDanceMode	proto
 StartDanceMode proto

@@ -34,16 +34,16 @@ MAINLOOP_JMP_TBL	dword	offset logo_mainLoop,offset nop_mainLoop,offset story1_ma
 							offset nop_mainLoop,offset nop_mainLoop,offset nop_mainLoop,offset gameOver_mainLoop,offset killBoss_mainLoop,offset gameWin_mainLoop
 .code
 onLButtonUp	proc	lParam:LPARAM
-	local mousex:sword, mousey:sword
+	local	mousex:sdword,mousey:sdword
 	mov	eax,mainwinp.currentState
 	cmp	eax,mainwinp.intentState
 	je	continue_onLButtonUp
 	ret
 continue_onLButtonUp:
-	mov edx, lParam
-	mov mousex, dx
-	shr edx, 16
-	mov mousey, dx	;移位算出鼠标相对坐标
+	movsx	edx,word ptr lParam
+	mov	mousex,edx
+	movsx	edx,word ptr [lParam+2]
+	mov	mousey,edx	;移位算出鼠标相对坐标
 	jmp	[LBUTTON_JMP_TBL+eax*4]
 nop_onLButtonUp	label	dword
 	ret
