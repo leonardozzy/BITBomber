@@ -240,8 +240,13 @@ WindowProcPaint:
 	invoke	EndPaint,hwnd,addr ps		;释放绘图资源
 	jmp	ExitWindowProc
 WindowProcCreate:
+	;初始化win状态
+	mov mainwinp.timer, 0
+	mov mainwinp.currentState,LOGO_STATE
+	mov mainwinp.intentState,LOGO_STATE
 	invoke	ImmAssociateContext, hwnd, NULL	;qjh测试功能，禁用输入法
-	invoke	InitDanceMode		;初始化体感模式
+	invoke	initResources	;加载图像资源进内存
+	invoke	InitDanceMode	;初始化体感模式
 	;创建双缓冲绘图资源
 	invoke	CreateCompatibleDC,NULL
 	mov	hdcBuffer,eax
@@ -257,6 +262,8 @@ WindowProcDestroy:
 	invoke	DeleteObject,hMemBitmap
 	invoke	DeleteDC,hdcBuffer
 	invoke	KillTimer,hwnd,1	;停止定时器
+	invoke	releaseResources	;释放图像资源
+	invoke	TerminateProcess,dancemode_pi.hProcess,300
 	invoke	PostQuitMessage,0
 	jmp ExitWindowProc
 WindowProcLButtonUp:
@@ -271,7 +278,6 @@ WinMain	proc	hInst:HINSTANCE,hPrevInst:HINSTANCE,cmdLine:LPSTR,cmdShow:DWORD
 	invoke	readInfo,addr errorMsg
 	test	eax,eax
 	jnz	ErrorLoad
-	invoke	initResources	;加载图像资源进内存
 	invoke	crt_memset,addr wc,0,sizeof WNDCLASS
 	mov	wc.lpfnWndProc,offset WindowProc
 	mov	eax,hInst
@@ -284,10 +290,6 @@ WinMain	proc	hInst:HINSTANCE,hPrevInst:HINSTANCE,cmdLine:LPSTR,cmdShow:DWORD
 	test	eax,eax
 	jz	ErrorCreate
 	invoke	ShowWindow,eax,cmdShow
-	;初始化win状态
-	mov mainwinp.timer, 0
-	mov mainwinp.currentState,LOGO_STATE
-	mov mainwinp.intentState,LOGO_STATE
 EventLoop:
 	invoke	GetMessage,addr msg,NULL,0,0
 	test	eax,eax
@@ -303,11 +305,6 @@ ErrorCreate:
 	invoke	MessageBox,NULL,offset MSGBOX_WINDOW_FAIL_TEXT,offset MSGBOX_ERROR_TITLE,MB_ICONERROR
 	mov	eax,1
 ExitMain:
-	invoke	releaseResources	;释放图像资源
-	cmp dancemode_pi.hProcess,0
-	je JOkillDance_WinMain
-	invoke	TerminateProcess,dancemode_pi.hProcess,300
-JOkillDance_WinMain:
 	ret
 WinMain	endp
 
