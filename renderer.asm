@@ -332,10 +332,10 @@ mainLoop_drawMap:
 	movzx	edx,game.map[ebx*4].id
 	mov	id,edx
 	jmp	[DRAW_MAP_JMP_TBL+eax*4]
-drawWall_drawMap	label	dword
+drawWall_drawMap	label	near
 	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,bmpStructs[WALL_IMG*sizeof BmpStruct].bitmapHdc,0,0,SRCCOPY
 	jmp	exitSwitch_drawMap
-drawPlayer_drawMap	label	dword
+drawPlayer_drawMap	label	near
 	mov	eax,game.player.timer
 	shr	eax,3	;分频待定
 	and	eax,1
@@ -358,7 +358,7 @@ playerNotMove_drawMap:
 	pop	eax
 	invoke	BitBlt,hdcBuffer,drawXPos,drawYPos,ELEMENT_WIDTH,ELEMENT_HEIGHT,bmpStructs[PLAYER_IMG*sizeof BmpStruct].bitmapHdc,edx,eax,SRCPAINT
 	jmp	exitSwitch_drawMap
-drawBomb_drawMap	label	dword
+drawBomb_drawMap	label	near
 	mov	eax,id
 	imul	eax,sizeof Bomb
 	mov	eax,game.bombs[eax].timer
@@ -370,7 +370,7 @@ drawBomb_drawMap	label	dword
 	pop	eax
 	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,bmpStructs[BOMB_IMG*sizeof BmpStruct].bitmapHdc,eax,0,SRCPAINT
 	jmp	exitSwitch_drawMap
-drawMonster_drawMap	label	dword
+drawMonster_drawMap	label	near
 	mov	eax,id
 	imul	eax,sizeof Monster
 	mov	edx,game.monsters[eax].speed
@@ -415,10 +415,10 @@ drawMonster2_drawMap:
 	pop	eax
 	invoke	BitBlt,hdcBuffer,drawXPos,drawYPos,ELEMENT_WIDTH,ELEMENT_HEIGHT,bmpStructs[MONSTER2_IMG*sizeof BmpStruct].bitmapHdc,eax,edx,SRCPAINT
 	jmp	exitSwitch_drawMap
-drawBox_drawMap	label	dword
+drawBox_drawMap	label	near
 	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,bmpStructs[BOX_IMG*sizeof BmpStruct].bitmapHdc,0,0,SRCCOPY
 	jmp	exitSwitch_drawMap
-drawTool_drawMap	label	dword
+drawTool_drawMap	label	near
 	mov	eax,id
 	imul	eax,sizeof Tool
 	mov	eax,game.tools[eax]._type
@@ -428,7 +428,7 @@ drawTool_drawMap	label	dword
 	pop	eax
 	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,bmpStructs[TOOL_IMG*sizeof BmpStruct].bitmapHdc,eax,0,SRCPAINT
 	jmp	exitSwitch_drawMap
-drawFire_drawMap	label	dword
+drawFire_drawMap	label	near
 	;第0张图是火焰消失，第3张图是火焰刚出来
 	mov	eax,id
 	imul	eax,sizeof Bomb
@@ -441,7 +441,7 @@ drawFire_drawMap	label	dword
 	pop	eax
 	invoke	BitBlt,hdcBuffer,esi,edi,ELEMENT_WIDTH,ELEMENT_HEIGHT,bmpStructs[FIRE_IMG*sizeof BmpStruct].bitmapHdc,eax,0,SRCPAINT
 	jmp	exitSwitch_drawMap
-drawBoss_drawMap	label	dword
+drawBoss_drawMap	label	near
 	mov	eax,game.timer
 	shr	eax,3
 	and	eax,3
@@ -455,7 +455,7 @@ drawBoss_drawMap	label	dword
 	pop	eax
 	invoke	BitBlt,hdcBuffer,drawXPos,drawYPos,135,3*ELEMENT_HEIGHT,bmpStructs[DRAGON_IMG*sizeof BmpStruct].bitmapHdc,eax,0,SRCPAINT
 	jmp	exitSwitch_drawMap
-drawBlueFire_drawMap	label	dword
+drawBlueFire_drawMap	label	near
 	mov	eax,id
 	imul	eax,sizeof Attack
 	mov	eax,game.attacks[eax].timer
@@ -469,10 +469,10 @@ drawBlueFire_drawMap	label	dword
 	pop	eax
 	invoke	BitBlt,hdcBuffer,esi,drawYPos,ELEMENT_WIDTH,2*ELEMENT_HEIGHT,bmpStructs[BLUE_FIRE_IMG*sizeof BmpStruct].bitmapHdc,eax,0,SRCPAINT
 	jmp	exitSwitch_drawMap
-drawAttack_drawMap	label	dword
+drawAttack_drawMap	label	near
 	invoke	AlphaBlend,hdcBuffer,esi,edi,ELEMENT_WIDTH,DRAW_Y_STEP,bmpStructs[WARNING_IMG*sizeof BmpStruct].bitmapHdc,0,0,ELEMENT_WIDTH,DRAW_Y_STEP,00800000h	;alpha=128
 	jmp	exitSwitch_drawMap
-drawEmpty_drawMap	label	dword
+drawEmpty_drawMap	label	near
 exitSwitch_drawMap:
 	inc	ebx
 	inc	layer

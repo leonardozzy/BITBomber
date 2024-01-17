@@ -155,7 +155,7 @@ JmpOver_placeBomb_pollingPlayer:
 	mov game.player.direction,eax
 	mov game.player.isMove,MOVE
 	jmp [PLAYER_INPUT_JMP_TBL+eax*4]
-playerPressUp_pollingPlayer   label   dword
+playerPressUp_pollingPlayer   label   near
 	mov eax,game.player.frac_x
 	sub eax,game.player.speed
 	mov game.player.frac_x,eax
@@ -174,7 +174,7 @@ canMoveUp_pollingPlayer:
 	add eax,2*FRAC_RANGE
 	mov game.player.frac_x,eax
 	jmp checkDie_pollingPlayer
-playerPressDown_pollingPlayer label   dword
+playerPressDown_pollingPlayer label   near
 	mov eax,game.player.frac_x
 	add eax,game.player.speed
 	mov game.player.frac_x,eax
@@ -193,7 +193,7 @@ canMoveDown_pollingPlayer:
 	sub eax,2*FRAC_RANGE
 	mov game.player.frac_x,eax
 	jmp checkDie_pollingPlayer
-playerPressLeft_pollingPlayer label   dword
+playerPressLeft_pollingPlayer label   near
 	mov eax,game.player.frac_y
 	sub eax,game.player.speed
 	mov game.player.frac_y,eax
@@ -212,7 +212,7 @@ canMoveLeft_pollingPlayer:
 	add eax,2*FRAC_RANGE
 	mov game.player.frac_y,eax
 	jmp checkDie_pollingPlayer
-playerPressRight_pollingPlayer    label   dword
+playerPressRight_pollingPlayer    label   near
 	mov eax,game.player.frac_y
 	add eax,game.player.speed
 	mov game.player.frac_y,eax
@@ -270,27 +270,27 @@ pickTool_pollingPlayer:
 	sal ecx, 4  ;tool_index *= sizeof(tool)   考虑万一改变sizeof Tool，这个地方要改
 	mov edx,game.tools[ecx]._type
 	jmp [TOOL_TYPE_JMP_TBL+edx*4]
-addLife_pollingPlayer label dword
+addLife_pollingPlayer	label	near
 	cmp game.player.life,MAX_LIFE
 	jge ToolSwEnd_pollingPlayer
 	inc game.player.life
 	jmp ToolSwEnd_pollingPlayer
-addRange_pollingPlayer label dword
+addRange_pollingPlayer	label	near
 	cmp game.player.bomb_range,MAX_BOMB_RANGE
 	jge  ToolSwEnd_pollingPlayer
 	inc game.player.bomb_range
 	jmp ToolSwEnd_pollingPlayer
-addCnt_pollingPlayer label dword
+addCnt_pollingPlayer	label	near
 	cmp game.player.bomb_cnt,MAX_BOMB_CNT
 	jge ToolSwEnd_pollingPlayer
 	inc game.player.bomb_cnt
 	jmp ToolSwEnd_pollingPlayer
-addSpeed_pollingPlayer label dword
+addSpeed_pollingPlayer	label	near
 	cmp game.player.speed,MAX_SPEED
 	jge ToolSwEnd_pollingPlayer
 	inc game.player.speed
 	jmp ToolSwEnd_pollingPlayer
-addTime_pollingPlayer label dword
+addTime_pollingPlayer	label	near
 	add game.timer,20*FRAMES_PER_SEC
 ToolSwEnd_pollingPlayer:
 	mov game.map[eax*4-8]._type, EMPTY
@@ -303,7 +303,7 @@ pollingPlayer	endp
 calculateNextMove proc stdcall x:dword,y:dword,direction:dword,new_x:ptr dword,new_y:ptr dword
 	mov eax,direction
 	jmp [CALC_NEXT_MOVE_JMP_TBL+eax*4]
-direUp_calculateNextMove    label   dword
+direUp_calculateNextMove	label	near
 	mov ecx,x
 	dec	ecx
 	mov	eax,new_x
@@ -312,7 +312,7 @@ direUp_calculateNextMove    label   dword
 	mov	eax,new_y
 	mov	[eax],ecx
 	ret
-direDown_calculateNextMove    label   dword
+direDown_calculateNextMove	label	near
 	mov	ecx,x
 	inc	ecx
 	mov	eax,new_x
@@ -321,7 +321,7 @@ direDown_calculateNextMove    label   dword
 	mov	eax,new_y
 	mov	[eax],ecx
 	ret
-direLeft_calculateNextMove    label   dword
+direLeft_calculateNextMove	label	near
 	mov	ecx,x
 	mov	eax,new_x
 	mov	[eax],ecx
@@ -330,7 +330,7 @@ direLeft_calculateNextMove    label   dword
 	mov	eax,new_y
 	mov	[eax],ecx
 	ret
-direRight_calculateNextMove    label   dword
+direRight_calculateNextMove	label	near
 	mov	ecx,x
 	mov	eax,new_x
 	mov	[eax],ecx
@@ -368,42 +368,42 @@ skipLeft_pickDirection:
 	or	ebx,1
 skipRight_pickDirection:
 	jmp	[PICK_DIRECTION_JMP_TBL+ebx*4]
-empty_pickDirection	label	dword
+empty_pickDirection	label	near
 	mov	eax,direction
 	mov	eax,[FROM_DIRECTION_TBL+eax*4]
 	jmp	exit_pickDirection
 r1_pickDirection:
-r_pickDirection	label	dword
+r_pickDirection	label	near
 	mov	eax,direction
 	mov	eax,[RIGHT_DIRECTION_TBL+eax*4]
 	jmp	exit_pickDirection
 l1_pickDirection:
-l_pickDirection	label	dword
+l_pickDirection	label	near
 	mov	eax,direction
 	mov	eax,[LEFT_DIRECTION_TBL+eax*4]
 	jmp	exit_pickDirection
-lr_pickDirection	label	dword
+lr_pickDirection	label	near
 	invoke	crt_rand
 	and	eax,1
 	jz	l1_pickDirection
 	jmp	r1_pickDirection
 f1_pickDirection:
-f_pickDirection	label	dword
+f_pickDirection	label	near
 	mov	eax,direction
 exit_pickDirection:
 	pop	ebx
 	ret
-fr_pickDirection	label	dword
+fr_pickDirection	label	near
 	invoke	crt_rand
 	and	eax,1
 	jz	f1_pickDirection
 	jmp	r1_pickDirection
-fl_pickDirection	label	dword
+fl_pickDirection	label	near
 	invoke	crt_rand
 	and	eax,1
 	jz	f1_pickDirection
 	jmp	l1_pickDirection
-flr_pickDirection	label	dword
+flr_pickDirection	label	near
 	invoke	crt_rand
 	and	eax,1
 	jz	f1_pickDirection
@@ -428,7 +428,7 @@ loop_pollingMonster:
 	mov	eax,game.monsters[ebx].speed	;都要改小坐标的，速度先移进寄存器再说
 	mov	edx,game.monsters[ebx].direction
 	jmp	[POLL_MONSTER_JMP_TBL+edx*4]	;根据怪的方向来判断
-direUp_pollingMonster	label	dword
+direUp_pollingMonster	label	near
 	sub	game.monsters[ebx].frac_x,eax	;试探性地改变小坐标
 	jg	setMap_pollingMonster	;没过中点，无事发生
 	cmp	game.monsters[ebx].has_turned,0	;过了中点，这个格子有没有选过方向？
@@ -444,7 +444,7 @@ direUp_pollingMonster	label	dword
 	dec	game.monsters[ebx].x
 	mov	game.monsters[ebx].has_turned,0
 	jmp	setMap_pollingMonster
-direDown_pollingMonster	label	dword
+direDown_pollingMonster	label	near
 	add	game.monsters[ebx].frac_x,eax
 	jl	setMap_pollingMonster
 	cmp	game.monsters[ebx].has_turned,0
@@ -460,7 +460,7 @@ direDown_pollingMonster	label	dword
 	inc	game.monsters[ebx].x
 	mov	game.monsters[ebx].has_turned,0
 	jmp	setMap_pollingMonster
-direLeft_pollingMonster	label	dword
+direLeft_pollingMonster	label	near
 	sub	game.monsters[ebx].frac_y,eax
 	jg	setMap_pollingMonster
 	cmp	game.monsters[ebx].has_turned,0
@@ -476,7 +476,7 @@ direLeft_pollingMonster	label	dword
 	dec	game.monsters[ebx].y
 	mov	game.monsters[ebx].has_turned,0
 	jmp	setMap_pollingMonster
-direRight_pollingMonster	label	dword
+direRight_pollingMonster	label	near
 	add	game.monsters[ebx].frac_y,eax
 	jl	setMap_pollingMonster
 	cmp	game.monsters[ebx].has_turned,0
@@ -770,28 +770,28 @@ loop_bossAttack:
 	je	placeAttack_bossAttack
 	mov	eax,game.player.direction
 	jmp	[PLACE_ATTACK_JMP_TBL+eax*4]
-placeAttackUp_bossAttack	label	dword
+placeAttackUp_bossAttack	label	near
 	mov	ebx,game.player.x
 	dec	ebx
 	invoke	isMoveable,ebx,game.player.y
 	test	eax,eax
 	jz	placeAttack_bossAttack
 	jmp	placeAttackX_bossAttack
-placeAttackDown_bossAttack	label	dword
+placeAttackDown_bossAttack	label	near
 	mov	ebx,game.player.x
 	inc	ebx
 	invoke	isMoveable,ebx,game.player.y
 	test	eax,eax
 	jz	placeAttack_bossAttack
 	jmp	placeAttackX_bossAttack
-placeAttackLeft_bossAttack	label	dword
+placeAttackLeft_bossAttack	label	near
 	mov	ebx,game.player.y
 	dec	ebx
 	invoke	isMoveable,game.player.x,ebx
 	test	eax,eax
 	jz	placeAttack_bossAttack
 	jmp	placeAttackY_bossAttack
-placeAttackRight_bossAttack	label	dword
+placeAttackRight_bossAttack	label	near
 	mov	ebx,game.player.y
 	inc	ebx
 	invoke	isMoveable,game.player.x,ebx
@@ -902,22 +902,22 @@ exit_killAllMonsters:
 	ret
 killAllMonsters	endp
 
-killAllBlueFire	proc
+killAllAttacks	proc
 	push	ebx
 	xor	ebx,ebx
-loop_killAllBlueFire:
+loop_killAllAttacks:
 	cmp	ebx,MAX_ATTACK*sizeof Attack
-	je	exit_killAllBlueFire
+	je	exit_killAllAttacks
 	cmp	game.attacks[ebx].timer,0
-	je	continue_killAllBlueFire
+	je	continue_killAllAttacks
 	mov	game.attacks[ebx].timer,1
-continue_killAllBlueFire:
+continue_killAllAttacks:
 	add	ebx,sizeof Attack
-	jmp	loop_killAllBlueFire
-exit_killAllBlueFire:
+	jmp	loop_killAllAttacks
+exit_killAllAttacks:
 	pop	ebx
 	ret
-killAllBlueFire	endp
+killAllAttacks	endp
 
 pollingBoss	proc
 	local audioCmd[100]:byte
@@ -945,14 +945,14 @@ skipRoar_pollingBoss:
 changeState_pollingBoss:
 	mov	eax,game.boss.state
 	jmp	[BOSS_STATE_CHG_TBL+eax*4]
-toTakeoff_pollingBoss	label	dword
+toTakeoff_pollingBoss	label	near
 	invoke calcMapOffset,game.boss.x,game.boss.y,4
 	mov game.map[4*eax]._type,EMPTY
 	mov	game.boss.state,TAKEOFF_STATE
 	mov	game.boss.timer,TAKEOFF_TIME
-	invoke	killAllBlueFire
+	invoke	killAllAttacks
 	jmp	exit_pollingBoss
-toInSky_pollingBoss	label	dword
+toInSky_pollingBoss	label	near
 	invoke	crt_rand
 	xor	edx,edx
 	mov	ecx,MAX_SKY_TIME-MIN_SKY_TIME
@@ -972,13 +972,13 @@ finishSetSky_pollingBoss:
 	invoke crt_sprintf,addr audioCmd,offset PLAY_SPRINTF,offset DRAGON_ROAR_AUDIO
 	invoke mciSendString,addr audioCmd,0,0,0
 	jmp	exit_pollingBoss
-toLanding_pollingBoss	label	dword
+toLanding_pollingBoss	label	near
 	;randomly choose a place to land
 	invoke	generatePosition,offset game.boss.x,offset game.boss.y
 	mov	game.boss.state,LANDING_STATE
 	mov	game.boss.timer,LANDING_TIME
 	jmp	exit_pollingBoss
-toInMap_pollingBoss	label	dword
+toInMap_pollingBoss	label	near
 	invoke	killAllMonsters
 	invoke	calcMapOffset,game.boss.x,game.boss.y,4
 	mov game.map[eax*4]._type,BOSS

@@ -45,9 +45,9 @@ continue_onLButtonUp:
 	movsx	edx,word ptr [lParam+2]
 	mov	mousey,edx	;移位算出鼠标相对坐标
 	jmp	[LBUTTON_JMP_TBL+eax*4]
-nop_onLButtonUp	label	dword
+nop_onLButtonUp	label	near
 	ret
-start_onLButtonUp	label	dword
+start_onLButtonUp	label	near
 	invoke isMouseInButton, mousex, mousey, BUTT_STARTNEW_X,BUTT_STARTNEW_Y,BUTT_STARTNEW_W,BUTT_STARTNEW_H
 	test	eax,eax
 	jnz clickStartNew_onLButtonUp
@@ -77,23 +77,23 @@ errLoad_onLButtonUp:
 clickAboutme_onLButtonUp:
 	invoke	MessageBox,NULL,offset MSGBOX_ABOUT_TEXT,offset MSGBOX_ABOUT_TITLE,MB_OK
 	ret
-story1_onLButtonUp	label	dword
+story1_onLButtonUp	label	near
 	mov	mainwinp.transitionFunc,jobResetTimer
 	mov	mainwinp.shouldFade,TRUE
 	mov	mainwinp.intentState,STORY2_STATE
 	ret
-story2_onLButtonUp	label	dword
+story2_onLButtonUp	label	near
 	mov	mainwinp.transitionFunc,NULL
 	mov	mainwinp.shouldFade,TRUE
 	mov	mainwinp.intentState,TUTORIAL_STATE
 	ret
-tutorial_onLButtonUp	label	dword
+tutorial_onLButtonUp	label	near
 	mov	mainwinp.transitionFunc,jobTutorialToGame
 	mov	mainwinp.shouldFade,TRUE
 	mov	mainwinp.intentState,GAME_STATE
 	invoke	initGame
 	ret
-pause_onLButtonUp	label	dword
+pause_onLButtonUp	label	near
 	invoke isMouseInButton, mousex, mousey, BUTT_SAVE_X,BUTT_SAVE_Y,BUTT_SAVE_W,BUTT_SAVE_H
 	test	eax,eax
 	jnz clickSave_onLButtonUp
@@ -129,7 +129,7 @@ clickRethome_onLButtonUp:
 	mov	mainwinp.shouldFade,TRUE
 	mov	mainwinp.intentState,START_STATE
 	ret
-question_onLButtonUp	label	dword
+question_onLButtonUp	label	near
 	mov	mainwinp.playerAnswer,-1
 	invoke isMouseInButton, mousex, mousey, BUTT_CHOICEA_X,BUTT_CHOICEA_Y,BUTT_CHOICEA_W,BUTT_CHOICEA_H
 	test	eax,eax
@@ -163,7 +163,7 @@ checkValid_onLButtonUp:
 	mov	mainwinp.intentState,ANSWER_STATE
 exitQuestion_onLButtonUp:
 	ret
-answer_onLButtonUp	label	dword
+answer_onLButtonUp	label	near
 	mov mainwinp.transitionFunc,jobAnswerToGame
 	mov	mainwinp.shouldFade,TRUE
 	mov	mainwinp.intentState,GAME_STATE
@@ -178,19 +178,19 @@ mainLoop	proc	hwnd:HWND
 	ret
 continue_mainLoop:
 	jmp	[MAINLOOP_JMP_TBL+eax*4]
-nop_mainLoop	label	dword
+nop_mainLoop	label	near
 	ret
-logo_mainLoop	label	dword
+logo_mainLoop	label	near
 	invoke	checkTimerAndFade,15+30,START_STATE,jobToStart
 	invoke	InvalidateRect,hwnd,NULL,TRUE	;通知重绘
 	ret
-story1_mainLoop	label	dword
+story1_mainLoop	label	near
 	invoke	checkTimerAndFade,180,STORY2_STATE,jobResetTimer
 	ret
-story2_mainLoop	label	dword
+story2_mainLoop	label	near
 	invoke	checkTimerAndFade,300,TUTORIAL_STATE,NULL
 	ret
-game_mainLoop	label	dword
+game_mainLoop	label	near
 	invoke	readKeyInGame
 	cmp	eax,GAMEPAUSE
 	je	wantToPause_mainLoop
@@ -202,13 +202,13 @@ wantToPause_mainLoop:
 	mov	mainwinp.transitionFunc,NULL
 	mov	mainwinp.intentState,PAUSE_STATE
 	ret
-gameOver_mainLoop	label	dword
+gameOver_mainLoop	label	near
 	invoke	checkTimerAndFade,120,START_STATE,jobToStart
 	ret
-killBoss_mainLoop	label	dword
+killBoss_mainLoop	label	near
 	invoke	checkTimerAndFade,120,GAME_WIN_STATE,jobResetTimer
 	ret
-gameWin_mainLoop	label	dword
+gameWin_mainLoop	label	near
 	invoke	checkTimerAndFade,120,START_STATE,jobToStart
 	ret
 mainLoop	endp
