@@ -254,7 +254,7 @@ WindowProcCreate:
 	invoke	CreateCompatibleBitmap,eax,WINDOW_WIDTH,WINDOW_HEIGHT
 	mov	hMemBitmap,eax
 	invoke	SelectObject,hdcBuffer,eax
-	invoke	SetStretchBltMode,hdcBuffer,COLORONCOLOR	;设置GDI的图片缩放模式，防止缩小后图是一坨屎
+	invoke	SetStretchBltMode,hdcBuffer,COLORONCOLOR	;设置GDI的图片缩放模式，防止缩小后色彩错误
 	invoke	SetTimer,hwnd,1,20,NULL	;暂定每20ms更新一次状态，但实测频率低于理论值
 	jmp	ExitWindowProc
 WindowProcDestroy:
