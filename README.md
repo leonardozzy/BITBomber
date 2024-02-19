@@ -1,13 +1,5 @@
-**文件作用**
+# 《理工炸弹侠》——BITBoomberman
 
-mainwindow是主窗口和事件循环
+这是《汇编语言与接口技术》课程的大作业《理工炸弹侠》，我们小组实现了一个炸弹人游戏。共分为3个普通关和一个BOSS战。
 
-gamelogic是游戏逻辑
-
-renderer是画图
-
-testmain是控制台测试用
-
-util是工具函数
-
-common.inc是头文件
+只需要clone下来后放入vs编译即可运行。
