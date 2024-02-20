@@ -295,6 +295,7 @@ MainWinp	ends
 initResources	proto
 releaseResources	proto
 drawWindow	proto
+;DrawEx.dll
 drawImage	proto c:dword,:dword,:dword
 drawAdvImage	proto c:dword,:dword,:dword,:dword,:dword
 ;gamelogic.asm
