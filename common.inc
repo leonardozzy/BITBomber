@@ -10,6 +10,7 @@ include	gdiplus.inc
 include	msimg32.inc
 include	imm32.inc
 include winmm.inc
+include	shell32.inc
 include	msvcrt.inc
 includelib	user32.lib
 includelib	kernel32.lib
@@ -18,6 +19,7 @@ includelib	gdiplus.lib
 includelib	msimg32.lib
 includelib	imm32.lib
 includelib	winmm.lib
+includelib	shell32.lib
 includelib	msvcrt.lib
 includelib	DrawEx.lib
 

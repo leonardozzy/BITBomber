@@ -24,6 +24,7 @@ MSGBOX_MSG_TITLE	byte	"消息",0
 MSGBOX_ABOUT_TITLE	byte	"关于",0
 MSGBOX_ABOUT_TEXT	byte	"你说得对，但是《北理炸弹侠》是由二十二小组自主研发的一款全新开放世界冒险游戏。游戏发生在一个被称作“北理工”的幻想世界，在这里，被张华平选中的人将被授予“MASM”，导引IA-32之力。"
 MSGBOX_ABOUT_TEXT1	byte	"你将扮演一位名为“炸弹侠”的神秘角色，在自由的旅行中使用汇编炸弹击败强敌，拯救北理工——同时，逐步发掘“恶龙”的真相。",0
+MSGBOX_NO_ADMIN_TEXT	byte	"请以管理员身份运行！",0
 MSGBOX_WINDOW_FAIL_TEXT	byte	"窗口创建失败！",0
 MSGBOX_SAVESUCC_TEXT	byte	"游戏进度保存成功",0
 MSGBOX_SAVEFAIL_TEXT	byte	"无法保存游戏进度！",0
@@ -311,9 +312,16 @@ ExitMain:
 WinMain	endp
 
 start:
+	invoke	IsUserAnAdmin
+	test	eax,eax
+	jz	NoAdmin
 	invoke	GetModuleHandle,NULL
 	mov	edx,eax
 	invoke	GetCommandLine
 	invoke	WinMain,edx,NULL,eax,SW_SHOWDEFAULT
+	jmp	ExitProg
+NoAdmin:
+	invoke	MessageBox,NULL,offset MSGBOX_NO_ADMIN_TEXT,offset MSGBOX_ERROR_TITLE,MB_OK
+ExitProg:
 	invoke	ExitProcess,eax
 end	start
