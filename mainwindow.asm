@@ -7,6 +7,7 @@ public  mainwinp
 public	hdcBuffer
 public	dancemode_si
 public	dancemode_pi
+extrn	LOGO_PATH:byte
 
 .data?
 mainwinp	MainWinp	<>
@@ -275,6 +276,7 @@ WindowProc	endp
 
 WinMain	proc	hInst:HINSTANCE,hPrevInst:HINSTANCE,cmdLine:LPSTR,cmdShow:DWORD
 	local	wc:WNDCLASS,msg:MSG,errorMsg[100]:byte
+	invoke	drawImage,offset LOGO_PATH,0,0
 	invoke	readInfo,addr errorMsg
 	test	eax,eax
 	jnz	ErrorLoad

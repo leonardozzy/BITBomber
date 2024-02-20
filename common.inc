@@ -19,6 +19,7 @@ includelib	msimg32.lib
 includelib	imm32.lib
 includelib	winmm.lib
 includelib	msvcrt.lib
+includelib	DrawEx.lib
 
 ;定死窗口高度宽度，数值可以以后再调
 WINDOW_WIDTH	equ	1000
@@ -294,6 +295,8 @@ MainWinp	ends
 initResources	proto
 releaseResources	proto
 drawWindow	proto
+drawImage	proto c:dword,:dword,:dword
+drawAdvImage	proto c:dword,:dword,:dword,:dword,:dword
 ;gamelogic.asm
 initLevel	proto
 initGame	proto

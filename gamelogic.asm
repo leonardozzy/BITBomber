@@ -7,6 +7,7 @@ public  game
 public  level_cnt
 public	question_cnt
 extrn	mainwinp:MainWinp
+extrn	BOMB_PATH:byte
 
 .const
 BOMB_AUDIO   byte    "./audio/Bomb.wav",0
@@ -16,7 +17,6 @@ LEVEL_UP_AUDIO byte "./audio/Levelup.mp3",0
 DRAGON_ROAR_AUDIO byte "./audio/DragonRoar.mp3",0
 DRAGON_HURT_AUDIO byte "./audio/DragonHurt.wav",0
 ATTACK_AUDIO	byte	"./audio/Attack.wav",0
-
 PLAY_SPRINTF byte "play %s",0
 OPEN_FILE_READ_ONLY	byte	"r",0
 ONE_INT_FORMAT	byte	"%d",0
@@ -71,6 +71,7 @@ isMoveableMonster   endp
 
 placeBomb	proc	
 	push    ebx
+	invoke	drawAdvImage,offset BOMB_PATH,20,80,0,50
 	cmp game.player.bomb_cnt,0
 	jng ret_placeBomb
 	invoke calcMapOffset,game.player.x,game.player.y,0

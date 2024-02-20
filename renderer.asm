@@ -3,11 +3,13 @@
 option	casemap:none
 
 include	common.inc
-public levelup_question
-public levelup_choice1
-public levelup_choice2
-public levelup_choice3
-public levelup_choice4
+public	levelup_question
+public	levelup_choice1
+public	levelup_choice2
+public	levelup_choice3
+public	levelup_choice4
+public	LOGO_PATH
+public	BOMB_PATH
 extrn	game:Game
 extrn	level_cnt:dword
 extrn	mainwinp:MainWinp
